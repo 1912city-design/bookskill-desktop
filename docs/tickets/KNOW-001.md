@@ -5,10 +5,11 @@
 - 目标：知识卡以 `draft` 创建，用户确认后才变为 `verified_by_user`；支持编辑、合并、删除；删除卡片不得删除原书（对应 AT-03）。
 - 负责人 Agent：frontend_engineer（BookSkill Frontend Engineer）
 - 依赖：VERT-001 + READ-001。从已含 READ-001 的 `origin/feat/VERT-001`（`a83e0a0`）拉出独立分支。
-- 状态：Pull Request（[PR #6](https://github.com/1912city-design/bookskill-desktop/pull/6) → `feat/VERT-001`；待独立 QA；不得标 Done）
+- 状态：Landed on `feat/VERT-001`（[PR #6](https://github.com/1912city-design/bookskill-desktop/pull/6)，merge `6d7914d`，2026-11-14 01:51 Asia/Shanghai）。未进 `integration` / `main`，不得标 Done。
 - 启动时间：2026-11-14 00:52 Asia/Shanghai（工作树）
 - 实现启动时间：2026-11-14 01:39 Asia/Shanghai
-- PR 打开时间：2026-11-14 01:48 Asia/Shanghai（按 D-025 自动推进，无需再向用户确认开 PR）
+- PR 打开时间：2026-11-14 01:48 Asia/Shanghai
+- 合入时间：2026-11-14 01:51 Asia/Shanghai（独立 QA PASS 后仅合入 `feat/VERT-001`）
 - 分支 / 工作树：`feat/KNOW-001` @ `4129bd5`，`/workspace/bookskill-worktrees/KNOW-001`
 - 视觉参考（只读，禁止改）：`/workspace/bookskill-desktop/prototypes/desktop-shell/`，证据 `/workspace/bookskill-desktop/prototypes/desktop-shell/EVIDENCE.md`
 - 风险等级（预估）：低/中（不得让 AI 自动发布为正式卡，见 D-017 / D-018）
