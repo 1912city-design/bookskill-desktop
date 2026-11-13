@@ -5,8 +5,8 @@
 - 目标：知识卡以 `draft` 创建，用户确认后才变为 `verified_by_user`；支持编辑、合并、删除；删除卡片不得删除原书（对应 AT-03）。
 - 负责人 Agent：frontend_engineer（BookSkill Frontend Engineer）
 - 依赖：VERT-001。从 `feat/VERT-001` 拉出独立分支。
-- 状态：Ready（工作树已建；实现排在 taste-skill UI 闸门流程之后，避免与 READ-001 同时改 `packages/desktop` 主导线）
-- 启动时间：2026-11-14 00:52 Asia/Shanghai
+- 状态：Ready（taste-skill 已过闸；实现仍排在 READ-001 之后，避免同时改 `packages/desktop` 主导线）
+- 启动时间：2026-11-14 00:52 Asia/Shanghai（工作树；已快进至 `f109cd2`）
 - 分支 / 工作树：`feat/KNOW-001`，`/workspace/bookskill-worktrees/KNOW-001`
 - 风险等级（预估）：低/中（不得让 AI 自动发布为正式卡，见 D-017 / D-018）
 - 测试样本：只使用 FIXT-001 或同等许可/合成样本。

@@ -1,6 +1,6 @@
 # TASKS
 
-- 更新时间：2026-11-14 00:52 Asia/Shanghai
+- 更新时间：2026-11-14 01:25 Asia/Shanghai
 - 状态机：`Backlog → Ready → In Progress → Pull Request → CI → Independent QA → Auto-merge to integration（低/中风险）或 Human Approval（高风险）→ Done`
 - 合入规则：D-025 与 `docs/policies/merge-policy.yml`。低/中风险在 CI + 独立 QA 通过后由 Orchestrator 自动合入 `integration`，不逐个询问。高风险与生产发布、以及分支保护启用前合入 `main`，须人工确认（记入 `docs/PENDING_DECISIONS.md`）。
 - 并行规则：最多 6 个互不冲突的开发任务；每个子系统同一时间只允许一个实现 Agent 修改；独立分支或 worktree。
@@ -28,11 +28,11 @@
 - BOT-001：`/workspace/bookskill-worktrees/BOT-001`，`feat/BOT-001`
 - APP-001：`/workspace/bookskill-worktrees/APP-001`，`feat/APP-001`
 - DATA-001：`/workspace/bookskill-worktrees/DATA-001`，`feat/DATA-001`
-- VERT-001：`/workspace/bookskill-worktrees/VERT-001`，`feat/VERT-001`
-- IMPORT-001：`/workspace/bookskill-worktrees/IMPORT-001`，`feat/IMPORT-001`（基于 `feat/VERT-001`）
-- READ-001：`/workspace/bookskill-worktrees/READ-001`，`feat/READ-001`（基于 `feat/VERT-001`）
-- KNOW-001：`/workspace/bookskill-worktrees/KNOW-001`，`feat/KNOW-001`（基于 `feat/VERT-001`）
-- 产品 UI 原型（taste-skill，不在本仓库实现树）：`/workspace/bookskill-ui-taste`
+- VERT-001：`/workspace/bookskill-worktrees/VERT-001`，`feat/VERT-001`（已快进至 `f109cd2`，含 IMPORT-001）
+- IMPORT-001：`/workspace/bookskill-worktrees/IMPORT-001`，`feat/IMPORT-001`（已合入 `feat/VERT-001` @ `f109cd2`，未进 `integration`）
+- READ-001：`/workspace/bookskill-worktrees/READ-001`，`feat/READ-001`（已快进至 `f109cd2`）
+- KNOW-001：`/workspace/bookskill-worktrees/KNOW-001`，`feat/KNOW-001`（已快进至 `f109cd2`；实现仍等 READ-001）
+- 产品 UI 原型（taste-skill GATE: PASS，不在实现树内改）：`/workspace/bookskill-ui-taste`，同步副本 `/workspace/bookskill-desktop/prototypes/desktop-shell/`
 
 发布仓库已连接：`https://github.com/1912city-design/bookskill-desktop`。按 D-025 开远端 PR；Orchestrator 不自行合入 `main`、不发布。
 
@@ -46,9 +46,9 @@
 | APP-001 | B | Done（本地 Linux 开发骨架；G1 未通过；未合入） | frontend_engineer | REPO-001 | 桌面骨架 |
 | DATA-001 | B | Done（本地；未合入；合入 `integration` 为高风险，见 P-002） | backend_engineer | REPO-001 | 本地 schema 与迁移 |
 | VERT-001 | C | Done（本地薄切片；未合入；不是正式交付；未宣布 G1/G2） | ai_skill_engineer | APP-001, DATA-001, GOV-001（FIXT-001 已提供 CC0 样本） | 书到对话 Skill 的薄切片 |
-| IMPORT-001 | D | Ready / In Progress | backend_engineer | VERT-001 | 导入、去重、失败与重试 |
-| READ-001 | D | Ready（工作树已建；等 taste-skill UI 流程结束后再实现，避免抢同一 frontend Agent） | frontend_engineer | VERT-001 | 章节、摘录、批注、来源定位 |
-| KNOW-001 | D | Ready（工作树已建；排在 READ-001 之后启动实现，避免同时改 desktop 主导线） | frontend_engineer | VERT-001 | 知识卡草稿/确认/编辑/合并/删除 |
+| IMPORT-001 | D | Landed on `feat/VERT-001`（PR #4；未进 `integration`；不得标 Done） | backend_engineer | VERT-001 | 导入、去重、失败与重试 |
+| READ-001 | D | In Progress | frontend_engineer | VERT-001 + IMPORT-001 | 章节、摘录、批注、来源定位 |
+| KNOW-001 | D | Ready（排在 READ-001 之后，避免同时改 desktop 主导线） | frontend_engineer | VERT-001 + READ-001 | 知识卡草稿/确认/编辑/合并/删除 |
 | SEARCH-001 | D | Backlog | ai_skill_engineer | KNOW-001 | 全文/语义搜索与来源显示 |
 | REL-001 | D | Backlog | ai_skill_engineer | KNOW-001 | 知识关系建议与用户确认 |
 | CHAT-001 | E | Backlog | frontend_engineer | VERT-001 | 对话历史/输入/附件/停止/导出/删除 |
