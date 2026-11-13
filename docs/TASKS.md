@@ -1,6 +1,6 @@
 # TASKS
 
-- 更新时间：2026-11-13 17:21 Asia/Shanghai
+- 更新时间：2026-11-13 17:27 Asia/Shanghai
 - 状态机：`Backlog → Ready → In Progress → Pull Request → CI → Independent QA → Auto-merge to integration（低/中风险）或 Human Approval（高风险）→ Done`
 - 并行规则：最多 6 个互不冲突的开发任务；每个子系统同一时间只允许一个实现 Agent 修改；独立分支或 worktree。
 - 重试：每任务最多 2 次自动重试，其后标 BLOCKED，其它任务继续。
@@ -34,7 +34,7 @@
 | REPO-001 | A | Done（本地基线；远端 CI 因 B-001 未生效） | release_engineer | 无 | 仓库和 CI 基线 |
 | BOT-001 | A | Local Complete / Remote BLOCKED | backend_engineer | 无 | 本地运行时与 34 项测试已通过；远端 PR/CI 仍阻塞，不得标 Done |
 | APP-001 | B | In Progress | frontend_engineer | REPO-001 | 桌面骨架 |
-| DATA-001 | B | In Progress | backend_engineer | REPO-001 | 本地 schema 与迁移 |
+| DATA-001 | B | Done（本地；未合入；合入 integration 需人工确认；远端 PR 因 B-001 未开） | backend_engineer | REPO-001 | 本地 schema 与迁移 |
 | VERT-001 | C | Backlog | ai_skill_engineer | APP-001, DATA-001, GOV-001（测试材料许可） | 书到对话 Skill 的薄切片 |
 | IMPORT-001 | D | Backlog | backend_engineer | VERT-001 | 导入、去重、失败与重试 |
 | READ-001 | D | Backlog | frontend_engineer | VERT-001 | 章节、摘录、批注、来源定位 |
