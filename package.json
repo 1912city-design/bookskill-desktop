@@ -12,7 +12,6 @@
     "test": "node scripts/validate-ci-workflow.mjs && pnpm --filter @bookskill/repo-baseline test",
     "build": "pnpm --filter @bookskill/repo-baseline build",
     "validate-ci": "node scripts/validate-ci-workflow.mjs",
-    "local-ci": "bash scripts/ci-local.sh",
-    "ci": "bash scripts/ci-local.sh"
+    "local-ci": "bash scripts/ci-local.sh"
   }
 }

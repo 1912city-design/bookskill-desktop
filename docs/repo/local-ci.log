@@ -1,0 +1,64 @@
+=== BookSkill REPO-001 ===
+started_at: 2026-11-13 17:17:59 CST
+timezone: Asia/Shanghai (UTC+8)
+cwd: /workspace/bookskill-worktrees/REPO-001
+uname: Linux x86_64
+node: v24.22.1
+pnpm: 10.34.6
+command: bash scripts/ci-local.sh
+note: local equivalent of .github/workflows/ci.yml (not remote GitHub Actions). Do not use 'pnpm ci' — that is a reserved pnpm command.
+----------------------------------------
+Scope: all 2 workspace projects
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 396ms using pnpm v10.34.6
+
+> bookskill-desktop@0.0.0 lint /workspace/bookskill-worktrees/REPO-001
+> pnpm --filter @bookskill/repo-baseline lint
+
+
+> @bookskill/repo-baseline@0.0.0 lint /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> eslint .
+
+
+> bookskill-desktop@0.0.0 test /workspace/bookskill-worktrees/REPO-001
+> node scripts/validate-ci-workflow.mjs && pnpm --filter @bookskill/repo-baseline test
+
+validate-ci-workflow: OK: a Test step runs `pnpm test` and will fail the job on a non-zero exit.
+
+> @bookskill/repo-baseline@0.0.0 test /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> pnpm build && node --test --test-reporter=spec test/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ resolveDataDir
+  ✔ uses a BookSkill XDG path on Linux, not an AnythingLLM path (0.767112ms)
+  ✔ honors XDG_DATA_HOME on Linux (0.122634ms)
+  ✔ uses Application Support / BookSkill Desktop on macOS (0.154386ms)
+  ✔ uses APPDATA / BookSkill Desktop on Windows (0.177402ms)
+  ✔ honors BOOKSKILL_DATA_DIR when the path is product-specific (0.107468ms)
+  ✔ rejects an override that points at AnythingLLM data (0.304397ms)
+  ✔ product unix dir name is bookskill-desktop, not an AnythingLLM user-data name (0.081466ms)
+✔ resolveDataDir (2.65234ms)
+ℹ tests 7
+ℹ suites 1
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80.725904
+
+> bookskill-desktop@0.0.0 build /workspace/bookskill-worktrees/REPO-001
+> pnpm --filter @bookskill/repo-baseline build
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+----------------------------------------
+exit_code: 0
+finished_at: 2026-11-13 17:18:04 CST
