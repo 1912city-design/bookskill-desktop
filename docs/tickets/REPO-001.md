@@ -7,8 +7,13 @@
 - 输入/受影响模块：`docs/DEVELOPMENT.md`、`.github/**`、产品侧构建骨架与基线测试、`docs/repo/**`
 - 允许工具：创建/修改上述文件、安装开发依赖、运行 lint/test/build、写本地 PR 草案
 - 禁止操作：推送或保护远端 `main`（仓库未连接）；把 AnythingLLM 官方二进制当构建产物；把上游内部数据库当业务 API；读取密钥；合并到 `main`；声称远端 CI 已接通
-- 状态：In Progress
+- 状态：Done（本地基线完成；远端 GitHub Actions / 分支保护因 B-001 尚未生效，不得称为远端 CI 已绿）
 - 启动时间：2026-11-13 17:10 Asia/Shanghai
+- 本地完成时间：2026-11-13 17:19 Asia/Shanghai
+- 分支：`feat/REPO-001` @ `630b761`
+- 工作树：`/workspace/bookskill-worktrees/REPO-001`
+- 独立复测：2026-11-13 17:20 Asia/Shanghai，`pnpm test` 7 passed / 0 failed exit 0；`pnpm lint` exit 0；`pnpm build` exit 0
+- 失败证明：`docs/repo/ci-fail-proof.log`（exit 1）；通过证明：`docs/repo/ci-pass-proof.log`（exit 0）。未合入 main
 
 ## 验收条件（可测试）
 

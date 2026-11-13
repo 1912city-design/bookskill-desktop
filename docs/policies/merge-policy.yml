@@ -1,0 +1,55 @@
+# BookSkill Desktop executable merge policy (D-025)
+# Evaluated by: node docs/policies/apply-merge-policy.mjs
+version: 1
+decision_id: D-025
+updated: "2026-11-14T00:51:00+08:00"
+timezone: Asia/Shanghai
+contract: docs/GROK_EXECUTION_SPEC.md
+
+high_risk_categories:
+  - data_migration
+  - auth
+  - sync_encryption
+  - external_operations
+  - release
+  - license
+  - security
+  - privacy
+  - payment
+
+risks:
+  low: auto_eligible
+  medium: auto_eligible
+  high: human
+
+targets:
+  integration:
+    auto_merge_when:
+      ci: passed
+      independent_qa: passed
+      risk: [low, medium]
+    wait_for_human_when:
+      risk: high
+  main:
+    require_human_confirmation_until:
+      ci_workflow_on_default_branch: true
+      branch_protection_enabled: true
+    after_branch_protection_enabled: follow_branch_protection
+    orchestrator_must_not_bypass_protection: true
+    orchestrator_auto_merge: false
+  production_release:
+    always_require_human_confirmation: true
+    orchestrator_auto_merge: false
+
+qa_failed:
+  open_defect_ticket: true
+  ticket_directory: docs/tickets/
+  return_to_implementing_agent: true
+  idle_wait: false
+
+exit_codes:
+  auto_merge_integration: 0
+  usage_or_error: 1
+  wait_for_human: 2
+  qa_failed_open_defect: 3
+  follow_branch_protection: 4
