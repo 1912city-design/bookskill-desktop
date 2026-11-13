@@ -1,0 +1,47 @@
+command: pnpm --filter @bookskill/desktop test
+cwd: /workspace/bookskill-worktrees/VERT-001
+started: 2026-11-13 17:39:07 CST
+
+
+> @bookskill/desktop@0.0.0 test /workspace/bookskill-worktrees/VERT-001/packages/desktop
+> pnpm --filter @bookskill/repo-baseline build && tsc -p tsconfig.json --noEmit && node --test --test-reporter=spec test/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/VERT-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ BookSkill data directory initialization
+  ✔ creates the BookSkill layout under BOOKSKILL_DATA_DIR (1.732388ms)
+  ✔ is idempotent and does not overwrite an existing manifest (1.311169ms)
+  ✔ uses the BookSkill XDG directory name, not an AnythingLLM user-data path (0.431395ms)
+  ✔ rejects an AnythingLLM default user directory and does not create it (0.418376ms)
+  ✔ rejects mintplex and anything-llm path markers (0.155265ms)
+✔ BookSkill data directory initialization (4.962298ms)
+▶ render error boundary
+  ✔ returns a visible alert panel instead of an empty document (0.65478ms)
+  ✔ escapes untrusted error text so a failed render cannot inject markup (0.144611ms)
+  ✔ catches a thrown render function and still produces visible output (0.138739ms)
+  ✔ passes through a successful render unchanged (0.102843ms)
+  ✔ formats unknown values without going blank (0.157316ms)
+✔ render error boundary (2.126402ms)
+▶ BookSkill Desktop navigation
+  ✔ exposes exactly five first-level entries with the contract labels (1.020431ms)
+  ✔ defaults to 问题对话 (0.167336ms)
+  ✔ can navigate to every first-level entry (0.130044ms)
+  ✔ rejects unknown routes so a typo cannot silently show a blank view (0.333017ms)
+  ✔ uses the BookSkill Desktop product name, not an AnythingLLM mark (0.173081ms)
+✔ BookSkill Desktop navigation (2.915143ms)
+▶ desktop shell wiring for the VERT-001 slice
+  ✔ initializes the shell data directory and opens the business database under it (16.540474ms)
+✔ desktop shell wiring for the VERT-001 slice (17.196609ms)
+ℹ tests 16
+ℹ suites 4
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135.623014
+
+exit_code: 0
+finished: 2026-11-13 17:39:10 CST
