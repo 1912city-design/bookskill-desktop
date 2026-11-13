@@ -1,0 +1,233 @@
+/* Original BookSkill Desktop shell styles. No AnythingLLM / Mintplex brand colors, marks, or type locked to that product. */
+:root {
+  --ink: #1c2a3a;
+  --ink-soft: #3d4a59;
+  --paper: #f6f1e8;
+  --paper-2: #ece4d6;
+  --line: #d5cbb8;
+  --copper: #c4652d;
+  --copper-dark: #8f4320;
+  --sidebar: #162230;
+  --sidebar-text: #f4efe6;
+  --sidebar-muted: #b9c0c8;
+  --danger: #8b1e1e;
+  --danger-bg: #f8e6e2;
+  --shadow: 0 16px 40px rgba(22, 34, 48, 0.12);
+  font-family: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--sidebar);
+  color: var(--sidebar-text);
+  padding: 28px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, transparent 0 10px, var(--copper) 10px 18px, transparent 18px) 22px 6px / 8px 20px no-repeat,
+    linear-gradient(90deg, #f6f1e8 0 46%, #1c2a3a 46% 54%, #ece4d6 54% 100%);
+  box-shadow: inset 0 0 0 2px rgba(246, 241, 232, 0.16);
+  flex: 0 0 36px;
+}
+
+.brand-kicker {
+  margin: 0 0 2px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sidebar-muted);
+}
+
+.product-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--sidebar-text);
+  text-align: left;
+  padding: 11px 12px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.nav-button:hover {
+  background: rgba(246, 241, 232, 0.08);
+}
+
+.nav-button[aria-current="page"] {
+  background: rgba(196, 101, 45, 0.22);
+  box-shadow: inset 3px 0 0 var(--copper);
+  font-weight: 650;
+}
+
+.main {
+  padding: 48px 56px;
+}
+
+.active-view {
+  max-width: 720px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 36px 40px 40px;
+  box-shadow: var(--shadow);
+}
+
+.view-kicker,
+.error-kicker {
+  margin: 0 0 8px;
+  color: var(--copper-dark);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0 0 16px;
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.view-description,
+.view-note,
+.error-boundary-hint {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+.view-note {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.meta-list {
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.meta-list div {
+  display: grid;
+  gap: 4px;
+}
+
+.meta-list dt {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.meta-list dd {
+  margin: 0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 14px;
+  word-break: break-all;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.error-boundary {
+  min-height: 100vh;
+  margin: 0;
+  padding: 72px 56px;
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.error-boundary h1 {
+  color: var(--danger);
+}
+
+.error-boundary-message {
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #e3b7b0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    padding: 16px;
+  }
+
+  .nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .main,
+  .error-boundary {
+    padding: 28px 20px;
+  }
+}
