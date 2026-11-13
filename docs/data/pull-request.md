@@ -33,6 +33,8 @@ pnpm --filter @bookskill/data test    # exit 0, 11 passed / 0 failed, 2026-11-13
 - 根目录 `pnpm test` 尚未包含本包（受任务写权限限制，未改根 `package.json` / lockfile）。
 - 数据迁移需人工批准后才能合入 `integration`。
 
+实现提交：`af14b5c7415d191f7f981073ad855014b0de195a`。
+
 ## 建议审阅者
 
 连接远端仓库后，由独立 `qa_security` 复核，再由负责人人工确认合入 `integration`。不要由本任务实现者自行合并，也不要直接合入 `main`。

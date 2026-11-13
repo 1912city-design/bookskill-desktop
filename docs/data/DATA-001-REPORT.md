@@ -70,7 +70,7 @@ pnpm --filter @bookskill/data test
 
 ## Git 提交
 
-见 `feat/DATA-001` 分支 tip（提交后记录；未推送，未开远端 PR，未合入 `main` / `integration`）。
+本报告对应提交：`af14b5c7415d191f7f981073ad855014b0de195a`（`feat/DATA-001`；未推送，未开远端 PR，未合入 `main` / `integration`）。本条 hash 记录提交见随后的 docs 提交。
 
 ## 未解决风险 / BLOCKED
 
