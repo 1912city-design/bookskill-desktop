@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-- 更新时间：2026-11-13 17:27 Asia/Shanghai
+- 更新时间：2026-11-13 17:31 Asia/Shanghai
 - 更新人：orchestrator
 - 产品暂名：BookSkill Desktop
 - 当前阶段：Phase B — 桌面骨架与本地数据（Phase A 本地底座已完成；远端仍未连接）
@@ -9,7 +9,7 @@
 
 ## 一句话结论
 
-**发布仓库尚未连接。** 已建立本地 Git 工作区草案 `/workspace/bookskill-desktop`（仅 `main` 本地分支，无 remote）。GOV-001 / REPO-001 本地已验收，BOT-001 本地完成但远端未完。DATA-001 本地 schema 与迁移已验收（未合入）。APP-001 仍在进行。在负责人指定组织/仓库并完成本地到远端的连接之前，不得声称可提交远端 PR 或发布安装包。
+**发布仓库尚未连接。** 已建立本地 Git 工作区草案 `/workspace/bookskill-desktop`（仅 `main` 本地分支，无 remote）。GOV-001 / REPO-001 本地已验收，BOT-001 本地完成但远端未完。DATA-001 本地 schema 与迁移已验收（未合入）。APP-001 本地 Linux 开发骨架已验收（未合入；G1 未通过）。VERT-001 已开工。在负责人指定组织/仓库并完成本地到远端的连接之前，不得声称可提交远端 PR 或发布安装包。
 
 ## 环境清单（2026-11-13 17:09 Asia/Shanghai 实测）
 
@@ -71,14 +71,15 @@
 
 禁止（已遵守）：读生产密钥、访问真实用户书籍、推送主分支、合并自己的 PR、删除线上数据、未经人工确认发布生产、绕过支付或授权系统、在聊天中要求粘贴 API 密钥。
 
-## 进展（2026-11-13 17:27 Asia/Shanghai）
+## 进展（2026-11-13 17:31 Asia/Shanghai）
 
 - GOV-001：审查交付 Done（不构成法律批准）。分支 `feat/GOV-001` @ `18281a88ae64d38a9af38308490aa937cba28843`。独立复测 `python3 docs/licenses/verify_gov001.py` exit 0。上游 AnythingLLM `1626d971c73d70a68602a662e3baf52e160c62ff`。待确认 L-001–L-012；公开发行仍受 B-002 阻塞。未合入 main。
 - REPO-001：本地基线 Done。分支 `feat/REPO-001` @ `630b761`。独立复测 `pnpm test` 7/0 exit 0，`pnpm lint` 0，`pnpm build` 0。失败证明 `docs/repo/ci-fail-proof.log` exit 1。远端 CI 因 B-001 未生效，不得称为已绿。未合入 main。
 - BOT-001：本地产物完成，远端验收未完成，**不得标 Done**。分支 `feat/BOT-001` @ `f284b8f`。`npm test` 34/0 exit 0。阻塞 B-001 / B-007。
 - FIXT-001：本地完成。分支 `feat/FIXT-001` @ `3a804f4`。校验脚本 exit 0。
 - DATA-001：本地产物 Done（未合入；合入 integration 属高风险，需人工确认；远端 PR 因 B-001 未开）。分支 `feat/DATA-001` @ `8bf68e114237653fc86538ed28e47154e9a723e2`（实现 `af14b5c7415d191f7f981073ad855014b0de195a`）。工作区 `/workspace/bookskill-worktrees/DATA-001`。独立复测 `pnpm --filter @bookskill/data test`：11 passed，0 failed，exit 0，时间 2026-11-13 17:27:16 Asia/Shanghai。合同 3.1 全部 15 张表，当前 schema 版本 2（v1→v2 为 `source_chunks.ordinal` 真实迁移）。业务库 `{dataDir}/db/bookskill.sqlite`，AnythingLLM / mintplex 路径会被拒绝。报告：`docs/data/DATA-001-REPORT.md`。未合入 main / integration。
-- APP-001：仍 In Progress。分支 `feat/APP-001`，工作区 `/workspace/bookskill-worktrees/APP-001`（从 `feat/REPO-001` 拉出，不合入 main）。
+- APP-001：本地 Linux 开发骨架 Done（未合入；G1 未通过；远端 PR 因 B-001 未开）。分支 `feat/APP-001` @ `f98e9c11a5656c78fa4f3c367faf9d01a4a5bf63`。工作区 `/workspace/bookskill-worktrees/APP-001`。独立复测：`pnpm --filter @bookskill/desktop test` 15 passed，0 failed，exit 0，时间 2026-11-13 17:30:33 Asia/Shanghai；`pnpm --filter @bookskill/desktop smoke` exit 0，时间 2026-11-13 17:30:44，默认入口「问题对话」，标题 `问题对话 · BookSkill Desktop`，数据目录 `/tmp/bookskill-desktop-smoke-mZbhgs`；未签名 dir 内 `bookskill-desktop --smoke` exit 0，时间 17:30:47，产物约 284M：`packages/desktop/out/BookSkill Desktop-linux-x64`（gitignore）。报告：`docs/app/APP-001-REPORT.md`。未制作 Windows 11 / macOS 13+ 构建，不得宣布 G1 已通过。未合入 main / integration。
+- VERT-001：In Progress。工作区 `/workspace/bookskill-worktrees/VERT-001`，分支 `feat/VERT-001`（本地工作分支汇入已验收的 APP-001、DATA-001、FIXT-001，不合入 main / integration）。
 
 ## 本轮已完成（orchestrator）
 
@@ -88,6 +89,6 @@
 
 ## 下一步（依赖已满足即执行，不等阶段会议）
 
-- 等待 APP-001 完成本地桌面骨架并经独立复测后，再启动 VERT-001（书→知识卡→Skill 对话→引用→保存/重启的薄切片；测试材料用 FIXT-001）。
+- 推进 VERT-001（书→知识卡→Skill 对话→引用→保存/重启的薄切片；测试材料只用 FIXT-001 的 CC0 样本）。
 - 在不依赖远端仓库的前提下继续本地开发。负责人指定组织/仓库后，再连接 remote、启用真实 CI 与分支保护。
 - 不得将 Linux 开发构建宣布为 G1 已通过。

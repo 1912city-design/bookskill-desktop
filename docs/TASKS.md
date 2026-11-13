@@ -1,6 +1,6 @@
 # TASKS
 
-- 更新时间：2026-11-13 17:27 Asia/Shanghai
+- 更新时间：2026-11-13 17:31 Asia/Shanghai
 - 状态机：`Backlog → Ready → In Progress → Pull Request → CI → Independent QA → Auto-merge to integration（低/中风险）或 Human Approval（高风险）→ Done`
 - 并行规则：最多 6 个互不冲突的开发任务；每个子系统同一时间只允许一个实现 Agent 修改；独立分支或 worktree。
 - 重试：每任务最多 2 次自动重试，其后标 BLOCKED，其它任务继续。
@@ -15,6 +15,7 @@
 | BOT-001 | `.bookskill/**`、`packages/bot-runtime/**`、`docs/bot/**`、对应测试 | `.github/**`、`docs/licenses/**`、`docs/gov/**`、`docs/DEVELOPMENT.md`、治理文件正文 |
 | APP-001 | `packages/desktop/**`、`docs/app/**` | 根 `package.json`、`pnpm-workspace.yaml`、`packages/data/**`、`packages/repo-baseline/**`、`.bookskill/**`、治理文件 |
 | DATA-001 | `packages/data/**`、`docs/data/**` | 根 `package.json`、`pnpm-workspace.yaml`、`packages/desktop/**`、`packages/repo-baseline/**`、`.bookskill/**`、治理文件 |
+| VERT-001 | 新包（如 `packages/core/**` 或切片所需新目录）、`docs/vert/**`、切片自动测试；为接线可有限修改 `packages/desktop/**` 与 `packages/data/**`；可更新根 `pnpm-lock.yaml`；只读使用 `fixtures/**` | 根 `package.json`、`pnpm-workspace.yaml`、`.github/**`、`.bookskill/**`、治理文件正文；不得改 FIXT-001 样本内容；不得把无授权整本书写入仓库 |
 
 本地 worktree：
 
@@ -23,6 +24,7 @@
 - BOT-001：`/workspace/bookskill-worktrees/BOT-001`，分支 `feat/BOT-001`
 - APP-001：`/workspace/bookskill-worktrees/APP-001`，分支 `feat/APP-001`（基于 `feat/REPO-001`，不合入 main）
 - DATA-001：`/workspace/bookskill-worktrees/DATA-001`，分支 `feat/DATA-001`（基于 `feat/REPO-001`，不合入 main）
+- VERT-001：`/workspace/bookskill-worktrees/VERT-001`，分支 `feat/VERT-001`（本地工作分支汇入已验收的 APP-001、DATA-001、FIXT-001，不合入 main / integration）
 
 无远端时：在分支上提交，并写本地 `pull-request.md` 作为 PR 草案，**不推送、不开远端 PR、不合入 `main`**。
 
@@ -33,9 +35,9 @@
 | GOV-001 | A | Done（审查完成，不构成法律批准） | architect | 无 | 上游和许可证审查 |
 | REPO-001 | A | Done（本地基线；远端 CI 因 B-001 未生效） | release_engineer | 无 | 仓库和 CI 基线 |
 | BOT-001 | A | Local Complete / Remote BLOCKED | backend_engineer | 无 | 本地运行时与 34 项测试已通过；远端 PR/CI 仍阻塞，不得标 Done |
-| APP-001 | B | In Progress | frontend_engineer | REPO-001 | 桌面骨架 |
+| APP-001 | B | Done（本地 Linux 开发骨架；G1 未通过；未合入；远端 PR 因 B-001 未开） | frontend_engineer | REPO-001 | 桌面骨架 |
 | DATA-001 | B | Done（本地；未合入；合入 integration 需人工确认；远端 PR 因 B-001 未开） | backend_engineer | REPO-001 | 本地 schema 与迁移 |
-| VERT-001 | C | Backlog | ai_skill_engineer | APP-001, DATA-001, GOV-001（测试材料许可） | 书到对话 Skill 的薄切片 |
+| VERT-001 | C | In Progress | ai_skill_engineer | APP-001, DATA-001, GOV-001（测试材料许可；FIXT-001 已提供 CC0 样本） | 书到对话 Skill 的薄切片 |
 | IMPORT-001 | D | Backlog | backend_engineer | VERT-001 | 导入、去重、失败与重试 |
 | READ-001 | D | Backlog | frontend_engineer | VERT-001 | 章节、摘录、批注、来源定位 |
 | KNOW-001 | D | Backlog | frontend_engineer | VERT-001 | 知识卡草稿/确认/编辑/合并/删除 |
