@@ -11,6 +11,8 @@ export const FIXTURES_DIR = path.resolve(
 
 export const PDF_FIXTURE = path.join(FIXTURES_DIR, "bookskill-test-primer.pdf");
 export const EPUB_FIXTURE = path.join(FIXTURES_DIR, "bookskill-test-primer.epub");
+export const MD_FIXTURE = path.join(FIXTURES_DIR, "bookskill-test-primer.md");
+export const TXT_FIXTURE = path.join(FIXTURES_DIR, "bookskill-test-primer.txt");
 
 export type TempWorkspace = {
   dataDir: string;
