@@ -5,10 +5,11 @@
 - 目标：在已导入材料上提供章节浏览、摘录、批注和来源定位（对应 AT-02 的阅读侧）。
 - 负责人 Agent：frontend_engineer（BookSkill Frontend Engineer）
 - 依赖：VERT-001。从已含 IMPORT-001 的 `origin/feat/VERT-001`（`f109cd2`）拉出独立分支。
-- 状态：In Progress
+- 状态：Landed on `feat/VERT-001`（[PR #5](https://github.com/1912city-design/bookskill-desktop/pull/5)，merge `a83e0a0`，2026-11-14 01:39 Asia/Shanghai）。未进 `integration` / `main`，不得标 Done。
 - 启动时间：2026-11-14 00:52 Asia/Shanghai（工作树）
-- 实现启动时间：2026-11-14 01:25 Asia/Shanghai（taste-skill GATE: PASS 已独立核对）
-- 分支 / 工作树：`feat/READ-001`，`/workspace/bookskill-worktrees/READ-001`（已快进至 `f109cd2`）
+- 实现启动时间：2026-11-14 01:25 Asia/Shanghai
+- 合入时间：2026-11-14 01:39 Asia/Shanghai（独立 QA PASS 后仅合入 `feat/VERT-001`）
+- 分支 / 工作树：`feat/READ-001`，`/workspace/bookskill-worktrees/READ-001`
 - 视觉参考（只读，禁止改）：`/workspace/bookskill-desktop/prototypes/desktop-shell/`，证据 `/workspace/bookskill-desktop/prototypes/desktop-shell/EVIDENCE.md`
 - 风险等级（预估）：低/中
 - 测试样本：只使用 FIXT-001 或同等许可/合成样本。
