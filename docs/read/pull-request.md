@@ -32,7 +32,7 @@ pnpm --filter @bookskill/core test
 - `pnpm --filter @bookskill/desktop test`：退出码 **0**；**22 passed，0 failed**；时间 2026-11-14 01:33:22 CST（Asia/Shanghai）；完整输出 `docs/read/pnpm-desktop-test-output.txt`
 - `pnpm --filter @bookskill/core test`：退出码 **0**；**15 passed，0 failed**；时间 2026-11-14 01:33:31 CST（Asia/Shanghai）；完整输出 `docs/read/pnpm-core-test-output.txt`
 - 环境：Node v24.22.1，pnpm 10.34.6，Linux x86_64
-- 实现提交：`COMMIT_HASH_PLACEHOLDER`
+- 实现提交：`8d8ae037d6645016588ca65ec418f5dae57b34e5`
 
 ## 未解决风险
 

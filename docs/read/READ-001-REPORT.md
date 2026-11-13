@@ -6,7 +6,7 @@
 - 基础：`feat/VERT-001` / `origin/feat/VERT-001` @ `f109cd2`（含已合入的 IMPORT-001）
 - 工作区：`/workspace/bookskill-worktrees/READ-001`
 - 完成时间：2026-11-14 01:33 Asia/Shanghai
-- 实现提交：`COMMIT_HASH_PLACEHOLDER`
+- 实现提交：`8d8ae037d6645016588ca65ec418f5dae57b34e5`
 - 状态：本地实现与测试已完成。**本执行器未打开远端 PR，未合入 `main` / `integration`，未发布，未标 Done。** PR 草案见 `docs/read/pull-request.md`，目标只能是 `feat/VERT-001`。由 Orchestrator 安排独立 QA。
 - 风险等级：**低/中（low/medium）**。未改 schema 迁移；批注以 JSON 文件写入 BookSkill 数据目录。不是正式 G1，也不是发运包。
 
