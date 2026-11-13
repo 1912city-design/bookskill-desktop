@@ -1,10 +1,10 @@
 # PROJECT_STATE
 
-- 更新时间：2026-11-13 17:19 Asia/Shanghai
+- 更新时间：2026-11-13 17:21 Asia/Shanghai
 - 更新人：orchestrator
 - 产品暂名：BookSkill Desktop
 - 当前阶段：Phase A — 仓库与交付底座
-- 当前验收门：G0 环境可执行（进行中；目标时限为启动后 2 小时内，即 2026-11-13 19:08 前 Asia/Shanghai）
+- 当前验收门：G0 本地条件已满足（仓库盘点、构建命令、工单就绪）。G1 可构建骨架进行中（目标 2026-11-13 23:08 前 Asia/Shanghai）。远端仓库仍未连接，不得声称远端 CI 已绿或可发布安装包。
 - 产品状态：开发中的本地草案，**不是**正式交付、也不是发布候选
 
 ## 一句话结论
@@ -71,11 +71,13 @@
 
 禁止（已遵守）：读生产密钥、访问真实用户书籍、推送主分支、合并自己的 PR、删除线上数据、未经人工确认发布生产、绕过支付或授权系统、在聊天中要求粘贴 API 密钥。
 
-## 进展（2026-11-13 17:19 Asia/Shanghai）
+## 进展（2026-11-13 17:21 Asia/Shanghai）
 
-- FIXT-001：本地完成。分支 `feat/FIXT-001` @ `3a804f4d69269a1cd29626e7f4e5b1ca1f4dec0b`。`python3 docs/fixtures/verify_fixt001.py` 退出码 0。未合入 main。
-- BOT-001：本地产物完成，远端验收未完成，**不得标 Done**。分支 `feat/BOT-001` @ `f284b8fb042726e9ae32757613bb0b8afa18c6e2`。独立复测 `npm test`：34 passed, 0 failed，exit 0（17:18:47 Asia/Shanghai）。阻塞项 B-001 / B-007。未合入 main。
-- GOV-001、REPO-001：仍在收尾，尚未做独立验收。
+- GOV-001：审查交付 Done（不构成法律批准）。分支 `feat/GOV-001` @ `18281a88ae64d38a9af38308490aa937cba28843`。独立复测 `python3 docs/licenses/verify_gov001.py` exit 0。上游 AnythingLLM `1626d971c73d70a68602a662e3baf52e160c62ff`。待确认 L-001–L-012；公开发行仍受 B-002 阻塞。未合入 main。
+- REPO-001：本地基线 Done。分支 `feat/REPO-001` @ `630b761`。独立复测 `pnpm test` 7/0 exit 0，`pnpm lint` 0，`pnpm build` 0。失败证明 `docs/repo/ci-fail-proof.log` exit 1。远端 CI 因 B-001 未生效，不得称为已绿。未合入 main。
+- BOT-001：本地产物完成，远端验收未完成，**不得标 Done**。分支 `feat/BOT-001` @ `f284b8f`。`npm test` 34/0 exit 0。阻塞 B-001 / B-007。
+- FIXT-001：本地完成。分支 `feat/FIXT-001` @ `3a804f4`。校验脚本 exit 0。
+- APP-001、DATA-001：已从 `feat/REPO-001` 拉出独立分支开工（不合入 main）。
 
 ## 本轮已完成（orchestrator）
 

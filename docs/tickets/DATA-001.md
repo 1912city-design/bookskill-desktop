@@ -7,7 +7,10 @@
 - 输入/受影响模块：BookSkill 自有 schema、migration、本地库
 - 允许工具：实现 schema、迁移、基础备份恢复测试
 - 禁止操作：把 AnythingLLM 内部数据库当作唯一业务数据源；无备份窗口的破坏性迁移；推送 main
-- 状态：Backlog
+- 状态：In Progress
+- 启动时间：2026-11-13 17:21 Asia/Shanghai
+- 分支：`feat/DATA-001`（从 `feat/REPO-001` 拉出，不改 main）
+- 工作树：`/workspace/bookskill-worktrees/DATA-001`
 - 验收条件（可测试）：
   1. 合同列出的对象均有表与 UUID 主键，并有迁移脚本。
   2. 从 N 迁移到 N+1 后旧数据可读取。
