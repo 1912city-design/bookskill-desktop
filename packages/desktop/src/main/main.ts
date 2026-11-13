@@ -1,3 +1,5 @@
+import { openSliceWorkspace, type SliceWorkspace } from "@bookskill/core";
+import { resolveBusinessDbPath } from "@bookskill/data";
 import { app, BrowserWindow, ipcMain } from "electron";
 import fs from "node:fs";
 import path from "node:path";
@@ -5,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { initializeDataDir } from "../shared/data-layout.ts";
 import { DEFAULT_ROUTE_ID, NAV_ITEMS } from "../shared/navigation.ts";
 import { PRODUCT_NAME, PRODUCT_VERSION } from "../shared/product.ts";
-import type { ShellInfo } from "../shared/shell-info.ts";
+import type { ShellInfo, SliceSnapshotInfo } from "../shared/shell-info.ts";
 
 const MAIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const RENDERER_DIR = path.join(MAIN_DIR, "../renderer");
@@ -19,10 +21,22 @@ type SmokeOptions = {
 type BootState = {
   dataDir: string;
   bootError: string | null;
+  businessDbPath: string;
+  schemaVersion: number | null;
+  slice: SliceSnapshotInfo | null;
+  sliceError: string | null;
 };
 
 let mainWindow: BrowserWindow | null = null;
-let bootState: BootState = { dataDir: "", bootError: null };
+let sliceWorkspace: SliceWorkspace | null = null;
+let bootState: BootState = {
+  dataDir: "",
+  bootError: null,
+  businessDbPath: "",
+  schemaVersion: null,
+  slice: null,
+  sliceError: null,
+};
 
 function parseSmokeOptions(argv: string[]): SmokeOptions {
   const enabled = argv.includes("--smoke");
@@ -148,11 +162,38 @@ async function boot(): Promise<void> {
 
   try {
     const initialized = initializeDataDir();
-    bootState = { dataDir: initialized.dataDir, bootError: null };
+    let businessDbPath = "";
+    let schemaVersion: number | null = null;
+    let slice: SliceSnapshotInfo | null = null;
+    let sliceError: string | null = null;
+    try {
+      businessDbPath = resolveBusinessDbPath();
+      sliceWorkspace = openSliceWorkspace();
+      businessDbPath = sliceWorkspace.dbPath;
+      schemaVersion = sliceWorkspace.schemaVersion;
+      slice = sliceWorkspace.snapshot();
+    } catch (error) {
+      sliceError = error instanceof Error ? error.message : String(error);
+    }
+    bootState = {
+      dataDir: initialized.dataDir,
+      bootError: null,
+      businessDbPath,
+      schemaVersion,
+      slice,
+      sliceError,
+    };
     app.setPath("userData", path.join(initialized.dataDir, "electron-user-data"));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    bootState = { dataDir: "", bootError: message };
+    bootState = {
+      dataDir: "",
+      bootError: message,
+      businessDbPath: "",
+      schemaVersion: null,
+      slice: null,
+      sliceError: message,
+    };
     if (smoke.enabled) {
       writeSmokeResult(smoke.outPath, { ok: false, error: message });
       app.exit(1);
@@ -166,6 +207,10 @@ async function boot(): Promise<void> {
     dataDir: bootState.dataDir,
     defaultRouteId: DEFAULT_ROUTE_ID,
     routes: NAV_ITEMS,
+    businessDbPath: bootState.businessDbPath,
+    schemaVersion: bootState.schemaVersion,
+    slice: bootState.slice,
+    sliceError: bootState.sliceError,
   };
 
   ipcMain.handle("shell:getInfo", () => shellInfo);
@@ -198,6 +243,15 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+app.on("before-quit", () => {
+  try {
+    sliceWorkspace?.close();
+  } catch {
+    // Closing the business database must not block shutdown.
+  }
+  sliceWorkspace = null;
 });
 
 void boot().catch((error) => {

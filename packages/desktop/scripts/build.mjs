@@ -11,7 +11,7 @@ await esbuild.build({
   platform: "node",
   format: "esm",
   target: "node22",
-  external: ["electron"],
+  external: ["electron", "node:sqlite"],
   outfile: path.join(root, "dist/main/main.js"),
   sourcemap: true,
   logLevel: "info",

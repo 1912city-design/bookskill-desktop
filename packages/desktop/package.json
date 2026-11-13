@@ -14,6 +14,8 @@
     "pack:dir": "pnpm build && node scripts/ensure-electron.mjs && node scripts/pack-dir.mjs"
   },
   "dependencies": {
+    "@bookskill/core": "workspace:*",
+    "@bookskill/data": "workspace:*",
     "@bookskill/repo-baseline": "workspace:*"
   },
   "devDependencies": {

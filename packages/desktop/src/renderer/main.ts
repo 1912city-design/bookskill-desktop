@@ -15,6 +15,14 @@ type DesktopBridge = {
   getShellInfo: () => Promise<ShellInfo>;
 };
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
 function getBridge(): DesktopBridge | null {
   const fromWindow = (window as Window & { bookskillDesktop?: DesktopBridge }).bookskillDesktop;
   return fromWindow ?? null;
@@ -49,14 +57,22 @@ function renderShell(info: ShellInfo, nav: NavigationState): string {
     .join("");
 
   const view = nav.currentItem;
+  const sliceSummary = info.slice
+    ? `书籍 ${info.slice.books} · 知识卡 ${info.slice.knowledgeCards} · Skills ${info.slice.skills} · 对话 ${info.slice.conversations} · 反馈 ${info.slice.feedback}`
+    : info.sliceError
+      ? `业务库尚未打开：${escapeHtml(info.sliceError)}`
+      : "业务库尚未打开。";
   const dataDir =
     view.id === "settings"
       ? `<dl class="meta-list">
           <div><dt>产品名称</dt><dd data-testid="settings-product-name">${info.productName}</dd></div>
           <div><dt>本机数据目录</dt><dd data-testid="data-dir">${info.dataDir || "尚未创建（启动时解析失败）"}</dd></div>
+          <div><dt>业务库路径</dt><dd data-testid="business-db-path">${info.businessDbPath || "尚未解析"}</dd></div>
+          <div><dt>Schema 版本</dt><dd data-testid="schema-version">${info.schemaVersion ?? "未知"}</dd></div>
+          <div><dt>薄切片数据</dt><dd data-testid="slice-summary">${sliceSummary}</dd></div>
           <div><dt>版本</dt><dd>${info.version}</dd></div>
         </dl>`
-      : `<p class="view-note">此入口已可导航，业务功能将在后续任务接入。本地数据保存在独立的 BookSkill 目录中。</p>`;
+      : `<p class="view-note">此入口已可导航。薄切片的导入、知识卡、Skill 与离线对话已接到本机业务库；完整阅读器或 Skill Studio 不在本页范围。</p>`;
 
   return [
     `<div class="app-shell" data-testid="app-shell">`,
@@ -120,6 +136,10 @@ async function loadShellInfo(): Promise<ShellInfo> {
     dataDir: "",
     defaultRouteId: DEFAULT_ROUTE_ID,
     routes: createNavigationState().items,
+    businessDbPath: "",
+    schemaVersion: null,
+    slice: null,
+    sliceError: null,
   };
 }
 

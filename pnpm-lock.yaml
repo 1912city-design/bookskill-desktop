@@ -8,8 +8,22 @@ importers:
 
   .: {}
 
+  packages/core:
+    dependencies:
+      '@bookskill/data':
+        specifier: workspace:*
+        version: link:../data
+
+  packages/data: {}
+
   packages/desktop:
     dependencies:
+      '@bookskill/core':
+        specifier: workspace:*
+        version: link:../core
+      '@bookskill/data':
+        specifier: workspace:*
+        version: link:../data
       '@bookskill/repo-baseline':
         specifier: workspace:*
         version: link:../repo-baseline
