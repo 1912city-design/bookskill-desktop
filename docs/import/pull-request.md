@@ -35,7 +35,7 @@ pnpm --filter @bookskill/core test
 - 完整输出：`docs/import/pnpm-core-test-output.txt`
 - 环境：Node v24.22.1，pnpm 10.34.6
 
-实现提交：`bcd2bab1020dad03d7a1ff1c23d2f46bc2b80dfa`。
+实现提交：`3336bc4a5499f1ed20120d222b49f646216c3f7a`。
 
 ## 未解决风险
 

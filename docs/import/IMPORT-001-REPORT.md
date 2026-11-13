@@ -6,7 +6,7 @@
 - 基础：`feat/VERT-001` @ `7cc95ee`
 - 工作区：`/workspace/bookskill-worktrees/IMPORT-001`
 - 完成时间：2026-11-14 01:00 Asia/Shanghai
-- 实现提交：`bcd2bab1020dad03d7a1ff1c23d2f46bc2b80dfa`
+- 实现提交：`3336bc4a5499f1ed20120d222b49f646216c3f7a`
 - 状态：本地实现与测试已完成，并准备基于 `feat/VERT-001` 的远端 PR。**未合入 `main` / `integration`，未发布。** 合入按 D-025（CI + 独立 QA）由 Orchestrator 推进。
 - 风险等级：**中（medium）**。未新增或修改 schema 迁移，沿用 schema v2 的 `books.parse_status`，失败详情写入库内 sidecar JSON。
 
