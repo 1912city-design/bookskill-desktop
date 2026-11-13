@@ -1,46 +1,54 @@
 # TASKS
 
-- 更新时间：2026-11-13 17:40 Asia/Shanghai
+- 更新时间：2026-11-14 00:52 Asia/Shanghai
 - 状态机：`Backlog → Ready → In Progress → Pull Request → CI → Independent QA → Auto-merge to integration（低/中风险）或 Human Approval（高风险）→ Done`
+- 合入规则：D-025 与 `docs/policies/merge-policy.yml`。低/中风险在 CI + 独立 QA 通过后由 Orchestrator 自动合入 `integration`，不逐个询问。高风险与生产发布、以及分支保护启用前合入 `main`，须人工确认（记入 `docs/PENDING_DECISIONS.md`）。
 - 并行规则：最多 6 个互不冲突的开发任务；每个子系统同一时间只允许一个实现 Agent 修改；独立分支或 worktree。
-- 重试：每任务最多 2 次自动重试，其后标 BLOCKED，其它任务继续。
+- 重试：每任务最多 2 次自动重试，其后标 BLOCKED，其它任务继续。QA 不通过时开缺陷工单并退回实现 Agent，不空等。
 
-## 文件所有权（Phase A，互不重叠）
+## 文件所有权（互不重叠）
 
 | 任务 | 允许写入 | 禁止写入 |
 |---|---|---|
-| orchestrator（本轮） | `docs/PROJECT_STATE.md`、`docs/DECISIONS.md`、`docs/BLOCKERS.md`、`docs/TASKS.md`、`docs/tickets/**`、`README.md`、`.gitignore`、`docs/GROK_EXECUTION_SPEC.md`（仅复制合同） | 各任务交付目录中的报告与代码 |
-| GOV-001 | `docs/UPSTREAM-LICENSES.md`、`docs/licenses/**`、`docs/gov/**`；只读克隆上游到 `/workspace/bookskill-upstream/anything-llm`（不提交该克隆进本仓库） | `.github/**`、`docs/DEVELOPMENT.md`、应用代码、`.bookskill/**`、上述 orchestrator 文件（状态由总控回写） |
-| REPO-001 | `docs/DEVELOPMENT.md`、`docs/repo/**`、`.github/**`、产品侧构建/测试骨架（如 `package.json`、`pnpm-workspace.yaml`、`packages/repo-baseline/**`、`scripts/**`）、`.gitignore` 中与构建相关的增补 | `docs/UPSTREAM-LICENSES.md`、`docs/licenses/**`、`docs/gov/**`、`.bookskill/**`、orchestrator 治理文件正文（可在自己的报告里引用） |
-| BOT-001 | `.bookskill/**`、`packages/bot-runtime/**`、`docs/bot/**`、对应测试 | `.github/**`、`docs/licenses/**`、`docs/gov/**`、`docs/DEVELOPMENT.md`、治理文件正文 |
+| orchestrator | `docs/PROJECT_STATE.md`、`docs/DECISIONS.md`、`docs/BLOCKERS.md`、`docs/TASKS.md`、`docs/PENDING_DECISIONS.md`、`docs/tickets/**`、`docs/policies/**`、`README.md`、`.gitignore`、`docs/GROK_EXECUTION_SPEC.md`（仅复制合同） | 各任务交付目录中的报告与实现代码 |
+| GOV-001 | `docs/UPSTREAM-LICENSES.md`、`docs/licenses/**`、`docs/gov/**` | 应用代码、`.bookskill/**`、治理文件正文 |
+| REPO-001 | `docs/DEVELOPMENT.md`、`docs/repo/**`、`.github/**`、产品侧构建骨架、`.gitignore` 中与构建相关的增补 | 许可证目录、`.bookskill/**`、治理文件正文 |
+| BOT-001 | `.bookskill/**`、`packages/bot-runtime/**`、`docs/bot/**`、对应测试 | `.github/**`、许可证目录、`docs/DEVELOPMENT.md`、治理文件正文 |
 | APP-001 | `packages/desktop/**`、`docs/app/**` | 根 `package.json`、`pnpm-workspace.yaml`、`packages/data/**`、`packages/repo-baseline/**`、`.bookskill/**`、治理文件 |
 | DATA-001 | `packages/data/**`、`docs/data/**` | 根 `package.json`、`pnpm-workspace.yaml`、`packages/desktop/**`、`packages/repo-baseline/**`、`.bookskill/**`、治理文件 |
-| VERT-001 | 新包（如 `packages/core/**` 或切片所需新目录）、`docs/vert/**`、切片自动测试；为接线可有限修改 `packages/desktop/**` 与 `packages/data/**`；可更新根 `pnpm-lock.yaml`；只读使用 `fixtures/**` | 根 `package.json`、`pnpm-workspace.yaml`、`.github/**`、`.bookskill/**`、治理文件正文；不得改 FIXT-001 样本内容；不得把无授权整本书写入仓库 |
+| VERT-001 | 切片所需包（如 `packages/core/**`）、`docs/vert/**`、切片测试；为接线可有限修改 `packages/desktop/**` 与 `packages/data/**` | 根 `package.json`、`pnpm-workspace.yaml`、`.github/**`、`.bookskill/**`、治理文件正文；不得改 FIXT-001 样本 |
+| IMPORT-001 | 见 `docs/tickets/IMPORT-001.md`（导入管道与 `docs/import/**`） | 知识卡实现、阅读 UI、治理文件、taste-skill 原型树 |
+| READ-001 | 见 `docs/tickets/READ-001.md`（`packages/desktop/src/renderer/read/**`、`docs/read/**`） | 导入管道、知识卡实现、taste-skill 原型树、治理文件 |
+| KNOW-001 | 见 `docs/tickets/KNOW-001.md`（`knowledge` 核心与 `packages/desktop/src/renderer/knowledge/**`、`docs/know/**`） | 导入管道、阅读 UI、taste-skill 原型树、治理文件 |
 
 本地 worktree：
 
-- GOV-001：`/workspace/bookskill-worktrees/GOV-001`，分支 `feat/GOV-001`
-- REPO-001：`/workspace/bookskill-worktrees/REPO-001`，分支 `feat/REPO-001`
-- BOT-001：`/workspace/bookskill-worktrees/BOT-001`，分支 `feat/BOT-001`
-- APP-001：`/workspace/bookskill-worktrees/APP-001`，分支 `feat/APP-001`（基于 `feat/REPO-001`，不合入 main）
-- DATA-001：`/workspace/bookskill-worktrees/DATA-001`，分支 `feat/DATA-001`（基于 `feat/REPO-001`，不合入 main）
-- VERT-001：`/workspace/bookskill-worktrees/VERT-001`，分支 `feat/VERT-001`（本地工作分支汇入已验收的 APP-001、DATA-001、FIXT-001，不合入 main / integration）
+- GOV-001：`/workspace/bookskill-worktrees/GOV-001`，`feat/GOV-001`
+- REPO-001：`/workspace/bookskill-worktrees/REPO-001`，`feat/REPO-001`（已合入 `integration` 与 `main`）
+- BOT-001：`/workspace/bookskill-worktrees/BOT-001`，`feat/BOT-001`
+- APP-001：`/workspace/bookskill-worktrees/APP-001`，`feat/APP-001`
+- DATA-001：`/workspace/bookskill-worktrees/DATA-001`，`feat/DATA-001`
+- VERT-001：`/workspace/bookskill-worktrees/VERT-001`，`feat/VERT-001`
+- IMPORT-001：`/workspace/bookskill-worktrees/IMPORT-001`，`feat/IMPORT-001`（基于 `feat/VERT-001`）
+- READ-001：`/workspace/bookskill-worktrees/READ-001`，`feat/READ-001`（基于 `feat/VERT-001`）
+- KNOW-001：`/workspace/bookskill-worktrees/KNOW-001`，`feat/KNOW-001`（基于 `feat/VERT-001`）
+- 产品 UI 原型（taste-skill，不在本仓库实现树）：`/workspace/bookskill-ui-taste`
 
-无远端时：在分支上提交，并写本地 `pull-request.md` 作为 PR 草案，**不推送、不开远端 PR、不合入 `main`**。
+发布仓库已连接：`https://github.com/1912city-design/bookskill-desktop`。按 D-025 开远端 PR；Orchestrator 不自行合入 `main`、不发布。
 
 ## 看板
 
 | ID | 阶段 | 状态 | 负责人 | 依赖 | 目标 |
 |---|---|---|---|---|---|
-| GOV-001 | A | Done（审查完成，不构成法律批准） | architect | 无 | 上游和许可证审查 |
-| REPO-001 | A | Done（本地基线；远端 CI 因 B-001 未生效） | release_engineer | 无 | 仓库和 CI 基线 |
-| BOT-001 | A | Local Complete / Remote BLOCKED | backend_engineer | 无 | 本地运行时与 34 项测试已通过；远端 PR/CI 仍阻塞，不得标 Done |
-| APP-001 | B | Done（本地 Linux 开发骨架；G1 未通过；未合入；远端 PR 因 B-001 未开） | frontend_engineer | REPO-001 | 桌面骨架 |
-| DATA-001 | B | Done（本地；未合入；合入 integration 需人工确认；远端 PR 因 B-001 未开） | backend_engineer | REPO-001 | 本地 schema 与迁移 |
-| VERT-001 | C | Done（本地薄切片；未合入；不是正式交付；未宣布 G1/G2；远端 PR 因 B-001 未开） | ai_skill_engineer | APP-001, DATA-001, GOV-001（测试材料许可；FIXT-001 已提供 CC0 样本） | 书到对话 Skill 的薄切片 |
-| IMPORT-001 | D | Backlog | backend_engineer | VERT-001 | 导入、去重、失败与重试 |
-| READ-001 | D | Backlog | frontend_engineer | VERT-001 | 章节、摘录、批注、来源定位 |
-| KNOW-001 | D | Backlog | frontend_engineer | VERT-001 | 知识卡草稿/确认/编辑/合并/删除 |
+| GOV-001 | A | Done（审查完成，不构成法律批准；未合入） | architect | 无 | 上游和许可证审查 |
+| REPO-001 | A | Done（已合入 `integration` 与 `main`；第一次 `main` Actions 为 success，不是 G1/G2） | release_engineer | 无 | 仓库和 CI 基线 |
+| BOT-001 | A | Local Complete / 远端 PR 可启动 | backend_engineer | 无 | 本地 34 项测试已通过；待自身 PR + CI + QA 后才能标 Done |
+| APP-001 | B | Done（本地 Linux 开发骨架；G1 未通过；未合入） | frontend_engineer | REPO-001 | 桌面骨架 |
+| DATA-001 | B | Done（本地；未合入；合入 `integration` 为高风险，见 P-002） | backend_engineer | REPO-001 | 本地 schema 与迁移 |
+| VERT-001 | C | Done（本地薄切片；未合入；不是正式交付；未宣布 G1/G2） | ai_skill_engineer | APP-001, DATA-001, GOV-001（FIXT-001 已提供 CC0 样本） | 书到对话 Skill 的薄切片 |
+| IMPORT-001 | D | Ready / In Progress | backend_engineer | VERT-001 | 导入、去重、失败与重试 |
+| READ-001 | D | Ready（工作树已建；等 taste-skill UI 流程结束后再实现，避免抢同一 frontend Agent） | frontend_engineer | VERT-001 | 章节、摘录、批注、来源定位 |
+| KNOW-001 | D | Ready（工作树已建；排在 READ-001 之后启动实现，避免同时改 desktop 主导线） | frontend_engineer | VERT-001 | 知识卡草稿/确认/编辑/合并/删除 |
 | SEARCH-001 | D | Backlog | ai_skill_engineer | KNOW-001 | 全文/语义搜索与来源显示 |
 | REL-001 | D | Backlog | ai_skill_engineer | KNOW-001 | 知识关系建议与用户确认 |
 | CHAT-001 | E | Backlog | frontend_engineer | VERT-001 | 对话历史/输入/附件/停止/导出/删除 |
@@ -58,4 +66,4 @@
 | QA-001 | F | Backlog | qa_security | AT 所需功能任务 | 端到端、安全、隐私、升级回归 |
 | REL-001 | F | Backlog | release_engineer | QA-001, GOV-001, PKG-001 | 候选发布包与发行文档 |
 
-工单正文见 `docs/tickets/`。缺少验收条件的工单不得进入 Ready。APP-001 / DATA-001 在 REPO-001 的本地 CI 基线可用后进入 Ready（不必等待远端仓库）。
+工单正文见 `docs/tickets/`。缺少验收条件的工单不得进入 Ready。
