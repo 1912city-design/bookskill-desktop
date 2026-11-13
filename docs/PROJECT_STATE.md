@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-- 更新时间：2026-11-14 01:39 Asia/Shanghai
+- 更新时间：2026-11-14 01:48 Asia/Shanghai
 - 合同：`docs/GROK_EXECUTION_SPEC.md`（SHA-256 `7b2cd11ac44e4dcc5d9f4b219c837ce8ddc2be86856e02327352e545418b64d2`）
 - 发布仓库：已连接，私有仓库 https://github.com/1912city-design/bookskill-desktop
 - 默认分支 `origin/main`：`953ba8d`（合入 REPO-001，PR #1）
@@ -19,7 +19,7 @@
 - Phase D：IMPORT-001 已独立 QA 通过并合入 `feat/VERT-001`（PR #4，`f109cd2`，2026-11-14 01:05 Asia/Shanghai），未合入 `integration` / `main`，不得标 Done（P-002）。
 - taste-skill 完整流程已跑完。独立核对 `logs/gate-3.txt` 与 `.taste-skill/gate.json`：`GATE: PASS`（2026-11-14 01:23 Asia/Shanghai），开着的 FAIL 无，10 条非阻断 WARN，2 条工作台-vs-营销栅格豁免未对上开放 finding。证据：`/workspace/bookskill-desktop/prototypes/desktop-shell/EVIDENCE.md`。这不是正式 G1，也不是可安装发运包。
 - READ-001 独立 QA 已通过（仅此票），证据 `/workspace/bookskill-qa/READ-001-PR5/QA_REPORT.md`。已合入 `feat/VERT-001`（[PR #5](https://github.com/1912city-design/bookskill-desktop/pull/5)，merge `a83e0a0`，2026-11-14 01:39 Asia/Shanghai）。未进 `integration` / `main`，不得标 Done。
-- KNOW-001 已于 2026-11-14 01:39 Asia/Shanghai 交给 frontend_engineer 实现；工作树已快进至 `a83e0a0`。
+- KNOW-001 本地验收后，按 D-025 自动打开 [PR #6](https://github.com/1912city-design/bookskill-desktop/pull/6)（`feat/KNOW-001` @ `4129bd5` → `feat/VERT-001`），无需再向用户确认开 PR。提交者本机测试 24/0 core、28/0 desktop（01:46 Asia/Shanghai）。已安排独立 QA。不得标 Done，不得自动合入 `integration` / `main`。
 
 ## 已完成（本地或已合入，均非正式交付）
 
@@ -35,7 +35,7 @@
 
 - IMPORT-001：已合入 `feat/VERT-001`（PR #4）；未进 `integration` / `main`；不得标 Done。
 - READ-001：已合入 `feat/VERT-001`（[PR #5](https://github.com/1912city-design/bookskill-desktop/pull/5)，`a83e0a0`）；未进 `integration` / `main`；不得标 Done。
-- KNOW-001：In Progress，`feat/KNOW-001` @ `a83e0a0` 基线，`/workspace/bookskill-worktrees/KNOW-001`。
+- KNOW-001：Pull Request，[PR #6](https://github.com/1912city-design/bookskill-desktop/pull/6)，头 `4129bd5`，待独立 QA。
 - taste-skill UI：GATE: PASS。产物 `/workspace/bookskill-ui-taste/`，已同步到 `/workspace/bookskill-desktop/prototypes/desktop-shell/`（当前仍为未跟踪工作副本，未合入任何分支）。
 - D-025 合入策略：已合入 `integration`（PR #3，`46aa811`）。
 
