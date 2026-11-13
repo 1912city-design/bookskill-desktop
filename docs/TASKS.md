@@ -1,6 +1,6 @@
 # TASKS
 
-- 更新时间：2026-11-14 01:25 Asia/Shanghai
+- 更新时间：2026-11-14 01:36 Asia/Shanghai
 - 状态机：`Backlog → Ready → In Progress → Pull Request → CI → Independent QA → Auto-merge to integration（低/中风险）或 Human Approval（高风险）→ Done`
 - 合入规则：D-025 与 `docs/policies/merge-policy.yml`。低/中风险在 CI + 独立 QA 通过后由 Orchestrator 自动合入 `integration`，不逐个询问。高风险与生产发布、以及分支保护启用前合入 `main`，须人工确认（记入 `docs/PENDING_DECISIONS.md`）。
 - 并行规则：最多 6 个互不冲突的开发任务；每个子系统同一时间只允许一个实现 Agent 修改；独立分支或 worktree。
@@ -47,7 +47,7 @@
 | DATA-001 | B | Done（本地；未合入；合入 `integration` 为高风险，见 P-002） | backend_engineer | REPO-001 | 本地 schema 与迁移 |
 | VERT-001 | C | Done（本地薄切片；未合入；不是正式交付；未宣布 G1/G2） | ai_skill_engineer | APP-001, DATA-001, GOV-001（FIXT-001 已提供 CC0 样本） | 书到对话 Skill 的薄切片 |
 | IMPORT-001 | D | Landed on `feat/VERT-001`（PR #4；未进 `integration`；不得标 Done） | backend_engineer | VERT-001 | 导入、去重、失败与重试 |
-| READ-001 | D | In Progress | frontend_engineer | VERT-001 + IMPORT-001 | 章节、摘录、批注、来源定位 |
+| READ-001 | D | Pull Request（[PR #5](https://github.com/1912city-design/bookskill-desktop/pull/5) → `feat/VERT-001`；待独立 QA；不得标 Done） | frontend_engineer | VERT-001 + IMPORT-001 | 章节、摘录、批注、来源定位 |
 | KNOW-001 | D | Ready（排在 READ-001 之后，避免同时改 desktop 主导线） | frontend_engineer | VERT-001 + READ-001 | 知识卡草稿/确认/编辑/合并/删除 |
 | SEARCH-001 | D | Backlog | ai_skill_engineer | KNOW-001 | 全文/语义搜索与来源显示 |
 | REL-001 | D | Backlog | ai_skill_engineer | KNOW-001 | 知识关系建议与用户确认 |
