@@ -47,8 +47,8 @@
 ## Git 提交
 
 - 初始基线：`adfa28ceed0a27b8536ea5025b64543b42c7226b`（`feat(repo): add install, lint, test, and CI baseline`）
-- 更正提交：`1b7c49094a7fc7d54cd7897e75513a5d36bc523d`（`fix(repo): split CI proof logs and correct local-ci command`）
-- 分支：`feat/REPO-001`（未推送，未开远端 PR，未合入 `main` / `integration`）
+- 更正与证据补交：`9072603b5b0c7ba67d8e98314223633461b6175e`（`fix(repo): split CI proof logs and correct local-ci command`）
+- 本条 hash 记录提交：见本文件提交后的 `feat/REPO-001` tip（未推送，未开远端 PR，未合入 `main` / `integration`）
 
 ## 未解决风险 / BLOCKED
 
