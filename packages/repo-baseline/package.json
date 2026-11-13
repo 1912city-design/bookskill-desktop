@@ -1,0 +1,30 @@
+{
+  "name": "@bookskill/repo-baseline",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Lightweight install/lint/test/build baseline for BookSkill Desktop. No Electron shell and no AnythingLLM user-data dependency.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "pnpm build && node --test --test-reporter=spec test/*.test.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.2"
+  }
+}
