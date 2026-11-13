@@ -1,0 +1,21 @@
+=== BookSkill REPO-001 ===
+started_at: 2026-11-13 17:17:35 CST
+timezone: Asia/Shanghai (UTC+8)
+cwd: /workspace/bookskill-worktrees/REPO-001
+uname: Linux x86_64
+node: v24.22.1
+pnpm: 10.34.6
+command: pnpm build
+note: package build via tsc
+----------------------------------------
+
+> bookskill-desktop@0.0.0 build /workspace/bookskill-worktrees/REPO-001
+> pnpm --filter @bookskill/repo-baseline build
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+----------------------------------------
+exit_code: 0
+finished_at: 2026-11-13 17:17:37 CST
