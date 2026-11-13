@@ -78,3 +78,16 @@ export type {
   SliceSnapshot,
   SourceLocation,
 } from "./types.ts";
+
+export { retryImport } from "./import-book.ts";
+export { parseMarkdown } from "./import/parse-markdown.ts";
+export { parseTxt } from "./import/parse-txt.ts";
+export {
+  IMPORT_STATUS_FILENAME,
+  ImportParseError,
+  importStatusPath,
+  listFailedImports,
+  loadImportStatus,
+  readImportStatusSidecar,
+} from "./import/status.ts";
+export type { FailedImportRecord, ImportStatus, ImportStatusSidecar } from "./import/status.ts";

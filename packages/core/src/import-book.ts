@@ -2,6 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { PARSE_STATUS_FAILED, PARSE_STATUS_PARSED } from "./constants.ts";
+import { parseMarkdown } from "./import/parse-markdown.ts";
+import { parseTxt } from "./import/parse-txt.ts";
+import { ImportParseError, readImportStatusSidecar, writeImportStatus } from "./import/status.ts";
 import { parseEpub } from "./parse-epub.ts";
 import { parseTextPdf } from "./parse-pdf.ts";
 import { chooseHighlightMatch } from "./chunks.ts";
@@ -12,6 +15,13 @@ export type ImportBookOptions = {
   db: DatabaseSync;
   dataDir: string;
   filePath: string;
+  now?: Date;
+};
+
+export type RetryImportOptions = {
+  db: DatabaseSync;
+  dataDir: string;
+  bookId: string;
   now?: Date;
 };
 
@@ -32,6 +42,12 @@ export function importBook(options: ImportBookOptions): ImportedBook {
   const buffer = fs.readFileSync(absolute);
   const format = detectFormat(absolute);
   const contentHash = sha256(buffer);
+
+  const existingId = findBookIdByContentHash(options.db, contentHash);
+  if (existingId) {
+    return loadBook(options.db, existingId);
+  }
+
   const stamp = nowIso(options.now);
   const id = newId();
   const storedPath = storeOriginal(options.dataDir, id, absolute, buffer);
@@ -41,74 +57,110 @@ export function importBook(options: ImportBookOptions): ImportedBook {
     parsed = parseSource(format, buffer);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    options.db
-      .prepare(
-        `INSERT INTO books(id, title, author, format, file_path, content_hash, parse_status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(id, path.basename(absolute), null, format, storedPath, contentHash, PARSE_STATUS_FAILED, stamp, stamp);
-    throw new Error(`Failed to parse ${format}: ${message}`);
+    persistFailedBook({
+      db: options.db,
+      dataDir: options.dataDir,
+      id,
+      title: path.basename(absolute),
+      format,
+      storedPath,
+      contentHash,
+      stamp,
+      error: message,
+      retryCount: 0,
+    });
+    throw new ImportParseError({
+      bookId: id,
+      format,
+      message: `Failed to parse ${format}: ${message}`,
+      cause: error,
+    });
   }
 
-  return withTransaction(options.db, () => {
-    options.db
-      .prepare(
-        `INSERT INTO books(id, title, author, format, file_path, content_hash, parse_status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        id,
-        parsed.title,
-        parsed.author,
-        parsed.format,
-        storedPath,
-        contentHash,
-        PARSE_STATUS_PARSED,
-        stamp,
-        stamp,
-      );
-
-    const chunks: ImportedChunk[] = [];
-    const insert = options.db.prepare(
-      `INSERT INTO source_chunks(id, book_id, chapter, page, location_json, text, content_hash, ordinal)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    );
-    for (const chunk of parsed.chunks) {
-      const chunkId = newId();
-      const locationJson = JSON.stringify(chunk.location);
-      const chunkHash = sha256(chunk.text);
-      insert.run(
-        chunkId,
-        id,
-        chunk.chapter,
-        chunk.page,
-        locationJson,
-        chunk.text,
-        chunkHash,
-        chunk.ordinal,
-      );
-      chunks.push({
-        id: chunkId,
-        bookId: id,
-        chapter: chunk.chapter,
-        page: chunk.page,
-        location: chunk.location,
-        text: chunk.text,
-        contentHash: chunkHash,
-        ordinal: chunk.ordinal,
-      });
-    }
-    return {
+  return withTransaction(options.db, () =>
+    insertParsedBook(options.db, {
       id,
-      title: parsed.title,
-      author: parsed.author,
-      format: parsed.format,
-      filePath: storedPath,
+      parsed,
+      storedPath,
       contentHash,
-      parseStatus: PARSE_STATUS_PARSED,
-      chunks,
-    } satisfies ImportedBook;
+      createdAt: stamp,
+      updatedAt: stamp,
+    }),
+  );
+}
+
+export function retryImport(options: RetryImportOptions): ImportedBook {
+  const row = loadBookRow(options.db, options.bookId);
+  if (!row) {
+    throw new Error(`Book not found: ${options.bookId}`);
+  }
+  if (row.parse_status === PARSE_STATUS_PARSED) {
+    return loadBook(options.db, options.bookId);
+  }
+
+  const stamp = nowIso(options.now);
+  const previous = readImportStatusSidecar(options.dataDir, options.bookId);
+  const retryCount = (previous?.retryCount ?? 0) + 1;
+  const storedPath = row.file_path;
+
+  if (!fs.existsSync(storedPath)) {
+    const message = `Stored original is missing: ${storedPath}`;
+    persistRetryFailure({
+      db: options.db,
+      dataDir: options.dataDir,
+      bookId: options.bookId,
+      stamp,
+      error: message,
+      retryCount,
+    });
+    throw new ImportParseError({
+      bookId: options.bookId,
+      format: row.format,
+      message: `Failed to parse ${row.format}: ${message}`,
+    });
+  }
+
+  const buffer = fs.readFileSync(storedPath);
+  const format = detectFormat(storedPath);
+  const contentHash = sha256(buffer);
+
+  let parsed: ParsedBook;
+  try {
+    parsed = parseSource(format, buffer);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    persistRetryFailure({
+      db: options.db,
+      dataDir: options.dataDir,
+      bookId: options.bookId,
+      stamp,
+      error: message,
+      retryCount,
+    });
+    throw new ImportParseError({
+      bookId: options.bookId,
+      format,
+      message: `Failed to parse ${format}: ${message}`,
+      cause: error,
+    });
+  }
+
+  const imported = withTransaction(options.db, () =>
+    replaceParsedBook(options.db, {
+      id: options.bookId,
+      parsed,
+      storedPath,
+      contentHash,
+      updatedAt: stamp,
+    }),
+  );
+  writeImportStatus(options.dataDir, options.bookId, {
+    parseStatus: PARSE_STATUS_PARSED,
+    error: null,
+    updatedAt: stamp,
+    retryCount,
   });
+  return imported;
 }
 
 export function parseSource(format: BookFormat, buffer: Buffer): ParsedBook {
@@ -118,25 +170,17 @@ export function parseSource(format: BookFormat, buffer: Buffer): ParsedBook {
   if (format === "epub") {
     return parseEpub(buffer);
   }
-  throw new Error(`VERT-001 import slice accepts licensed PDF and EPUB; ${format} is out of scope`);
+  if (format === "markdown") {
+    return parseMarkdown(buffer);
+  }
+  if (format === "txt") {
+    return parseTxt(buffer);
+  }
+  throw new Error(`Unsupported source format: ${format}`);
 }
 
 export function loadBook(db: DatabaseSync, bookId: string): ImportedBook {
-  const row = db
-    .prepare(
-      `SELECT id, title, author, format, file_path, content_hash, parse_status FROM books WHERE id = ?`,
-    )
-    .get(bookId) as
-    | {
-        id: string;
-        title: string;
-        author: string | null;
-        format: BookFormat;
-        file_path: string;
-        content_hash: string;
-        parse_status: string;
-      }
-    | undefined;
+  const row = loadBookRow(db, bookId);
   if (!row) {
     throw new Error(`Book not found: ${bookId}`);
   }
@@ -196,6 +240,199 @@ export function locateHighlight(book: ImportedBook, snippet: string): ImportedCh
     throw new Error(`No source chunk matches highlight: ${snippet}`);
   }
   return found;
+}
+
+function findBookIdByContentHash(db: DatabaseSync, contentHash: string): string | undefined {
+  const row = db
+    .prepare(`SELECT id FROM books WHERE content_hash = ? ORDER BY created_at, id`)
+    .get(contentHash) as { id: string } | undefined;
+  return row?.id;
+}
+
+type BookRow = {
+  id: string;
+  title: string;
+  author: string | null;
+  format: BookFormat;
+  file_path: string;
+  content_hash: string;
+  parse_status: string;
+};
+
+function loadBookRow(db: DatabaseSync, bookId: string): BookRow | undefined {
+  return db
+    .prepare(
+      `SELECT id, title, author, format, file_path, content_hash, parse_status FROM books WHERE id = ?`,
+    )
+    .get(bookId) as BookRow | undefined;
+}
+
+function insertParsedBook(
+  db: DatabaseSync,
+  params: {
+    id: string;
+    parsed: ParsedBook;
+    storedPath: string;
+    contentHash: string;
+    createdAt: string;
+    updatedAt: string;
+  },
+): ImportedBook {
+  db.prepare(
+    `INSERT INTO books(id, title, author, format, file_path, content_hash, parse_status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    params.id,
+    params.parsed.title,
+    params.parsed.author,
+    params.parsed.format,
+    params.storedPath,
+    params.contentHash,
+    PARSE_STATUS_PARSED,
+    params.createdAt,
+    params.updatedAt,
+  );
+  const chunks = insertChunks(db, params.id, params.parsed);
+  return toImportedBook(params.id, params.parsed, params.storedPath, params.contentHash, chunks);
+}
+
+function replaceParsedBook(
+  db: DatabaseSync,
+  params: {
+    id: string;
+    parsed: ParsedBook;
+    storedPath: string;
+    contentHash: string;
+    updatedAt: string;
+  },
+): ImportedBook {
+  db.prepare(`DELETE FROM source_chunks WHERE book_id = ?`).run(params.id);
+  db.prepare(
+    `UPDATE books
+     SET title = ?, author = ?, format = ?, file_path = ?, content_hash = ?, parse_status = ?, updated_at = ?
+     WHERE id = ?`,
+  ).run(
+    params.parsed.title,
+    params.parsed.author,
+    params.parsed.format,
+    params.storedPath,
+    params.contentHash,
+    PARSE_STATUS_PARSED,
+    params.updatedAt,
+    params.id,
+  );
+  const chunks = insertChunks(db, params.id, params.parsed);
+  return toImportedBook(params.id, params.parsed, params.storedPath, params.contentHash, chunks);
+}
+
+function insertChunks(db: DatabaseSync, bookId: string, parsed: ParsedBook): ImportedChunk[] {
+  const chunks: ImportedChunk[] = [];
+  const insert = db.prepare(
+    `INSERT INTO source_chunks(id, book_id, chapter, page, location_json, text, content_hash, ordinal)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  );
+  for (const chunk of parsed.chunks) {
+    const chunkId = newId();
+    const locationJson = JSON.stringify(chunk.location);
+    const chunkHash = sha256(chunk.text);
+    insert.run(
+      chunkId,
+      bookId,
+      chunk.chapter,
+      chunk.page,
+      locationJson,
+      chunk.text,
+      chunkHash,
+      chunk.ordinal,
+    );
+    chunks.push({
+      id: chunkId,
+      bookId,
+      chapter: chunk.chapter,
+      page: chunk.page,
+      location: chunk.location,
+      text: chunk.text,
+      contentHash: chunkHash,
+      ordinal: chunk.ordinal,
+    });
+  }
+  return chunks;
+}
+
+function toImportedBook(
+  id: string,
+  parsed: ParsedBook,
+  storedPath: string,
+  contentHash: string,
+  chunks: ImportedChunk[],
+): ImportedBook {
+  return {
+    id,
+    title: parsed.title,
+    author: parsed.author,
+    format: parsed.format,
+    filePath: storedPath,
+    contentHash,
+    parseStatus: PARSE_STATUS_PARSED,
+    chunks,
+  } satisfies ImportedBook;
+}
+
+function persistFailedBook(params: {
+  db: DatabaseSync;
+  dataDir: string;
+  id: string;
+  title: string;
+  format: BookFormat;
+  storedPath: string;
+  contentHash: string;
+  stamp: string;
+  error: string;
+  retryCount: number;
+}): void {
+  withTransaction(params.db, () => {
+    params.db
+      .prepare(
+        `INSERT INTO books(id, title, author, format, file_path, content_hash, parse_status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        params.id,
+        params.title,
+        null,
+        params.format,
+        params.storedPath,
+        params.contentHash,
+        PARSE_STATUS_FAILED,
+        params.stamp,
+        params.stamp,
+      );
+  });
+  writeImportStatus(params.dataDir, params.id, {
+    parseStatus: PARSE_STATUS_FAILED,
+    error: params.error,
+    updatedAt: params.stamp,
+    retryCount: params.retryCount,
+  });
+}
+
+function persistRetryFailure(params: {
+  db: DatabaseSync;
+  dataDir: string;
+  bookId: string;
+  stamp: string;
+  error: string;
+  retryCount: number;
+}): void {
+  withTransaction(params.db, () => {
+    params.db.prepare(`UPDATE books SET updated_at = ? WHERE id = ?`).run(params.stamp, params.bookId);
+  });
+  writeImportStatus(params.dataDir, params.bookId, {
+    parseStatus: PARSE_STATUS_FAILED,
+    error: params.error,
+    updatedAt: params.stamp,
+    retryCount: params.retryCount,
+  });
 }
 
 function storeOriginal(dataDir: string, bookId: string, sourcePath: string, buffer: Buffer): string {
