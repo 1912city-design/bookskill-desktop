@@ -1,4 +1,5 @@
 import type { NavItem, RouteId } from "./navigation.ts";
+import type { LibraryBookSummary, ReaderAnnotation, ReaderBook } from "../renderer/read/types.ts";
 
 export type SliceSnapshotInfo = {
   dataDir: string;
@@ -26,4 +27,12 @@ export type ShellInfo = {
 
 export type BookskillDesktopBridge = {
   getShellInfo: () => Promise<ShellInfo>;
+  listLibraryBooks: () => Promise<LibraryBookSummary[]>;
+  loadLibraryBook: (bookId: string) => Promise<ReaderBook>;
+  loadAnnotations: (bookId: string) => Promise<ReaderAnnotation[]>;
+  createExcerpt: (input: {
+    bookId: string;
+    selectedText: string;
+    note?: string;
+  }) => Promise<ReaderAnnotation[]>;
 };

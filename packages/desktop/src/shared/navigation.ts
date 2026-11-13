@@ -30,7 +30,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     id: "library",
     label: "书库",
     title: "书库",
-    description: "导入并管理 PDF、EPUB、Markdown 和 TXT。薄切片已能把许可测试 PDF/EPUB 写入本机业务库；完整阅读器仍待后续任务。",
+    description: "导入并管理 PDF、EPUB、Markdown 和 TXT。已导入的书籍可在此打开阅读器，浏览章节、摘录与批注。",
   },
   {
     id: "knowledge",

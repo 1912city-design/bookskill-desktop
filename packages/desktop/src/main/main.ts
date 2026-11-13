@@ -4,6 +4,9 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createAnnotationStore } from "../renderer/read/annotations.ts";
+import { listImportedBooks } from "../renderer/read/library.ts";
+import { createExcerptFromSelection } from "../renderer/read/locators.ts";
 import { initializeDataDir } from "../shared/data-layout.ts";
 import { DEFAULT_ROUTE_ID, NAV_ITEMS } from "../shared/navigation.ts";
 import { PRODUCT_NAME, PRODUCT_VERSION } from "../shared/product.ts";
@@ -214,6 +217,59 @@ async function boot(): Promise<void> {
   };
 
   ipcMain.handle("shell:getInfo", () => shellInfo);
+
+  ipcMain.handle("library:listBooks", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listImportedBooks(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("library:loadBook", (_event, bookId: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (typeof bookId !== "string") {
+      throw new Error("无效的书籍编号。");
+    }
+    return sliceWorkspace.loadBook(bookId);
+  });
+
+  ipcMain.handle("library:loadAnnotations", (_event, bookId: unknown) => {
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (typeof bookId !== "string") {
+      throw new Error("无效的书籍编号。");
+    }
+    return createAnnotationStore(bootState.dataDir).load(bookId);
+  });
+
+  ipcMain.handle("library:createExcerpt", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少摘录内容。");
+    }
+    const payload = input as { bookId?: unknown; selectedText?: unknown; note?: unknown };
+    if (typeof payload.bookId !== "string") {
+      throw new Error("无效的书籍编号。");
+    }
+    if (typeof payload.selectedText !== "string") {
+      throw new Error("选区为空，无法生成摘录。");
+    }
+    const book = sliceWorkspace.loadBook(payload.bookId);
+    const excerpt = createExcerptFromSelection({
+      book,
+      selectedText: payload.selectedText,
+      note: typeof payload.note === "string" ? payload.note : "",
+    });
+    return createAnnotationStore(bootState.dataDir).save(excerpt);
+  });
 
   await app.whenReady();
   mainWindow = createMainWindow(bootState.bootError);

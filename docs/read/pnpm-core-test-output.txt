@@ -1,0 +1,48 @@
+command: pnpm --filter @bookskill/core test
+cwd: /workspace/bookskill-worktrees/READ-001
+started: 2026-11-14 01:33:30 CST (Asia/Shanghai)
+
+
+> @bookskill/core@0.0.0 test /workspace/bookskill-worktrees/READ-001/packages/core
+> node --test --test-reporter=spec test/*.test.ts
+
+▶ IMPORT-001 markdown and txt import
+  ✔ imports the licensed Markdown fixture into the BookSkill library (18.479146ms)
+  ✔ imports the licensed plain-text fixture into the BookSkill library (8.062297ms)
+✔ IMPORT-001 markdown and txt import (27.966649ms)
+▶ IMPORT-001 dedup
+  ✔ recognizes a second import of the same Markdown bytes and keeps a single book row (7.123719ms)
+  ✔ treats PDF, EPUB, Markdown, and TXT primer files as distinct books (20.666431ms)
+  ✔ does not create a second row when the same failed bytes are imported again (8.895778ms)
+✔ IMPORT-001 dedup (36.949373ms)
+▶ IMPORT-001 failure status and retry
+  ✔ persists a queryable failed import and leaves an existing successful book untouched (11.514504ms)
+  ✔ retries a failed item after the stored original is replaced, without changing siblings (19.892713ms)
+  ✔ keeps siblings untouched when a retry still fails (16.238394ms)
+  ✔ persists failure for a truncated PDF and does not write AnythingLLM paths (8.367523ms)
+✔ IMPORT-001 failure status and retry (56.984865ms)
+▶ licensed import and locators
+  ✔ imports the licensed EPUB and locates [P1.3] and [P2.2] (18.401888ms)
+  ✔ imports the licensed text PDF and keeps page plus paragraph locators (7.08682ms)
+✔ licensed import and locators (26.285424ms)
+▶ knowledge cards
+  ✔ drafts a card from [P1.3], keeps sources on confirm, and does not delete the book (15.617805ms)
+✔ knowledge cards (16.272932ms)
+▶ business database path policy
+  ✔ opens the business database under the BookSkill data directory at schema v2 (19.652958ms)
+  ✔ rejects AnythingLLM and mintplex data directories and does not create them (0.731287ms)
+✔ business database path policy (21.369258ms)
+▶ VERT-001 book-to-skill thin slice
+  ✔ imports, cards, Skill, five follow-ups, citations, feedback, and survives reopen (50.282415ms)
+✔ VERT-001 book-to-skill thin slice (50.940734ms)
+ℹ tests 15
+ℹ suites 7
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 282.128536
+
+finished: 2026-11-14 01:33:31 CST (Asia/Shanghai)
+exit_code: 0
