@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-- 更新时间：2026-11-13 17:10 Asia/Shanghai
+- 更新时间：2026-11-13 17:19 Asia/Shanghai
 - 更新人：orchestrator
 - 产品暂名：BookSkill Desktop
 - 当前阶段：Phase A — 仓库与交付底座
@@ -70,6 +70,12 @@
 允许：读项目文档、建本地分支/worktree、改分支文件、跑测试、写本地任务状态与交接文档。
 
 禁止（已遵守）：读生产密钥、访问真实用户书籍、推送主分支、合并自己的 PR、删除线上数据、未经人工确认发布生产、绕过支付或授权系统、在聊天中要求粘贴 API 密钥。
+
+## 进展（2026-11-13 17:19 Asia/Shanghai）
+
+- FIXT-001：本地完成。分支 `feat/FIXT-001` @ `3a804f4d69269a1cd29626e7f4e5b1ca1f4dec0b`。`python3 docs/fixtures/verify_fixt001.py` 退出码 0。未合入 main。
+- BOT-001：本地产物完成，远端验收未完成，**不得标 Done**。分支 `feat/BOT-001` @ `f284b8fb042726e9ae32757613bb0b8afa18c6e2`。独立复测 `npm test`：34 passed, 0 failed，exit 0（17:18:47 Asia/Shanghai）。阻塞项 B-001 / B-007。未合入 main。
+- GOV-001、REPO-001：仍在收尾，尚未做独立验收。
 
 ## 本轮已完成（orchestrator）
 

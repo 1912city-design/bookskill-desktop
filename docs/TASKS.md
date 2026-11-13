@@ -1,6 +1,6 @@
 # TASKS
 
-- 更新时间：2026-11-13 17:10 Asia/Shanghai
+- 更新时间：2026-11-13 17:19 Asia/Shanghai
 - 状态机：`Backlog → Ready → In Progress → Pull Request → CI → Independent QA → Auto-merge to integration（低/中风险）或 Human Approval（高风险）→ Done`
 - 并行规则：最多 6 个互不冲突的开发任务；每个子系统同一时间只允许一个实现 Agent 修改；独立分支或 worktree。
 - 重试：每任务最多 2 次自动重试，其后标 BLOCKED，其它任务继续。
@@ -28,7 +28,7 @@
 |---|---|---|---|---|---|
 | GOV-001 | A | In Progress | architect | 无 | 上游和许可证审查 |
 | REPO-001 | A | In Progress | release_engineer | 无 | 仓库和 CI 基线 |
-| BOT-001 | A | In Progress | backend_engineer | 无 | Grok 执行器配置与护栏 |
+| BOT-001 | A | Local Complete / Remote BLOCKED | backend_engineer | 无 | 本地运行时与 34 项测试已通过；远端 PR/CI 仍阻塞，不得标 Done |
 | APP-001 | B | Backlog（依赖未全满足） | frontend_engineer | REPO-001 | 桌面骨架 |
 | DATA-001 | B | Backlog（依赖未全满足） | backend_engineer | REPO-001 | 本地 schema 与迁移 |
 | VERT-001 | C | Backlog | ai_skill_engineer | APP-001, DATA-001, GOV-001（测试材料许可） | 书到对话 Skill 的薄切片 |
