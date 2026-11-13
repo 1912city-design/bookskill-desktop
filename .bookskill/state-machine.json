@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "source": "docs/GROK_EXECUTION_SPEC.md section 4.3 and D-020",
+  "states": [
+    "Backlog",
+    "Ready",
+    "In Progress",
+    "Pull Request",
+    "CI",
+    "Independent QA",
+    "Auto-merge to integration",
+    "Human Approval",
+    "Done",
+    "BLOCKED"
+  ],
+  "highRiskCategories": [
+    "data_migration",
+    "authorization",
+    "sync_encryption",
+    "external_operations",
+    "release"
+  ],
+  "inFlightStates": [
+    "In Progress",
+    "Pull Request",
+    "CI",
+    "Independent QA",
+    "Auto-merge to integration",
+    "Human Approval"
+  ],
+  "transitions": [
+    { "from": "Backlog", "to": "Ready", "requires": ["acceptanceCriteria"] },
+    { "from": "Ready", "to": "In Progress" },
+    { "from": "In Progress", "to": "Pull Request" },
+    { "from": "In Progress", "to": "BLOCKED", "requires": ["retriesExhausted"] },
+    { "from": "Pull Request", "to": "CI" },
+    { "from": "Pull Request", "to": "In Progress", "requires": ["rework"] },
+    { "from": "CI", "to": "Independent QA", "requires": ["ciPassed"] },
+    { "from": "CI", "to": "In Progress", "requires": ["ciFailed", "retriesRemaining"] },
+    { "from": "CI", "to": "BLOCKED", "requires": ["ciFailed", "retriesExhausted"] },
+    { "from": "Independent QA", "to": "Auto-merge to integration", "requires": ["qaPassed", "lowOrMediumRisk"] },
+    { "from": "Independent QA", "to": "Human Approval", "requires": ["qaPassed", "highRisk"] },
+    { "from": "Independent QA", "to": "In Progress", "requires": ["qaFailed", "retriesRemaining"] },
+    { "from": "Independent QA", "to": "BLOCKED", "requires": ["qaFailed", "retriesExhausted"] },
+    { "from": "Auto-merge to integration", "to": "Done" },
+    { "from": "Human Approval", "to": "Done", "requires": ["humanApproved"] },
+    { "from": "Human Approval", "to": "BLOCKED", "requires": ["humanRejected"] },
+    { "from": "Human Approval", "to": "In Progress", "requires": ["rework", "retriesRemaining"] }
+  ],
+  "notes": [
+    "Auto-merge to integration 只是任务状态名，运行时只更新持久化状态，不执行 git merge，更不会合并 main。",
+    "高风险（数据迁移、授权、同步加密、执行外部操作、发布）不得自动合入，必须进入 Human Approval。",
+    "缺少验收条件的工单不能进入 Ready。",
+    "orchestrator 不得发起进入 Auto-merge to integration 的迁移。"
+  ]
+}

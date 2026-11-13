@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "source": "docs/GROK_EXECUTION_SPEC.md section 4.3",
+  "retries": {
+    "maxAutoRetries": 2,
+    "onExhaustion": "BLOCKED"
+  },
+  "timeouts": {
+    "taskTimeoutMs": 86400000,
+    "toolTimeoutMs": 300000,
+    "heartbeatIntervalMs": 3600000
+  },
+  "budget": {
+    "maxConcurrentDevelopmentTasks": 6,
+    "maxCostUsdPerTask": 50,
+    "maxTokensPerTask": 2000000,
+    "currency": "USD"
+  },
+  "notes": {
+    "taskTimeoutMs": "单任务墙钟上限 24 小时。超时记为失败并计入自动重试。",
+    "toolTimeoutMs": "单次工具调用上限 5 分钟。",
+    "heartbeatIntervalMs": "状态至少每 60 分钟持久化一次。",
+    "maxAutoRetries": "每任务最多 2 次自动重试（含首次执行最多 3 次尝试）；用尽后标记 BLOCKED。",
+    "maxConcurrentDevelopmentTasks": "最多 6 个互不冲突的开发任务处于进行中状态。"
+  }
+}
