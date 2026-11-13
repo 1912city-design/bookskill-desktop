@@ -6,7 +6,7 @@
 - 基础：`feat/VERT-001` / `origin/feat/VERT-001` @ `a83e0a0`（含已合入的 IMPORT-001 与 READ-001）
 - 工作区：`/workspace/bookskill-worktrees/KNOW-001`
 - 完成时间：2026-11-14 01:46 Asia/Shanghai
-- 实现提交：将在本地提交后回填
+- 实现提交：`222a018f23bf0f4b1f330aa855ab177656190442`
 - 状态：本地实现与测试已完成。**本执行器未打开远端 PR，未合入 `main` / `integration`，未发布，未标 Done。** PR 草案见 `docs/know/pull-request.md`，目标只能是 `feat/VERT-001`。由 Orchestrator 安排独立 QA。
 - 风险等级：**低/中（low/medium）**。未改 schema 迁移，未新增表；合并时把来源迁到保留卡并去重，再删除被吸收卡，不写入会在删除后悬空的 `knowledge_relations` 合并关系。不是正式 G1，也不是发运包。未进入 Phase E/F。
 

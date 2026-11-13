@@ -34,7 +34,7 @@ pnpm --filter @bookskill/desktop test
 - `pnpm --filter @bookskill/core test`：退出码 **0**；**24 passed，0 failed**；时间 2026-11-14 01:46:12 CST（Asia/Shanghai）；完整输出 `docs/know/pnpm-core-test-output.txt`
 - `pnpm --filter @bookskill/desktop test`：退出码 **0**；**28 passed，0 failed**；时间 2026-11-14 01:46:14 CST（Asia/Shanghai）；完整输出 `docs/know/pnpm-desktop-test-output.txt`
 - 环境：Node v24.22.1，pnpm 10.34.6，Linux x86_64
-- 实现提交：将在本地提交后回填
+- 实现提交：`222a018f23bf0f4b1f330aa855ab177656190442`
 
 ## 未解决风险
 
