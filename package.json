@@ -1,0 +1,18 @@
+{
+  "name": "bookskill-desktop",
+  "private": true,
+  "version": "0.0.0",
+  "description": "BookSkill Desktop workspace. Local draft; publish repository is not connected.",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "pnpm --filter @bookskill/repo-baseline lint",
+    "test": "node scripts/validate-ci-workflow.mjs && pnpm --filter @bookskill/repo-baseline test",
+    "build": "pnpm --filter @bookskill/repo-baseline build",
+    "validate-ci": "node scripts/validate-ci-workflow.mjs",
+    "local-ci": "bash scripts/ci-local.sh",
+    "ci": "bash scripts/ci-local.sh"
+  }
+}

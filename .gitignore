@@ -32,3 +32,12 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# typescript incremental
+*.tsbuildinfo
+
+# REPO-001 acceptance evidence (*.log is ignored above)
+!docs/repo/ci-fail-proof.log
+
+# REPO-001: allow committed CI evidence logs under docs/repo/
+!docs/repo/*.log

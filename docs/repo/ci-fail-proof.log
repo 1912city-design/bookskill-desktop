@@ -1,0 +1,201 @@
+# REPO-001: proof that a failing unit test makes `pnpm test` exit non-zero
+
+Environment: Linux x86_64, Node v24.22.1, pnpm 10.34.6
+Timezone: Asia/Shanghai (CST, UTC+8)
+Working directory: /workspace/bookskill-worktrees/REPO-001 (branch feat/REPO-001)
+
+Procedure:
+1. Added an intentional failing assertion and ran `pnpm test` — expected non-zero exit.
+2. Removed / corrected the assertion and ran `pnpm test` again — expected exit 0.
+3. A final pass also ran `pnpm lint`, `pnpm test`, and `pnpm build` after the tree was consistent.
+
+This log is local evidence only. The publish repository is not connected, so this is not a GitHub Actions run and does not mean remote CI is green.
+
+================================================================================
+FIRST RUN — intentional failing test (`pnpm test`, expect exit_code=1)
+================================================================================
+============================================================
+REPO-001 ci-fail-proof: FIRST RUN (intentional failing test)
+Host: Linux 6.12.113+ x86_64
+Node: v24.22.1
+pnpm: 10.34.6
+cwd: /workspace/bookskill-worktrees/REPO-001
+time: 2026-11-13 17:15:33 CST
+command: pnpm test
+============================================================
+
+> bookskill-desktop@0.0.0 test /workspace/bookskill-worktrees/REPO-001
+> pnpm -r --if-present test
+
+
+> @bookskill/repo-baseline@0.0.0 test /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> pnpm build && node --test test/**/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ resolveDataDir
+  ✔ uses a BookSkill XDG path on Linux, not an AnythingLLM path (0.735128ms)
+  ✔ honors XDG_DATA_HOME on Linux (0.120041ms)
+  ✔ uses Application Support / BookSkill Desktop on macOS (0.150837ms)
+  ✔ uses APPDATA / BookSkill Desktop on Windows (0.188821ms)
+  ✔ honors BOOKSKILL_DATA_DIR when the path is product-specific (0.114081ms)
+  ✔ rejects an override that points at AnythingLLM data (0.357799ms)
+✔ resolveDataDir (2.552246ms)
+▶ REPO-001 failing-test proof (intentional)
+  ✖ fails on purpose so pnpm test exits non-zero (2.110473ms)
+✖ REPO-001 failing-test proof (intentional) (3.171312ms)
+ℹ tests 7
+ℹ suites 2
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 120.897183
+
+✖ failing tests:
+
+test at test/failing-proof.test.ts:6:3
+✖ fails on purpose so pnpm test exits non-zero (2.110473ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '/tmp/bookskill-home/.local/share/bookskill-desktop'
+  - '/this-path-should-not-match'
+  
+      at TestContext.<anonymous> (file:///workspace/bookskill-worktrees/REPO-001/packages/repo-baseline/test/failing-proof.test.ts:12:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at node:internal/test_runner/test:1903:71
+      at node:internal/per_context/primordials:504:82
+      at new Promise (<anonymous>)
+      at new SafePromise (node:internal/per_context/primordials:478:3)
+      at node:internal/per_context/primordials:504:9
+      at Array.map (<anonymous>) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '/tmp/bookskill-home/.local/share/bookskill-desktop',
+    expected: '/this-path-should-not-match',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+/workspace/bookskill-worktrees/REPO-001/packages/repo-baseline:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @bookskill/repo-baseline@0.0.0 test: `pnpm build && node --test test/**/*.test.ts`
+Exit status 1
+ ELIFECYCLE  Test failed. See above for more details.
+exit_code=1
+
+
+================================================================================
+SECOND RUN — failing test removed (`pnpm test`, expect exit_code=0)
+================================================================================
+============================================================
+REPO-001 ci-fail-proof: SECOND RUN (failing test removed/fixed)
+Host: Linux 6.12.113+ x86_64
+Node: v24.22.1
+pnpm: 10.34.6
+cwd: /workspace/bookskill-worktrees/REPO-001
+time: 2026-11-13 17:15:42 CST
+command: pnpm test
+============================================================
+
+> bookskill-desktop@0.0.0 test /workspace/bookskill-worktrees/REPO-001
+> pnpm -r --if-present test
+
+
+> @bookskill/repo-baseline@0.0.0 test /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> pnpm build && node --test test/**/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ resolveDataDir
+  ✔ uses a BookSkill XDG path on Linux, not an AnythingLLM path (0.742528ms)
+  ✔ honors XDG_DATA_HOME on Linux (0.119701ms)
+  ✔ uses Application Support / BookSkill Desktop on macOS (0.143219ms)
+  ✔ uses APPDATA / BookSkill Desktop on Windows (0.17749ms)
+  ✔ honors BOOKSKILL_DATA_DIR when the path is product-specific (0.117269ms)
+  ✔ rejects an override that points at AnythingLLM data (0.344082ms)
+✔ resolveDataDir (2.520944ms)
+ℹ tests 6
+ℹ suites 1
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85.439356
+exit_code=0
+
+
+================================================================================
+FINAL PASSING RUN — lint, test, and build after the assertion was corrected
+================================================================================
+============================================================
+FINAL PASSING RUN after fixing the intentional failure
+Host: Linux 6.12.113+ x86_64
+Node: v24.22.1
+pnpm: 10.34.6
+cwd: /workspace/bookskill-worktrees/REPO-001
+time: 2026-11-13 17:17:33 CST
+============================================================
+
+----- pnpm lint -----
+
+> bookskill-desktop@0.0.0 lint /workspace/bookskill-worktrees/REPO-001
+> pnpm --filter @bookskill/repo-baseline lint
+
+
+> @bookskill/repo-baseline@0.0.0 lint /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> eslint .
+
+lint_exit=0
+
+----- pnpm test -----
+
+> bookskill-desktop@0.0.0 test /workspace/bookskill-worktrees/REPO-001
+> node scripts/validate-ci-workflow.mjs && pnpm --filter @bookskill/repo-baseline test
+
+validate-ci-workflow: OK: a Test step runs `pnpm test` and will fail the job on a non-zero exit.
+
+> @bookskill/repo-baseline@0.0.0 test /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> pnpm build && node --test --test-reporter=spec test/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ resolveDataDir
+  ✔ uses a BookSkill XDG path on Linux, not an AnythingLLM path (0.732538ms)
+  ✔ honors XDG_DATA_HOME on Linux (0.118105ms)
+  ✔ uses Application Support / BookSkill Desktop on macOS (0.1449ms)
+  ✔ uses APPDATA / BookSkill Desktop on Windows (0.169596ms)
+  ✔ honors BOOKSKILL_DATA_DIR when the path is product-specific (0.09871ms)
+  ✔ rejects an override that points at AnythingLLM data (0.301068ms)
+  ✔ product unix dir name is bookskill-desktop, not an AnythingLLM user-data name (0.086ms)
+✔ resolveDataDir (2.531676ms)
+ℹ tests 7
+ℹ suites 1
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 72.894593
+test_exit=0
+
+----- pnpm build -----
+
+> bookskill-desktop@0.0.0 build /workspace/bookskill-worktrees/REPO-001
+> pnpm --filter @bookskill/repo-baseline build
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/REPO-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+build_exit=0
+
