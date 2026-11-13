@@ -1,0 +1,55 @@
+command: pnpm --filter @bookskill/desktop test
+cwd: /workspace/bookskill-worktrees/READ-001
+started: 2026-11-14 01:33:19 CST (Asia/Shanghai)
+
+
+> @bookskill/desktop@0.0.0 test /workspace/bookskill-worktrees/READ-001/packages/desktop
+> pnpm --filter @bookskill/repo-baseline build && tsc -p tsconfig.json --noEmit && node --test --test-reporter=spec test/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/READ-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ BookSkill data directory initialization
+  ✔ creates the BookSkill layout under BOOKSKILL_DATA_DIR (2.26597ms)
+  ✔ is idempotent and does not overwrite an existing manifest (1.438691ms)
+  ✔ uses the BookSkill XDG directory name, not an AnythingLLM user-data path (1.188881ms)
+  ✔ rejects an AnythingLLM default user directory and does not create it (0.426495ms)
+  ✔ rejects mintplex and anything-llm path markers (0.157195ms)
+✔ BookSkill data directory initialization (6.559159ms)
+▶ render error boundary
+  ✔ returns a visible alert panel instead of an empty document (0.787577ms)
+  ✔ escapes untrusted error text so a failed render cannot inject markup (0.1758ms)
+  ✔ catches a thrown render function and still produces visible output (0.1505ms)
+  ✔ passes through a successful render unchanged (0.113255ms)
+  ✔ formats unknown values without going blank (0.111448ms)
+✔ render error boundary (2.35742ms)
+▶ BookSkill Desktop navigation
+  ✔ exposes exactly five first-level entries with the contract labels (0.986939ms)
+  ✔ defaults to 问题对话 (0.166307ms)
+  ✔ can navigate to every first-level entry (0.125668ms)
+  ✔ rejects unknown routes so a typo cannot silently show a blank view (0.294395ms)
+  ✔ uses the BookSkill Desktop product name, not an AnythingLLM mark (0.197383ms)
+✔ BookSkill Desktop navigation (2.688466ms)
+▶ READ-001 reader locators, excerpts, and annotations
+  ✔ keeps the contract unconfirmed label identical to @bookskill/core (0.721411ms)
+  ✔ shows chapter and paragraph locators for an imported licensed EPUB (12.664914ms)
+  ✔ shows page and paragraph locators for an imported licensed text PDF (8.218648ms)
+  ✔ creates an excerpt from a selection and jumps back to the original location (8.420529ms)
+  ✔ marks unmatched or unconfirmed sources as unconfirmed and never fakes a precise locator (6.09902ms)
+  ✔ persists annotations in the BookSkill data directory across a fresh store instance (5.264416ms)
+✔ READ-001 reader locators, excerpts, and annotations (42.395521ms)
+▶ desktop shell wiring for the VERT-001 slice
+  ✔ initializes the shell data directory and opens the business database under it (11.700791ms)
+✔ desktop shell wiring for the VERT-001 slice (12.359284ms)
+ℹ tests 22
+ℹ suites 5
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169.112801
+
+finished: 2026-11-14 01:33:22 CST (Asia/Shanghai)
+exit_code: 0

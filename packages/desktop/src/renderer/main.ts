@@ -1,5 +1,6 @@
 import {
   buildErrorPanelHTML,
+  formatErrorMessage,
   renderWithBoundary,
 } from "../shared/error-boundary.ts";
 import {
@@ -9,11 +10,10 @@ import {
   type RouteId,
 } from "../shared/navigation.ts";
 import { PRODUCT_NAME } from "../shared/product.ts";
-import type { ShellInfo } from "../shared/shell-info.ts";
-
-type DesktopBridge = {
-  getShellInfo: () => Promise<ShellInfo>;
-};
+import type { BookskillDesktopBridge, ShellInfo } from "../shared/shell-info.ts";
+import { emptyLibraryUiState, type LibraryUiState } from "./read/types.ts";
+import { jumpToAnnotation } from "./read/display.ts";
+import { renderLibraryRoute } from "./read/view.ts";
 
 function escapeHtml(value: string): string {
   return value
@@ -23,8 +23,8 @@ function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;");
 }
 
-function getBridge(): DesktopBridge | null {
-  const fromWindow = (window as Window & { bookskillDesktop?: DesktopBridge }).bookskillDesktop;
+function getBridge(): BookskillDesktopBridge | null {
+  const fromWindow = (window as Window & { bookskillDesktop?: BookskillDesktopBridge }).bookskillDesktop;
   return fromWindow ?? null;
 }
 
@@ -43,7 +43,13 @@ function mountError(root: HTMLElement, error: unknown): void {
   root.innerHTML = buildErrorPanelHTML(error);
 }
 
-function renderShell(info: ShellInfo, nav: NavigationState): string {
+type ShellState = {
+  info: ShellInfo;
+  nav: NavigationState;
+  library: LibraryUiState;
+};
+
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -62,7 +68,7 @@ function renderShell(info: ShellInfo, nav: NavigationState): string {
     : info.sliceError
       ? `业务库尚未打开：${escapeHtml(info.sliceError)}`
       : "业务库尚未打开。";
-  const dataDir =
+  const mainBody =
     view.id === "settings"
       ? `<dl class="meta-list">
           <div><dt>产品名称</dt><dd data-testid="settings-product-name">${info.productName}</dd></div>
@@ -72,7 +78,9 @@ function renderShell(info: ShellInfo, nav: NavigationState): string {
           <div><dt>薄切片数据</dt><dd data-testid="slice-summary">${sliceSummary}</dd></div>
           <div><dt>版本</dt><dd>${info.version}</dd></div>
         </dl>`
-      : `<p class="view-note">此入口已可导航。薄切片的导入、知识卡、Skill 与离线对话已接到本机业务库；完整阅读器或 Skill Studio 不在本页范围。</p>`;
+      : view.id === "library"
+        ? renderLibraryRoute(library)
+        : `<p class="view-note">此入口已可导航。薄切片的导入、知识卡、Skill 与离线对话已接到本机业务库；完整阅读器或 Skill Studio 不在本页范围。</p>`;
 
   return [
     `<div class="app-shell" data-testid="app-shell">`,
@@ -91,38 +99,178 @@ function renderShell(info: ShellInfo, nav: NavigationState): string {
     `<p class="view-kicker">当前入口</p>`,
     `<h1 data-testid="view-title">${view.title}</h1>`,
     `<p class="view-description" data-testid="view-description">${view.description}</p>`,
-    dataDir,
+    mainBody,
     `</section>`,
     `</main>`,
     `</div>`,
   ].join("");
 }
 
-function bindNavigation(root: HTMLElement, info: ShellInfo, nav: NavigationState): void {
+function bindNavigation(root: HTMLElement, state: ShellState): void {
   root.querySelectorAll<HTMLButtonElement>("[data-nav-id]").forEach((button) => {
     button.addEventListener("click", () => {
       const id = button.getAttribute("data-nav-id");
       if (!id) {
         return;
       }
+      void (async () => {
+        try {
+          state.nav.go(id);
+          if (id === "library") {
+            await ensureLibraryBooks(state);
+          }
+          paint(root, state);
+        } catch (error) {
+          mountError(root, error);
+        }
+      })();
+    });
+  });
+}
+
+function bindLibrary(root: HTMLElement, state: ShellState): void {
+  if (state.nav.current !== "library") {
+    return;
+  }
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='open-book']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const bookId = button.getAttribute("data-book-id");
+      const parseStatus = button.getAttribute("data-parse-status");
+      if (!bookId) {
+        return;
+      }
+      void (async () => {
+        try {
+          if (parseStatus !== "parsed") {
+            state.library.error = "该书尚未解析完成，无法打开阅读器。";
+            paint(root, state);
+            return;
+          }
+          const bridge = getBridge();
+          if (!bridge?.loadLibraryBook) {
+            state.library.error = "阅读器尚未连接到本机书库。";
+            paint(root, state);
+            return;
+          }
+          state.library.openBook = await bridge.loadLibraryBook(bookId);
+          state.library.annotations = (await bridge.loadAnnotations?.(bookId)) ?? [];
+          state.library.draftSelection = "";
+          state.library.draftNote = "";
+          state.library.focusedChunkId = null;
+          state.library.jumpMessage = null;
+          state.library.error = null;
+          paint(root, state);
+        } catch (error) {
+          state.library.error = formatErrorMessage(error);
+          paint(root, state);
+        }
+      })();
+    });
+  });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='reader-back']")?.addEventListener("click", () => {
+    state.library.openBook = null;
+    state.library.annotations = [];
+    state.library.draftSelection = "";
+    state.library.draftNote = "";
+    state.library.focusedChunkId = null;
+    state.library.jumpMessage = null;
+    state.library.error = null;
+    paint(root, state);
+  });
+
+  const pages = root.querySelector("[data-testid='reader-pages']");
+  const selectionBox = root.querySelector<HTMLTextAreaElement>("[data-testid='excerpt-selection']");
+  pages?.addEventListener("mouseup", () => {
+    const selected = window.getSelection()?.toString() ?? "";
+    if (selectionBox && selected.trim()) {
+      selectionBox.value = selected;
+    }
+  });
+
+  root.querySelector<HTMLFormElement>("[data-testid='excerpt-form']")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const book = state.library.openBook;
+    if (!book) {
+      return;
+    }
+    const selectedText = selectionBox?.value ?? "";
+    const note = root.querySelector<HTMLTextAreaElement>("[data-testid='excerpt-note']")?.value ?? "";
+    void (async () => {
       try {
-        nav.go(id);
-        paint(root, info, nav);
+        const bridge = getBridge();
+        if (!bridge?.createExcerpt) {
+          throw new Error("阅读器尚未连接到本机书库。");
+        }
+        state.library.annotations = await bridge.createExcerpt({
+          bookId: book.id,
+          selectedText,
+          note,
+        });
+        state.library.draftSelection = "";
+        state.library.draftNote = "";
+        state.library.jumpMessage = null;
+        state.library.error = null;
+        paint(root, state);
       } catch (error) {
-        mountError(root, error);
+        state.library.error = formatErrorMessage(error);
+        state.library.draftSelection = selectedText;
+        state.library.draftNote = note;
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='jump-excerpt']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const book = state.library.openBook;
+      const annotationId = button.getAttribute("data-annotation-id");
+      if (!book || !annotationId) {
+        return;
+      }
+      const annotation = state.library.annotations.find((entry) => entry.id === annotationId);
+      if (!annotation) {
+        return;
+      }
+      const jumped = jumpToAnnotation(book, annotation);
+      state.library.focusedChunkId = jumped.focusedChunkId;
+      state.library.jumpMessage = jumped.message;
+      paint(root, state);
+      if (jumped.focusedChunkId) {
+        root.querySelector(`[data-chunk-id="${jumped.focusedChunkId}"]`)?.scrollIntoView({ block: "center" });
       }
     });
   });
 }
 
-function paint(root: HTMLElement, info: ShellInfo, nav: NavigationState): void {
-  const attempt = renderWithBoundary(() => renderShell(info, nav));
+function paint(root: HTMLElement, state: ShellState): void {
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
   }
-  document.title = `${nav.currentItem.label} · ${PRODUCT_NAME}`;
-  bindNavigation(root, info, nav);
+  document.title = `${state.nav.currentItem.label} · ${PRODUCT_NAME}`;
+  bindNavigation(root, state);
+  bindLibrary(root, state);
+}
+
+async function ensureLibraryBooks(state: ShellState): Promise<void> {
+  const bridge = getBridge();
+  if (!bridge?.listLibraryBooks) {
+    state.library.loaded = true;
+    return;
+  }
+  try {
+    state.library.books = await bridge.listLibraryBooks();
+    if (!state.library.openBook) {
+      state.library.error = null;
+    }
+  } catch (error) {
+    state.library.error = formatErrorMessage(error);
+  } finally {
+    state.library.loaded = true;
+  }
 }
 
 async function loadShellInfo(): Promise<ShellInfo> {
@@ -166,7 +314,15 @@ async function start(): Promise<void> {
     const info = await loadShellInfo();
     const initial: RouteId = info.defaultRouteId;
     const nav = createNavigationState(initial);
-    paint(root, info, nav);
+    const state: ShellState = {
+      info,
+      nav,
+      library: emptyLibraryUiState(),
+    };
+    if (nav.current === "library") {
+      await ensureLibraryBooks(state);
+    }
+    paint(root, state);
   } catch (error) {
     mountError(root, error);
     document.title = `页面错误 · ${PRODUCT_NAME}`;
