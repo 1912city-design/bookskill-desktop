@@ -28,6 +28,23 @@ export type ConfirmCardOptions = {
   now?: Date;
 };
 
+export type UpdateKnowledgeCardOptions = {
+  db: DatabaseSync;
+  cardId: string;
+  title?: string;
+  content?: string;
+  conditions?: string | null;
+  limitations?: string | null;
+  now?: Date;
+};
+
+export type MergeKnowledgeCardsOptions = {
+  db: DatabaseSync;
+  survivingCardId: string;
+  absorbedCardId: string;
+  now?: Date;
+};
+
 export function draftKnowledgeCardFromLocator(options: DraftCardOptions): KnowledgeCardRecord {
   const book = loadBook(options.db, options.bookId);
   const chunk = findChunkByParagraphId(book, options.paragraphId);
@@ -157,6 +174,93 @@ export function loadKnowledgeCard(db: DatabaseSync, cardId: string): KnowledgeCa
       } satisfies KnowledgeSourceRecord;
     }),
   };
+}
+
+export function updateKnowledgeCard(options: UpdateKnowledgeCardOptions): KnowledgeCardRecord {
+  const existing = loadKnowledgeCard(options.db, options.cardId);
+  const stamp = nowIso(options.now);
+  options.db
+    .prepare(
+      `UPDATE knowledge_cards
+       SET title = ?, content = ?, conditions = ?, limitations = ?, updated_at = ?
+       WHERE id = ?`,
+    )
+    .run(
+      options.title ?? existing.title,
+      options.content ?? existing.content,
+      options.conditions === undefined ? existing.conditions : options.conditions,
+      options.limitations === undefined ? existing.limitations : options.limitations,
+      stamp,
+      options.cardId,
+    );
+  const updated = loadKnowledgeCard(options.db, options.cardId);
+  if (updated.status !== existing.status) {
+    throw new Error("Editing a knowledge card must not change its status");
+  }
+  return updated;
+}
+
+export function listKnowledgeCards(db: DatabaseSync): KnowledgeCardRecord[] {
+  const rows = db
+    .prepare(
+      `SELECT id FROM knowledge_cards
+       ORDER BY updated_at DESC, created_at DESC, id`,
+    )
+    .all() as Array<{ id: string }>;
+  return rows.map((row) => loadKnowledgeCard(db, row.id));
+}
+
+/**
+ * Merge by moving or deduplicating sources onto the surviving card, then
+ * deleting the absorbed card. Books and source chunks stay put.
+ *
+ * knowledge_relations has foreign keys to knowledge_cards, and
+ * deleteKnowledgeCard already removes relations involving the absorbed card.
+ * A merge relation that pointed at the absorbed card would dangle (or be
+ * deleted immediately), so this function does not record one.
+ *
+ * Status is left unchanged: a draft survivor stays draft.
+ */
+export function mergeKnowledgeCards(options: MergeKnowledgeCardsOptions): KnowledgeCardRecord {
+  if (options.survivingCardId === options.absorbedCardId) {
+    throw new Error("Cannot merge a knowledge card with itself");
+  }
+  const surviving = loadKnowledgeCard(options.db, options.survivingCardId);
+  const absorbed = loadKnowledgeCard(options.db, options.absorbedCardId);
+  const stamp = nowIso(options.now);
+  const existingChunkIds = new Set(surviving.sources.map((source) => source.sourceChunkId));
+
+  withTransaction(options.db, () => {
+    for (const source of absorbed.sources) {
+      if (existingChunkIds.has(source.sourceChunkId)) {
+        continue;
+      }
+      options.db
+        .prepare(`UPDATE knowledge_sources SET knowledge_card_id = ? WHERE id = ?`)
+        .run(options.survivingCardId, source.id);
+      existingChunkIds.add(source.sourceChunkId);
+    }
+    options.db
+      .prepare(`UPDATE knowledge_cards SET updated_at = ? WHERE id = ?`)
+      .run(stamp, options.survivingCardId);
+    // Inline the delete contract so merge and cleanup share one transaction.
+    // Do not insert a knowledge_relations row that would dangle after this delete.
+    options.db
+      .prepare(`DELETE FROM knowledge_relations WHERE from_card_id = ? OR to_card_id = ?`)
+      .run(options.absorbedCardId, options.absorbedCardId);
+    options.db.prepare(`DELETE FROM knowledge_sources WHERE knowledge_card_id = ?`).run(options.absorbedCardId);
+    options.db.prepare(`DELETE FROM skill_sources WHERE knowledge_card_id = ?`).run(options.absorbedCardId);
+    options.db
+      .prepare(`UPDATE evidence_refs SET knowledge_card_id = NULL WHERE knowledge_card_id = ?`)
+      .run(options.absorbedCardId);
+    options.db.prepare(`DELETE FROM knowledge_cards WHERE id = ?`).run(options.absorbedCardId);
+  });
+
+  const merged = loadKnowledgeCard(options.db, options.survivingCardId);
+  if (merged.status !== surviving.status) {
+    throw new Error("Merging knowledge cards must not change the surviving card status");
+  }
+  return merged;
 }
 
 function describeChunk(chunk: ImportedChunk, paragraphId: string): {

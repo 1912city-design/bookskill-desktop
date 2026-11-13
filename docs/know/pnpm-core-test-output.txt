@@ -1,0 +1,54 @@
+=== core start 2026-11-14 01:46:11 CST ===
+
+> @bookskill/core@0.0.0 test /workspace/bookskill-worktrees/KNOW-001/packages/core
+> node --test --test-reporter=spec test/*.test.ts
+
+▶ IMPORT-001 markdown and txt import
+  ✔ imports the licensed Markdown fixture into the BookSkill library (31.370087ms)
+  ✔ imports the licensed plain-text fixture into the BookSkill library (10.400293ms)
+✔ IMPORT-001 markdown and txt import (42.649048ms)
+▶ IMPORT-001 dedup
+  ✔ recognizes a second import of the same Markdown bytes and keeps a single book row (11.601214ms)
+  ✔ treats PDF, EPUB, Markdown, and TXT primer files as distinct books (12.773514ms)
+  ✔ does not create a second row when the same failed bytes are imported again (11.07379ms)
+✔ IMPORT-001 dedup (35.93158ms)
+▶ IMPORT-001 failure status and retry
+  ✔ persists a queryable failed import and leaves an existing successful book untouched (8.591397ms)
+  ✔ retries a failed item after the stored original is replaced, without changing siblings (12.214828ms)
+  ✔ keeps siblings untouched when a retry still fails (14.120314ms)
+  ✔ persists failure for a truncated PDF and does not write AnythingLLM paths (6.451552ms)
+✔ IMPORT-001 failure status and retry (41.726041ms)
+▶ licensed import and locators
+  ✔ imports the licensed EPUB and locates [P1.3] and [P2.2] (34.661129ms)
+  ✔ imports the licensed text PDF and keeps page plus paragraph locators (12.779077ms)
+✔ licensed import and locators (48.762644ms)
+▶ KNOW-001 knowledge card draft, confirm, edit, merge, and delete
+  ✔ starts a card generated from a source as draft (21.141434ms)
+  ✔ confirms a card as verified_by_user without changing source relationships (13.971469ms)
+  ✔ edits a draft without confirming it, leaving status as draft (8.253468ms)
+  ✔ merges sources onto the surviving card without auto-verifying or deleting the book (11.865493ms)
+  ✔ deduplicates sources by source_chunk_id when merging two cards from the same locator (13.381165ms)
+  ✔ does not mark a verified surviving card as changed, and does not auto-verify a draft (14.993541ms)
+  ✔ deletes a card while leaving the original book and locators usable (10.394124ms)
+  ✔ lists cards and does not auto-publish a Skill from the knowledge flow (14.680997ms)
+  ✔ only confirmKnowledgeCard may assign verified_by_user in the knowledge module (0.447501ms)
+✔ KNOW-001 knowledge card draft, confirm, edit, merge, and delete (110.621821ms)
+▶ knowledge cards
+  ✔ drafts a card from [P1.3], keeps sources on confirm, and does not delete the book (34.350901ms)
+✔ knowledge cards (35.296984ms)
+▶ business database path policy
+  ✔ opens the business database under the BookSkill data directory at schema v2 (9.146271ms)
+  ✔ rejects AnythingLLM and mintplex data directories and does not create them (0.481695ms)
+✔ business database path policy (10.568883ms)
+▶ VERT-001 book-to-skill thin slice
+  ✔ imports, cards, Skill, five follow-ups, citations, feedback, and survives reopen (43.851729ms)
+✔ VERT-001 book-to-skill thin slice (44.517468ms)
+ℹ tests 24
+ℹ suites 8
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 258.669227
+=== core exit 0 at 2026-11-14 01:46:12 CST ===

@@ -1,5 +1,10 @@
 import type { NavItem, RouteId } from "./navigation.ts";
 import type { LibraryBookSummary, ReaderAnnotation, ReaderBook } from "../renderer/read/types.ts";
+import type {
+  BookLocatorProof,
+  KnowledgeBookOption,
+  KnowledgeCardView,
+} from "../renderer/knowledge/types.ts";
 
 export type SliceSnapshotInfo = {
   dataDir: string;
@@ -35,4 +40,26 @@ export type BookskillDesktopBridge = {
     selectedText: string;
     note?: string;
   }) => Promise<ReaderAnnotation[]>;
+  listKnowledgeCards: () => Promise<KnowledgeCardView[]>;
+  listKnowledgeBooks: () => Promise<KnowledgeBookOption[]>;
+  draftKnowledgeCard: (input: { bookId: string; paragraphId: string }) => Promise<KnowledgeCardView[]>;
+  updateKnowledgeCard: (input: {
+    cardId: string;
+    title?: string;
+    content?: string;
+    conditions?: string | null;
+    limitations?: string | null;
+  }) => Promise<KnowledgeCardView[]>;
+  confirmKnowledgeCard: (input: {
+    cardId: string;
+    title?: string;
+    content?: string;
+    conditions?: string | null;
+    limitations?: string | null;
+  }) => Promise<KnowledgeCardView[]>;
+  mergeKnowledgeCards: (input: {
+    survivingCardId: string;
+    absorbedCardId: string;
+  }) => Promise<{ cards: KnowledgeCardView[]; locatorProof: BookLocatorProof[] }>;
+  deleteKnowledgeCard: (cardId: string) => Promise<{ cards: KnowledgeCardView[]; locatorProof: BookLocatorProof[] }>;
 };

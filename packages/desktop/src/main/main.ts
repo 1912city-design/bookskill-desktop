@@ -1,4 +1,11 @@
-import { openSliceWorkspace, type SliceWorkspace } from "@bookskill/core";
+import {
+  confirmKnowledgeCard,
+  draftKnowledgeCardFromLocator,
+  mergeKnowledgeCards,
+  openSliceWorkspace,
+  updateKnowledgeCard,
+  type SliceWorkspace,
+} from "@bookskill/core";
 import { resolveBusinessDbPath } from "@bookskill/data";
 import { app, BrowserWindow, ipcMain } from "electron";
 import fs from "node:fs";
@@ -7,6 +14,13 @@ import { fileURLToPath } from "node:url";
 import { createAnnotationStore } from "../renderer/read/annotations.ts";
 import { listImportedBooks } from "../renderer/read/library.ts";
 import { createExcerptFromSelection } from "../renderer/read/locators.ts";
+import {
+  deleteKnowledgeCardAndKeepBooks,
+  enrichKnowledgeCard,
+  listKnowledgeBooks,
+  listKnowledgeCardViews,
+  verifyBookLocatorsRemain,
+} from "../renderer/knowledge/catalog.ts";
 import { initializeDataDir } from "../shared/data-layout.ts";
 import { DEFAULT_ROUTE_ID, NAV_ITEMS } from "../shared/navigation.ts";
 import { PRODUCT_NAME, PRODUCT_VERSION } from "../shared/product.ts";
@@ -158,6 +172,40 @@ async function runSmokeInspection(window: BrowserWindow, smoke: SmokeOptions, da
   }
 }
 
+
+function readCardEditInput(input: unknown): {
+  cardId: string;
+  title?: string;
+  content?: string;
+  conditions?: string | null;
+  limitations?: string | null;
+} {
+  if (!input || typeof input !== "object") {
+    throw new Error("缺少知识卡内容。");
+  }
+  const payload = input as {
+    cardId?: unknown;
+    title?: unknown;
+    content?: unknown;
+    conditions?: unknown;
+    limitations?: unknown;
+  };
+  if (typeof payload.cardId !== "string") {
+    throw new Error("无效的知识卡编号。");
+  }
+  return {
+    cardId: payload.cardId,
+    title: typeof payload.title === "string" ? payload.title : undefined,
+    content: typeof payload.content === "string" ? payload.content : undefined,
+    conditions: payload.conditions === undefined || payload.conditions === null || typeof payload.conditions === "string"
+      ? (payload.conditions as string | null | undefined)
+      : undefined,
+    limitations: payload.limitations === undefined || payload.limitations === null || typeof payload.limitations === "string"
+      ? (payload.limitations as string | null | undefined)
+      : undefined,
+  };
+}
+
 async function boot(): Promise<void> {
   const smoke = parseSmokeOptions(process.argv);
   applyChromiumFlags();
@@ -269,6 +317,103 @@ async function boot(): Promise<void> {
       note: typeof payload.note === "string" ? payload.note : "",
     });
     return createAnnotationStore(bootState.dataDir).save(excerpt);
+  });
+
+  ipcMain.handle("knowledge:listCards", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listKnowledgeCardViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:listBooks", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listKnowledgeBooks(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:draftCard", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少草稿来源。");
+    }
+    const payload = input as { bookId?: unknown; paragraphId?: unknown };
+    if (typeof payload.bookId !== "string" || !payload.bookId.trim()) {
+      throw new Error("无效的书籍编号。");
+    }
+    if (typeof payload.paragraphId !== "string" || !payload.paragraphId.trim()) {
+      throw new Error("请填写段落定位符。");
+    }
+    draftKnowledgeCardFromLocator({
+      db: sliceWorkspace.db,
+      bookId: payload.bookId,
+      paragraphId: payload.paragraphId.trim(),
+    });
+    return listKnowledgeCardViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:updateCard", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    const payload = readCardEditInput(input);
+    updateKnowledgeCard({ db: sliceWorkspace.db, ...payload });
+    return listKnowledgeCardViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:confirmCard", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    const payload = readCardEditInput(input);
+    confirmKnowledgeCard({ db: sliceWorkspace.db, ...payload });
+    return listKnowledgeCardViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:mergeCards", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少要合并的知识卡。");
+    }
+    const payload = input as { survivingCardId?: unknown; absorbedCardId?: unknown };
+    if (typeof payload.survivingCardId !== "string") {
+      throw new Error("请选择要保留的知识卡。");
+    }
+    if (typeof payload.absorbedCardId !== "string") {
+      throw new Error("请选择要吸收的知识卡。");
+    }
+    const absorbed = enrichKnowledgeCard(
+      sliceWorkspace.db,
+      sliceWorkspace.loadKnowledgeCard(payload.absorbedCardId),
+    );
+    mergeKnowledgeCards({
+      db: sliceWorkspace.db,
+      survivingCardId: payload.survivingCardId,
+      absorbedCardId: payload.absorbedCardId,
+    });
+    return {
+      cards: listKnowledgeCardViews(sliceWorkspace.db),
+      locatorProof: verifyBookLocatorsRemain(sliceWorkspace.db, absorbed.sources),
+    };
+  });
+
+  ipcMain.handle("knowledge:deleteCard", (_event, cardId: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (typeof cardId !== "string") {
+      throw new Error("无效的知识卡编号。");
+    }
+    const result = deleteKnowledgeCardAndKeepBooks(sliceWorkspace.db, cardId);
+    return {
+      cards: listKnowledgeCardViews(sliceWorkspace.db),
+      locatorProof: result.locatorProof,
+    };
   });
 
   await app.whenReady();
