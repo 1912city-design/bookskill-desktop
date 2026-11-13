@@ -14,6 +14,8 @@ import type { BookskillDesktopBridge, ShellInfo } from "../shared/shell-info.ts"
 import { emptyLibraryUiState, type LibraryUiState } from "./read/types.ts";
 import { jumpToAnnotation } from "./read/display.ts";
 import { renderLibraryRoute } from "./read/view.ts";
+import { emptyKnowledgeUiState, type KnowledgeUiState } from "./knowledge/types.ts";
+import { renderKnowledgeRoute } from "./knowledge/view.ts";
 
 function escapeHtml(value: string): string {
   return value
@@ -47,9 +49,10 @@ type ShellState = {
   info: ShellInfo;
   nav: NavigationState;
   library: LibraryUiState;
+  knowledge: KnowledgeUiState;
 };
 
-function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState): string {
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -80,6 +83,8 @@ function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiSt
         </dl>`
       : view.id === "library"
         ? renderLibraryRoute(library)
+        : view.id === "knowledge"
+          ? renderKnowledgeRoute(knowledge)
         : `<p class="view-note">此入口已可导航。薄切片的导入、知识卡、Skill 与离线对话已接到本机业务库；完整阅读器或 Skill Studio 不在本页范围。</p>`;
 
   return [
@@ -118,6 +123,9 @@ function bindNavigation(root: HTMLElement, state: ShellState): void {
           state.nav.go(id);
           if (id === "library") {
             await ensureLibraryBooks(state);
+          }
+          if (id === "knowledge") {
+            await ensureKnowledgeCards(state);
           }
           paint(root, state);
         } catch (error) {
@@ -244,8 +252,191 @@ function bindLibrary(root: HTMLElement, state: ShellState): void {
   });
 }
 
+
+function readEditorFields(root: HTMLElement): {
+  title: string;
+  content: string;
+  conditions: string;
+  limitations: string;
+} {
+  return {
+    title: root.querySelector<HTMLInputElement>("[data-testid='edit-title']")?.value ?? "",
+    content: root.querySelector<HTMLTextAreaElement>("[data-testid='edit-content']")?.value ?? "",
+    conditions: root.querySelector<HTMLTextAreaElement>("[data-testid='edit-conditions']")?.value ?? "",
+    limitations: root.querySelector<HTMLTextAreaElement>("[data-testid='edit-limitations']")?.value ?? "",
+  };
+}
+
+function applyEditorDraft(state: ShellState, fields: ReturnType<typeof readEditorFields>): void {
+  state.knowledge.editTitle = fields.title;
+  state.knowledge.editContent = fields.content;
+  state.knowledge.editConditions = fields.conditions;
+  state.knowledge.editLimitations = fields.limitations;
+}
+
+function selectKnowledgeCard(state: ShellState, cardId: string | null): void {
+  state.knowledge.selectedCardId = cardId;
+  const selected = state.knowledge.cards.find((card) => card.id === cardId);
+  state.knowledge.editTitle = selected?.title ?? "";
+  state.knowledge.editContent = selected?.content ?? "";
+  state.knowledge.editConditions = selected?.conditions ?? "";
+  state.knowledge.editLimitations = selected?.limitations ?? "";
+  if (state.knowledge.mergeTargetId === cardId) {
+    state.knowledge.mergeTargetId = "";
+  }
+}
+
+function bindKnowledge(root: HTMLElement, state: ShellState): void {
+  if (state.nav.current !== "knowledge") {
+    return;
+  }
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='open-card']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const cardId = button.getAttribute("data-card-id");
+      if (!cardId) {
+        return;
+      }
+      selectKnowledgeCard(state, cardId);
+      state.knowledge.error = null;
+      paint(root, state);
+    });
+  });
+
+  root.querySelector<HTMLFormElement>("[data-testid='draft-form']")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const bookId = root.querySelector<HTMLSelectElement>("[data-testid='draft-book']")?.value ?? "";
+    const paragraphId = root.querySelector<HTMLInputElement>("[data-testid='draft-paragraph']")?.value ?? "";
+    state.knowledge.draftBookId = bookId;
+    state.knowledge.draftParagraphId = paragraphId;
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.draftKnowledgeCard) {
+          throw new Error("知识库尚未连接到本机业务库。");
+        }
+        state.knowledge.cards = await bridge.draftKnowledgeCard({ bookId, paragraphId });
+        const created = state.knowledge.cards[0];
+        selectKnowledgeCard(state, created?.id ?? null);
+        state.knowledge.statusMessage = "已生成知识卡草稿。确认之前它仍是 draft。";
+        state.knowledge.locatorProof = [];
+        state.knowledge.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.knowledge.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelector<HTMLFormElement>("[data-testid='knowledge-editor']")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const cardId = state.knowledge.selectedCardId;
+    if (!cardId) {
+      return;
+    }
+    const fields = readEditorFields(root);
+    applyEditorDraft(state, fields);
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.updateKnowledgeCard) {
+          throw new Error("知识库尚未连接到本机业务库。");
+        }
+        state.knowledge.cards = await bridge.updateKnowledgeCard({ cardId, ...fields });
+        selectKnowledgeCard(state, cardId);
+        state.knowledge.statusMessage = "已保存编辑，状态未改变。";
+        state.knowledge.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.knowledge.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='confirm-card']")?.addEventListener("click", () => {
+    const cardId = state.knowledge.selectedCardId;
+    if (!cardId) {
+      return;
+    }
+    const fields = readEditorFields(root);
+    applyEditorDraft(state, fields);
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.confirmKnowledgeCard) {
+          throw new Error("知识库尚未连接到本机业务库。");
+        }
+        state.knowledge.cards = await bridge.confirmKnowledgeCard({ cardId, ...fields });
+        selectKnowledgeCard(state, cardId);
+        state.knowledge.statusMessage = "已确认，状态为 verified_by_user。来源关系保持不变。";
+        state.knowledge.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.knowledge.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='delete-card']")?.addEventListener("click", () => {
+    const cardId = state.knowledge.selectedCardId;
+    if (!cardId) {
+      return;
+    }
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.deleteKnowledgeCard) {
+          throw new Error("知识库尚未连接到本机业务库。");
+        }
+        const result = await bridge.deleteKnowledgeCard(cardId);
+        state.knowledge.cards = result.cards;
+        state.knowledge.locatorProof = result.locatorProof;
+        selectKnowledgeCard(state, null);
+        state.knowledge.statusMessage = "知识卡已删除。原书仍在，书中定位仍可用。";
+        state.knowledge.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.knowledge.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelector<HTMLFormElement>("[data-testid='merge-form']")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const survivingCardId = state.knowledge.selectedCardId;
+    const absorbedCardId = root.querySelector<HTMLSelectElement>("[data-testid='merge-target']")?.value ?? "";
+    state.knowledge.mergeTargetId = absorbedCardId;
+    if (!survivingCardId) {
+      return;
+    }
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.mergeKnowledgeCards) {
+          throw new Error("知识库尚未连接到本机业务库。");
+        }
+        const result = await bridge.mergeKnowledgeCards({ survivingCardId, absorbedCardId });
+        state.knowledge.cards = result.cards;
+        state.knowledge.locatorProof = result.locatorProof;
+        selectKnowledgeCard(state, survivingCardId);
+        state.knowledge.mergeTargetId = "";
+        state.knowledge.statusMessage = "已合并知识卡。被吸收的卡片已删除；合并不会自动把草稿变为已确认。";
+        state.knowledge.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.knowledge.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+}
+
 function paint(root: HTMLElement, state: ShellState): void {
-  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library));
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
@@ -253,6 +444,7 @@ function paint(root: HTMLElement, state: ShellState): void {
   document.title = `${state.nav.currentItem.label} · ${PRODUCT_NAME}`;
   bindNavigation(root, state);
   bindLibrary(root, state);
+  bindKnowledge(root, state);
 }
 
 async function ensureLibraryBooks(state: ShellState): Promise<void> {
@@ -270,6 +462,36 @@ async function ensureLibraryBooks(state: ShellState): Promise<void> {
     state.library.error = formatErrorMessage(error);
   } finally {
     state.library.loaded = true;
+  }
+}
+
+
+async function ensureKnowledgeCards(state: ShellState): Promise<void> {
+  const bridge = getBridge();
+  if (!bridge?.listKnowledgeCards) {
+    state.knowledge.loaded = true;
+    return;
+  }
+  try {
+    const [cards, books] = await Promise.all([
+      bridge.listKnowledgeCards(),
+      bridge.listKnowledgeBooks ? bridge.listKnowledgeBooks() : Promise.resolve(state.knowledge.books),
+    ]);
+    state.knowledge.cards = cards;
+    state.knowledge.books = books;
+    if (state.knowledge.selectedCardId && !cards.some((card) => card.id === state.knowledge.selectedCardId)) {
+      selectKnowledgeCard(state, null);
+    } else if (state.knowledge.selectedCardId) {
+      selectKnowledgeCard(state, state.knowledge.selectedCardId);
+    }
+    if (!state.knowledge.draftBookId && books[0]?.id) {
+      state.knowledge.draftBookId = books[0].id;
+    }
+    state.knowledge.error = null;
+  } catch (error) {
+    state.knowledge.error = formatErrorMessage(error);
+  } finally {
+    state.knowledge.loaded = true;
   }
 }
 
@@ -318,9 +540,13 @@ async function start(): Promise<void> {
       info,
       nav,
       library: emptyLibraryUiState(),
+      knowledge: emptyKnowledgeUiState(),
     };
     if (nav.current === "library") {
       await ensureLibraryBooks(state);
+    }
+    if (nav.current === "knowledge") {
+      await ensureKnowledgeCards(state);
     }
     paint(root, state);
   } catch (error) {

@@ -36,7 +36,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     id: "knowledge",
     label: "知识库",
     title: "知识库",
-    description: "查看概念、原则、方法、案例、问题与个人洞察。薄切片已能生成带来源的知识卡草稿并确认；完整知识库仍待后续任务。",
+    description: "查看概念、原则、方法、案例、问题与个人洞察。可在此从段落生成草稿，并确认、编辑、合并或删除知识卡；删除卡片后原书与定位仍在。",
   },
   {
     id: "skills",

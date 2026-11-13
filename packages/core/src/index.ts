@@ -33,7 +33,16 @@ export {
   confirmKnowledgeCard,
   deleteKnowledgeCard,
   draftKnowledgeCardFromLocator,
+  listKnowledgeCards,
   loadKnowledgeCard,
+  mergeKnowledgeCards,
+  updateKnowledgeCard,
+} from "./knowledge.ts";
+export type {
+  ConfirmCardOptions,
+  DraftCardOptions,
+  MergeKnowledgeCardsOptions,
+  UpdateKnowledgeCardOptions,
 } from "./knowledge.ts";
 export {
   createRetrospectiveSkill,

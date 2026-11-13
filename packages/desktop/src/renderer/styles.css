@@ -480,3 +480,253 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Knowledge-base surface only. Do not restyle chat / library / reader / skills / settings. */
+.active-view[data-route="knowledge"] {
+  max-width: 1120px;
+  background: #000000;
+  border-color: #1f1f1f;
+  color: #ffffff;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.active-view[data-route="knowledge"] .view-kicker {
+  color: #93f1f7;
+}
+
+.active-view[data-route="knowledge"] h1 {
+  color: #ffffff;
+}
+
+.active-view[data-route="knowledge"] .view-description {
+  color: #999999;
+}
+
+.knowledge-surface {
+  --knowledge-bg: #000000;
+  --knowledge-surface: #0d0d0d;
+  --knowledge-ink: #ffffff;
+  --knowledge-muted: #999999;
+  --knowledge-accent: #93f1f7;
+  --knowledge-radius: 16px;
+  margin-top: 24px;
+  padding: 20px 0 0;
+  border-top: 1px solid #222222;
+  color: var(--knowledge-ink);
+  font-family: "Instrument Sans", system-ui, sans-serif;
+}
+
+.knowledge-lead,
+.knowledge-empty,
+.knowledge-editor-empty,
+.knowledge-help,
+.knowledge-editor-status {
+  margin: 0 0 16px;
+  color: var(--knowledge-muted, #999999);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.knowledge-error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #1a0a0a;
+  color: #ffb4b4;
+  border: 1px solid #5a2a2a;
+}
+
+.knowledge-message,
+.knowledge-proof {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #0d0d0d;
+  color: #93f1f7;
+  border: 1px solid #224246;
+  font-size: 14px;
+}
+
+.knowledge-proof ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.knowledge-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 20px;
+}
+
+.knowledge-list-pane,
+.knowledge-detail-pane,
+.knowledge-draft-form,
+.knowledge-editor,
+.knowledge-merge-form,
+.knowledge-card {
+  background: #0d0d0d;
+  border: 1px solid #222222;
+  border-radius: 16px;
+}
+
+.knowledge-list-pane,
+.knowledge-detail-pane {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: start;
+}
+
+.knowledge-draft-form,
+.knowledge-editor,
+.knowledge-merge-form {
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.knowledge-surface h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.knowledge-label,
+.knowledge-status-code,
+.knowledge-editor-status code,
+[data-testid="editor-status-code"] {
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #999999;
+}
+
+.knowledge-label {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.knowledge-input,
+.knowledge-textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #222222;
+  background: #000000;
+  color: #ffffff;
+  font: inherit;
+  padding: 10px 12px;
+}
+
+.knowledge-textarea {
+  resize: vertical;
+}
+
+.knowledge-card-list {
+  display: grid;
+  gap: 10px;
+}
+
+.knowledge-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.knowledge-card-open {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  padding: 14px 16px 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.knowledge-card[data-selected="true"] {
+  border-color: #93f1f7;
+  box-shadow: inset 3px 0 0 #93f1f7;
+}
+
+.knowledge-card-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 560;
+}
+
+.knowledge-card-meta {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-top: 6px;
+}
+
+.knowledge-status {
+  color: #93f1f7;
+  font-size: 13px;
+}
+
+.knowledge-source-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.knowledge-source {
+  font-family: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #999999;
+}
+
+.knowledge-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.knowledge-primary,
+.knowledge-secondary,
+.knowledge-danger {
+  appearance: none;
+  border-radius: 999px;
+  font: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+.knowledge-primary {
+  border: 0;
+  background: #93f1f7;
+  color: #000000;
+  font-weight: 600;
+}
+
+.knowledge-primary:disabled,
+.knowledge-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.knowledge-secondary {
+  background: transparent;
+  color: #93f1f7;
+  border: 1px solid #93f1f7;
+}
+
+.knowledge-danger {
+  background: transparent;
+  color: #ffb4b4;
+  border: 1px solid #5a2a2a;
+}
+
+@media (max-width: 860px) {
+  .knowledge-layout {
+    grid-template-columns: 1fr;
+  }
+}
