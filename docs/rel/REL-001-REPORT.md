@@ -6,7 +6,7 @@
 - 基础：`origin/integration` @ `71f8390`（含已合入的 KNOW-001）
 - 工作区：`/workspace/bookskill-worktrees/REL-001`
 - 完成时间：2026-11-14 20:59 Asia/Shanghai
-- 实现提交：见本分支 `feat/REL-001` 的 REL-001 提交（推送后记录完整哈希）
+- 实现提交：`a96abf332a8fc0418d9e298ad12a7205c7f27e42`
 - 状态：本地实现与测试已完成。准备推送 `feat/REL-001` 并打开目标为 `integration` 的 PR。**未合入 `main` / `integration`，未发布，未标 Done，未进入 Phase E/F。** 这不是正式发运，也不是 G1。
 - 风险等级：**中（medium）**。使用既有 `knowledge_relations` 表，未改 schema / 迁移，未改 KNOW-001 合并或删除契约。
 
