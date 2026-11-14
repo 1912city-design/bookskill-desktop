@@ -1,0 +1,46 @@
+{
+  "title": "BookSkill Test Primer",
+  "author": "BookSkill Desktop Project",
+  "license": "CC0-1.0",
+  "identifier": "urn:uuid:7c3e9d21-6a84-5b12-9f0e-2d18c4a6b5e0",
+  "chapter_count": 2,
+  "description": "Original licensed test fixture for BookSkill Desktop import and source-citation tests. Not a real book.",
+  "principle_paragraph_id": "P1.3",
+  "counterexample_paragraph_id": "P2.2",
+  "files": [
+    {
+      "filename": "bookskill-test-primer.md",
+      "format": "markdown",
+      "sha256": "f5c32795caeda618ade8b8c0c7b2732c19fb96ca60a76bf20452a1dcec978d85",
+      "chapter_count": 2,
+      "bytes": 2028
+    },
+    {
+      "filename": "bookskill-test-primer.txt",
+      "format": "txt",
+      "sha256": "4099d1c78a881369612efb13473e23e1fd440da2bf02f7f039cba8943b647371",
+      "chapter_count": 2,
+      "bytes": 2123
+    },
+    {
+      "filename": "bookskill-test-primer.pdf",
+      "format": "pdf",
+      "sha256": "114316270ae249b5da515439066cfdb81f514bb238c677610eaf78f7b95d3fd6",
+      "chapter_count": 2,
+      "bytes": 3579
+    },
+    {
+      "filename": "bookskill-test-primer.epub",
+      "format": "epub",
+      "sha256": "c475ac89205ea3ee0ec707dd146dac604990e426f83f867fab8568286721e622",
+      "chapter_count": 2,
+      "bytes": 3444
+    }
+  ],
+  "license_file": {
+    "filename": "LICENSE.md",
+    "format": "markdown",
+    "sha256": "b1c9a691331221e84cc38d4e735e66687972e69891e28846e39de05bd8852c45",
+    "bytes": 3894
+  }
+}

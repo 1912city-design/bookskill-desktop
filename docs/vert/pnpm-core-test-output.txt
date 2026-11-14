@@ -1,0 +1,33 @@
+command: pnpm --filter @bookskill/core test
+cwd: /workspace/bookskill-worktrees/VERT-001
+started: 2026-11-13 17:39:07 CST
+
+
+> @bookskill/core@0.0.0 test /workspace/bookskill-worktrees/VERT-001/packages/core
+> node --test --test-reporter=spec test/*.test.ts
+
+▶ licensed import and locators
+  ✔ imports the licensed EPUB and locates [P1.3] and [P2.2] (18.927396ms)
+  ✔ imports the licensed text PDF and keeps page plus paragraph locators (5.755563ms)
+✔ licensed import and locators (25.516232ms)
+▶ knowledge cards
+  ✔ drafts a card from [P1.3], keeps sources on confirm, and does not delete the book (23.672861ms)
+✔ knowledge cards (24.336095ms)
+▶ business database path policy
+  ✔ opens the business database under the BookSkill data directory at schema v2 (6.112797ms)
+  ✔ rejects AnythingLLM and mintplex data directories and does not create them (0.757436ms)
+✔ business database path policy (7.650031ms)
+▶ VERT-001 book-to-skill thin slice
+  ✔ imports, cards, Skill, five follow-ups, citations, feedback, and survives reopen (51.82417ms)
+✔ VERT-001 book-to-skill thin slice (52.995685ms)
+ℹ tests 6
+ℹ suites 4
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183.622476
+
+exit_code: 0
+finished: 2026-11-13 17:39:07 CST

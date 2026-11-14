@@ -1,0 +1,136 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [ 4 0 R 6 0 R ] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 2586 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+72 720 Td
+/F1 18 Tf
+(BookSkill Test Primer) Tj
+/F1 11 Tf
+0 -8 Td
+0 -17 Td
+(A short original work created solely as licensed test data for the BookSkill) Tj
+0 -17 Td
+(Desktop project. It is not a real book, and it must not be treated as a substitute) Tj
+0 -17 Td
+(for a reader's own library.) Tj
+0 -8 Td
+/F1 14 Tf
+0 -20 Td
+(Chapter 1. The Lantern Index Principle) Tj
+/F1 11 Tf
+0 -8 Td
+0 -17 Td
+([P1.1] The workshop in Harbor Lane kept a lantern index: every claim written on a) Tj
+0 -17 Td
+(card had to name the shelf, the page, and the paragraph from which it came.) Tj
+0 -8 Td
+0 -17 Td
+([P1.2] The governing principle of this primer is stated here in full:) Tj
+0 -8 Td
+0 -17 Td
+([P1.3] A knowledge card is valid only when every claim cites a paragraph) Tj
+0 -17 Td
+(identifier from the source document.) Tj
+0 -8 Td
+0 -17 Td
+([P1.4] Readers may locate that principle in Chapter 1, in the paragraph that) Tj
+0 -17 Td
+(begins "A knowledge card is valid only". Downstream citation tests should resolve) Tj
+0 -17 Td
+(a highlight of that sentence to this chapter and paragraph, not to a neighboring) Tj
+0 -17 Td
+(line.) Tj
+0 -8 Td
+0 -17 Td
+([P1.5] The lantern keepers also recorded a second locatable rule: If two passages) Tj
+0 -17 Td
+(disagree, the card must cite both passages and must not silently prefer one.) Tj
+0 -8 Td
+0 -17 Td
+([P1.6] This chapter does not discuss any third-party book. It exists only to give) Tj
+0 -17 Td
+(BookSkill a stable, licensed passage to point at.) Tj
+0 -8 Td
+/F1 14 Tf
+0 -20 Td
+(Chapter 2. The Hollow Echo Counterexample) Tj
+/F1 11 Tf
+0 -8 Td
+0 -17 Td
+([P2.1] On the opposite wall the keepers hung a counterexample, so that importers) Tj
+0 -17 Td
+(could practice rejection as well as citation.) Tj
+0 -8 Td
+0 -17 Td
+([P2.2] The hollow echo is this unsupported sentence: Cedar trees sing at noon in) Tj
+0 -17 Td
+(every harbor. That sentence is a deliberate counterexample. It is not supported by) Tj
+0 -17 Td
+(any other passage in this primer, and it must not be promoted into a knowledge) Tj
+0 -17 Td
+(card as if it were a cited fact.) Tj
+0 -8 Td
+0 -17 Td
+([P2.3] A correct system behavior is as follows: when a reader asks for a source) Tj
+0 -17 Td
+(for "cedar trees sing at noon," the product may point to this counterexample) Tj
+0 -17 Td
+(paragraph in Chapter 2, and must label the claim as unsourced or contradicted, not) Tj
+0 -17 Td
+(as an extracted principle.) Tj
+0 -8 Td
+0 -17 Td
+([P2.4] The keepers closed the primer with a locatable refusal rule: No card may be) Tj
+0 -17 Td
+(saved when its only support is a hollow echo.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 101 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+72 720 Td
+() Tj
+0 -17 Td
+([P2.5] End of the BookSkill Test Primer.) Tj
+0 -8 Td
+ET
+endstream
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000129 00000 n 
+0000000199 00000 n 
+0000000325 00000 n 
+0000002962 00000 n 
+0000003088 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R /Info << /Title (BookSkill Test Primer) /Author (BookSkill Desktop Project) /Creator (BookSkill Desktop Project) >> >>
+startxref
+3239
+%%EOF

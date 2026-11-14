@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="BookSkill Desktop">
+  <rect x="30" y="30" width="452" height="452" rx="92" fill="#1C2A3A"/>
+  <rect x="123" y="143" width="138" height="256" rx="16" fill="#F6F1E8"/>
+  <rect x="251" y="143" width="138" height="256" rx="16" fill="#ECE4D6"/>
+  <rect x="246" y="143" width="20" height="256" fill="#1C2A3A" fill-opacity="0.85"/>
+  <rect x="148" y="205" width="90" height="10" rx="5" fill="#1C2A3A" fill-opacity="0.35"/>
+  <rect x="148" y="246" width="90" height="10" rx="5" fill="#1C2A3A" fill-opacity="0.35"/>
+  <rect x="148" y="287" width="90" height="10" rx="5" fill="#1C2A3A" fill-opacity="0.35"/>
+  <rect x="148" y="328" width="90" height="10" rx="5" fill="#1C2A3A" fill-opacity="0.35"/>
+  <polygon points="297,102 348,102 348,256 322,230 297,256" fill="#C4652D"/>
+</svg>

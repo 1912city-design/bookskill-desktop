@@ -1,0 +1,31 @@
+
+> @bookskill/data@0.0.0 test /workspace/bookskill-worktrees/DATA-001/packages/data
+> node --test --test-reporter=spec test/*.test.ts
+
+▶ failed migration backup restore
+  ✔ restores the pre-migration backup so data matches the failed-before state (20.533614ms)
+✔ failed migration backup restore (21.337494ms)
+▶ schema migration N to N+1
+  ✔ migrates v1 data to v2 and keeps old books and chunks readable (16.155356ms)
+✔ schema migration N to N+1 (16.813471ms)
+▶ business database path
+  ✔ places the business db under the BookSkill data directory, not AnythingLLM storage (1.339646ms)
+  ✔ uses the BookSkill XDG path on Linux when no override is set (0.304672ms)
+  ✔ uses Application Support / BookSkill Desktop on macOS (0.165678ms)
+  ✔ uses APPDATA / BookSkill Desktop on Windows (0.317574ms)
+  ✔ rejects an AnythingLLM override and never creates a database there (1.41207ms)
+  ✔ open/migrate writes only inside the BookSkill data directory (5.098533ms)
+✔ business database path (9.668848ms)
+▶ core schema
+  ✔ creates every contract 3.1 table with a UUID text primary key named id (8.672425ms)
+  ✔ exposes the contract 3.1 columns on each core table (4.607864ms)
+  ✔ accepts a related row for every core table and rejects a broken foreign key (12.009613ms)
+✔ core schema (26.220197ms)
+ℹ tests 11
+ℹ suites 4
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 133.767037

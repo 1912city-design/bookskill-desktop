@@ -1,0 +1,22 @@
+{
+  "name": "@bookskill/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "BookSkill Desktop thin slice: licensed import, sourced knowledge cards, versioned Skills, and offline stub conversations. Not a complete reader or Skill Studio.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test --test-reporter=spec test/*.test.ts"
+  },
+  "dependencies": {
+    "@bookskill/data": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

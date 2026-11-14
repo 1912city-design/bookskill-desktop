@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "productName": "BookSkill Desktop",
+  "dataDir": "/tmp/bookskill-desktop-pack-smoke-Yaqf0M",
+  "snapshot": {
+    "title": "问题对话 · BookSkill Desktop",
+    "productName": "BookSkill Desktop",
+    "defaultRouteId": "chat",
+    "defaultViewLabel": "问题对话",
+    "navButtons": [
+      {
+        "id": "chat",
+        "label": "问题对话",
+        "ariaCurrent": "page"
+      },
+      {
+        "id": "library",
+        "label": "书库",
+        "ariaCurrent": "false"
+      },
+      {
+        "id": "knowledge",
+        "label": "知识库",
+        "ariaCurrent": "false"
+      },
+      {
+        "id": "skills",
+        "label": "Skills",
+        "ariaCurrent": "false"
+      },
+      {
+        "id": "settings",
+        "label": "设置与数据",
+        "ariaCurrent": "false"
+      }
+    ],
+    "hasErrorBoundary": false
+  }
+}

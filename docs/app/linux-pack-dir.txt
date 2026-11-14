@@ -1,0 +1,4 @@
+path=/workspace/bookskill-worktrees/APP-001/packages/desktop/out/BookSkill Desktop-linux-x64
+size=284M
+executable=bookskill-desktop
+note=Unsigned Linux x64 development directory. Not a signed installer. Not a V1 target-OS (Windows 11 / macOS 13+) package. gitignored under packages/desktop/out/.

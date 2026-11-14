@@ -1,0 +1,463 @@
+import {
+  confirmKnowledgeCard,
+  draftKnowledgeCardFromLocator,
+  mergeKnowledgeCards,
+  openSliceWorkspace,
+  updateKnowledgeCard,
+  type SliceWorkspace,
+} from "@bookskill/core";
+import { resolveBusinessDbPath } from "@bookskill/data";
+import { app, BrowserWindow, ipcMain } from "electron";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createAnnotationStore } from "../renderer/read/annotations.ts";
+import { listImportedBooks } from "../renderer/read/library.ts";
+import { createExcerptFromSelection } from "../renderer/read/locators.ts";
+import {
+  deleteKnowledgeCardAndKeepBooks,
+  enrichKnowledgeCard,
+  listKnowledgeBooks,
+  listKnowledgeCardViews,
+  verifyBookLocatorsRemain,
+} from "../renderer/knowledge/catalog.ts";
+import { initializeDataDir } from "../shared/data-layout.ts";
+import { DEFAULT_ROUTE_ID, NAV_ITEMS } from "../shared/navigation.ts";
+import { PRODUCT_NAME, PRODUCT_VERSION } from "../shared/product.ts";
+import type { ShellInfo, SliceSnapshotInfo } from "../shared/shell-info.ts";
+
+const MAIN_DIR = path.dirname(fileURLToPath(import.meta.url));
+const RENDERER_DIR = path.join(MAIN_DIR, "../renderer");
+const PRELOAD_PATH = path.join(MAIN_DIR, "preload.cjs");
+
+type SmokeOptions = {
+  enabled: boolean;
+  outPath: string | null;
+};
+
+type BootState = {
+  dataDir: string;
+  bootError: string | null;
+  businessDbPath: string;
+  schemaVersion: number | null;
+  slice: SliceSnapshotInfo | null;
+  sliceError: string | null;
+};
+
+let mainWindow: BrowserWindow | null = null;
+let sliceWorkspace: SliceWorkspace | null = null;
+let bootState: BootState = {
+  dataDir: "",
+  bootError: null,
+  businessDbPath: "",
+  schemaVersion: null,
+  slice: null,
+  sliceError: null,
+};
+
+function parseSmokeOptions(argv: string[]): SmokeOptions {
+  const enabled = argv.includes("--smoke");
+  const flag = argv.find((arg) => arg.startsWith("--smoke-out="));
+  const outPath = flag ? flag.slice("--smoke-out=".length) : null;
+  return { enabled, outPath };
+}
+
+function shouldRelaxChromiumSandbox(): boolean {
+  if (process.env.BOOKSKILL_ELECTRON_NO_SANDBOX === "1") {
+    return true;
+  }
+  if (process.argv.includes("--smoke")) {
+    return true;
+  }
+  if (process.env.CI === "true" || process.env.CI === "1") {
+    return true;
+  }
+  if (process.getuid?.() === 0) {
+    return true;
+  }
+  return fs.existsSync("/.dockerenv");
+}
+
+function applyChromiumFlags(): void {
+  // Container / CI environments often cannot use /dev/shm the way Chromium expects.
+  app.commandLine.appendSwitch("disable-dev-shm-usage");
+  if (!shouldRelaxChromiumSandbox()) {
+    return;
+  }
+  app.commandLine.appendSwitch("no-sandbox");
+  app.commandLine.appendSwitch("no-zygote");
+  app.commandLine.appendSwitch("disable-gpu");
+  app.disableHardwareAcceleration();
+}
+
+function writeSmokeResult(outPath: string | null, payload: unknown): void {
+  if (!outPath) {
+    return;
+  }
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+}
+
+function createMainWindow(bootError: string | null): BrowserWindow {
+  const window = new BrowserWindow({
+    width: 1280,
+    height: 800,
+    minWidth: 900,
+    minHeight: 600,
+    title: PRODUCT_NAME,
+    backgroundColor: "#F6F1E8",
+    autoHideMenuBar: true,
+    show: !process.argv.includes("--smoke"),
+    webPreferences: {
+      preload: PRELOAD_PATH,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      spellcheck: false,
+    },
+  });
+
+  const query: Record<string, string> = {};
+  if (bootError) {
+    query.bootError = bootError;
+  }
+  void window.loadFile(path.join(RENDERER_DIR, "index.html"), { query });
+  window.once("ready-to-show", () => {
+    if (!process.argv.includes("--smoke")) {
+      window.show();
+    }
+  });
+  return window;
+}
+
+async function runSmokeInspection(window: BrowserWindow, smoke: SmokeOptions, dataDir: string): Promise<void> {
+  try {
+    await window.webContents.executeJavaScript("document.readyState", true);
+    const snapshot = (await window.webContents.executeJavaScript(
+      `(() => {
+        const productName = document.querySelector('[data-testid="product-name"]')?.textContent?.trim() ?? null;
+        const activeView = document.querySelector('[data-testid="active-view"]');
+        const errorBoundary = document.querySelector('[data-testid="error-boundary"]');
+        const navButtons = [...document.querySelectorAll("[data-nav-id]")].map((el) => ({
+          id: el.getAttribute("data-nav-id"),
+          label: el.textContent?.trim() ?? "",
+          ariaCurrent: el.getAttribute("aria-current"),
+        }));
+        return {
+          title: document.title,
+          productName,
+          defaultRouteId: activeView?.getAttribute("data-route") ?? null,
+          defaultViewLabel: activeView?.querySelector('[data-testid="view-title"]')?.textContent?.trim() ?? null,
+          navButtons,
+          hasErrorBoundary: Boolean(errorBoundary),
+        };
+      })()`,
+      true,
+    )) as Record<string, unknown>;
+
+    writeSmokeResult(smoke.outPath, {
+      ok: true,
+      productName: PRODUCT_NAME,
+      dataDir,
+      snapshot,
+    });
+    app.exit(0);
+  } catch (error) {
+    writeSmokeResult(smoke.outPath, {
+      ok: false,
+      dataDir,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    app.exit(1);
+  }
+}
+
+
+function readCardEditInput(input: unknown): {
+  cardId: string;
+  title?: string;
+  content?: string;
+  conditions?: string | null;
+  limitations?: string | null;
+} {
+  if (!input || typeof input !== "object") {
+    throw new Error("缺少知识卡内容。");
+  }
+  const payload = input as {
+    cardId?: unknown;
+    title?: unknown;
+    content?: unknown;
+    conditions?: unknown;
+    limitations?: unknown;
+  };
+  if (typeof payload.cardId !== "string") {
+    throw new Error("无效的知识卡编号。");
+  }
+  return {
+    cardId: payload.cardId,
+    title: typeof payload.title === "string" ? payload.title : undefined,
+    content: typeof payload.content === "string" ? payload.content : undefined,
+    conditions: payload.conditions === undefined || payload.conditions === null || typeof payload.conditions === "string"
+      ? (payload.conditions as string | null | undefined)
+      : undefined,
+    limitations: payload.limitations === undefined || payload.limitations === null || typeof payload.limitations === "string"
+      ? (payload.limitations as string | null | undefined)
+      : undefined,
+  };
+}
+
+async function boot(): Promise<void> {
+  const smoke = parseSmokeOptions(process.argv);
+  applyChromiumFlags();
+  app.setName(PRODUCT_NAME);
+
+  try {
+    const initialized = initializeDataDir();
+    let businessDbPath = "";
+    let schemaVersion: number | null = null;
+    let slice: SliceSnapshotInfo | null = null;
+    let sliceError: string | null = null;
+    try {
+      businessDbPath = resolveBusinessDbPath();
+      sliceWorkspace = openSliceWorkspace();
+      businessDbPath = sliceWorkspace.dbPath;
+      schemaVersion = sliceWorkspace.schemaVersion;
+      slice = sliceWorkspace.snapshot();
+    } catch (error) {
+      sliceError = error instanceof Error ? error.message : String(error);
+    }
+    bootState = {
+      dataDir: initialized.dataDir,
+      bootError: null,
+      businessDbPath,
+      schemaVersion,
+      slice,
+      sliceError,
+    };
+    app.setPath("userData", path.join(initialized.dataDir, "electron-user-data"));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    bootState = {
+      dataDir: "",
+      bootError: message,
+      businessDbPath: "",
+      schemaVersion: null,
+      slice: null,
+      sliceError: message,
+    };
+    if (smoke.enabled) {
+      writeSmokeResult(smoke.outPath, { ok: false, error: message });
+      app.exit(1);
+      return;
+    }
+  }
+
+  const shellInfo: ShellInfo = {
+    productName: PRODUCT_NAME,
+    version: PRODUCT_VERSION,
+    dataDir: bootState.dataDir,
+    defaultRouteId: DEFAULT_ROUTE_ID,
+    routes: NAV_ITEMS,
+    businessDbPath: bootState.businessDbPath,
+    schemaVersion: bootState.schemaVersion,
+    slice: bootState.slice,
+    sliceError: bootState.sliceError,
+  };
+
+  ipcMain.handle("shell:getInfo", () => shellInfo);
+
+  ipcMain.handle("library:listBooks", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listImportedBooks(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("library:loadBook", (_event, bookId: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (typeof bookId !== "string") {
+      throw new Error("无效的书籍编号。");
+    }
+    return sliceWorkspace.loadBook(bookId);
+  });
+
+  ipcMain.handle("library:loadAnnotations", (_event, bookId: unknown) => {
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (typeof bookId !== "string") {
+      throw new Error("无效的书籍编号。");
+    }
+    return createAnnotationStore(bootState.dataDir).load(bookId);
+  });
+
+  ipcMain.handle("library:createExcerpt", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少摘录内容。");
+    }
+    const payload = input as { bookId?: unknown; selectedText?: unknown; note?: unknown };
+    if (typeof payload.bookId !== "string") {
+      throw new Error("无效的书籍编号。");
+    }
+    if (typeof payload.selectedText !== "string") {
+      throw new Error("选区为空，无法生成摘录。");
+    }
+    const book = sliceWorkspace.loadBook(payload.bookId);
+    const excerpt = createExcerptFromSelection({
+      book,
+      selectedText: payload.selectedText,
+      note: typeof payload.note === "string" ? payload.note : "",
+    });
+    return createAnnotationStore(bootState.dataDir).save(excerpt);
+  });
+
+  ipcMain.handle("knowledge:listCards", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listKnowledgeCardViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:listBooks", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listKnowledgeBooks(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:draftCard", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少草稿来源。");
+    }
+    const payload = input as { bookId?: unknown; paragraphId?: unknown };
+    if (typeof payload.bookId !== "string" || !payload.bookId.trim()) {
+      throw new Error("无效的书籍编号。");
+    }
+    if (typeof payload.paragraphId !== "string" || !payload.paragraphId.trim()) {
+      throw new Error("请填写段落定位符。");
+    }
+    draftKnowledgeCardFromLocator({
+      db: sliceWorkspace.db,
+      bookId: payload.bookId,
+      paragraphId: payload.paragraphId.trim(),
+    });
+    return listKnowledgeCardViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:updateCard", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    const payload = readCardEditInput(input);
+    updateKnowledgeCard({ db: sliceWorkspace.db, ...payload });
+    return listKnowledgeCardViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:confirmCard", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    const payload = readCardEditInput(input);
+    confirmKnowledgeCard({ db: sliceWorkspace.db, ...payload });
+    return listKnowledgeCardViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("knowledge:mergeCards", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少要合并的知识卡。");
+    }
+    const payload = input as { survivingCardId?: unknown; absorbedCardId?: unknown };
+    if (typeof payload.survivingCardId !== "string") {
+      throw new Error("请选择要保留的知识卡。");
+    }
+    if (typeof payload.absorbedCardId !== "string") {
+      throw new Error("请选择要吸收的知识卡。");
+    }
+    const absorbed = enrichKnowledgeCard(
+      sliceWorkspace.db,
+      sliceWorkspace.loadKnowledgeCard(payload.absorbedCardId),
+    );
+    mergeKnowledgeCards({
+      db: sliceWorkspace.db,
+      survivingCardId: payload.survivingCardId,
+      absorbedCardId: payload.absorbedCardId,
+    });
+    return {
+      cards: listKnowledgeCardViews(sliceWorkspace.db),
+      locatorProof: verifyBookLocatorsRemain(sliceWorkspace.db, absorbed.sources),
+    };
+  });
+
+  ipcMain.handle("knowledge:deleteCard", (_event, cardId: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (typeof cardId !== "string") {
+      throw new Error("无效的知识卡编号。");
+    }
+    const result = deleteKnowledgeCardAndKeepBooks(sliceWorkspace.db, cardId);
+    return {
+      cards: listKnowledgeCardViews(sliceWorkspace.db),
+      locatorProof: result.locatorProof,
+    };
+  });
+
+  await app.whenReady();
+  mainWindow = createMainWindow(bootState.bootError);
+
+  if (smoke.enabled) {
+    mainWindow.webContents.once("did-finish-load", () => {
+      void runSmokeInspection(mainWindow!, smoke, bootState.dataDir);
+    });
+    setTimeout(() => {
+      writeSmokeResult(smoke.outPath, {
+        ok: false,
+        error: "Smoke inspection timed out after 20s",
+        dataDir: bootState.dataDir,
+      });
+      app.exit(1);
+    }, 20_000).unref();
+  }
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      mainWindow = createMainWindow(bootState.bootError);
+    }
+  });
+}
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("before-quit", () => {
+  try {
+    sliceWorkspace?.close();
+  } catch {
+    // Closing the business database must not block shutdown.
+  }
+  sliceWorkspace = null;
+});
+
+void boot().catch((error) => {
+  const message = error instanceof Error ? error.message : String(error);
+  const smoke = parseSmokeOptions(process.argv);
+  writeSmokeResult(smoke.outPath, { ok: false, error: message });
+  app.exit(1);
+});
