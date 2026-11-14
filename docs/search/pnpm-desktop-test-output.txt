@@ -1,0 +1,64 @@
+
+> @bookskill/desktop@0.0.0 test /workspace/bookskill-worktrees/SEARCH-001/packages/desktop
+> pnpm --filter @bookskill/repo-baseline build && tsc -p tsconfig.json --noEmit && node --test --test-reporter=spec test/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/SEARCH-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ BookSkill data directory initialization
+  ✔ creates the BookSkill layout under BOOKSKILL_DATA_DIR (2.209277ms)
+  ✔ is idempotent and does not overwrite an existing manifest (1.859689ms)
+  ✔ uses the BookSkill XDG directory name, not an AnythingLLM user-data path (0.617732ms)
+  ✔ rejects an AnythingLLM default user directory and does not create it (0.5642ms)
+  ✔ rejects mintplex and anything-llm path markers (0.180501ms)
+✔ BookSkill data directory initialization (6.584654ms)
+▶ render error boundary
+  ✔ returns a visible alert panel instead of an empty document (0.694106ms)
+  ✔ escapes untrusted error text so a failed render cannot inject markup (0.176961ms)
+  ✔ catches a thrown render function and still produces visible output (0.145698ms)
+  ✔ passes through a successful render unchanged (0.158289ms)
+  ✔ formats unknown values without going blank (0.16699ms)
+✔ render error boundary (2.433682ms)
+▶ KNOW-001 knowledge base route
+  ✔ keeps status labels aligned with the draft / verified_by_user contract (0.774304ms)
+  ✔ updates only the knowledge nav description and does not add a new top-level entry (0.993838ms)
+  ✔ renders draft and confirmed cards with sources, and has no auto-confirm or auto-publish controls (0.811429ms)
+  ✔ lists imported books and cards drafted from a licensed EPUB as draft (22.519757ms)
+  ✔ saves edits without confirming, then confirms without dropping sources (8.494996ms)
+  ✔ merges and deletes cards while proving book locators remain (17.667494ms)
+✔ KNOW-001 knowledge base route (52.701392ms)
+▶ BookSkill Desktop navigation
+  ✔ exposes exactly five first-level entries with the contract labels (1.463187ms)
+  ✔ defaults to 问题对话 (0.238648ms)
+  ✔ can navigate to every first-level entry (0.153676ms)
+  ✔ rejects unknown routes so a typo cannot silently show a blank view (0.339701ms)
+  ✔ uses the BookSkill Desktop product name, not an AnythingLLM mark (0.195175ms)
+✔ BookSkill Desktop navigation (3.702142ms)
+▶ READ-001 reader locators, excerpts, and annotations
+  ✔ keeps the contract unconfirmed label identical to @bookskill/core (0.684667ms)
+  ✔ shows chapter and paragraph locators for an imported licensed EPUB (12.000363ms)
+  ✔ shows page and paragraph locators for an imported licensed text PDF (10.807466ms)
+  ✔ creates an excerpt from a selection and jumps back to the original location (9.082216ms)
+  ✔ marks unmatched or unconfirmed sources as unconfirmed and never fakes a precise locator (9.089864ms)
+  ✔ persists annotations in the BookSkill data directory across a fresh store instance (7.808117ms)
+✔ READ-001 reader locators, excerpts, and annotations (50.686256ms)
+▶ SEARCH-001 desktop search
+  ✔ keeps the default route on chat and does not add a top-level nav entry (1.203337ms)
+  ✔ returns labeled, jumpable hits for a licensed book, including file excerpts and notes (18.072443ms)
+  ✔ returns an empty list when nothing matches, and renders an empty state (6.693876ms)
+  ✔ documents the local semantic fallback and does not invent a hosted vector backend (13.381492ms)
+  ✔ does not modify books, knowledge-card status, or annotation files (17.451714ms)
+  ✔ does not ship a hosted vector client in the desktop search module (0.453308ms)
+✔ SEARCH-001 desktop search (58.376027ms)
+▶ desktop shell wiring for the VERT-001 slice
+  ✔ initializes the shell data directory and opens the business database under it (32.377936ms)
+✔ desktop shell wiring for the VERT-001 slice (33.53276ms)
+ℹ tests 34
+ℹ suites 7
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 243.203867

@@ -25,6 +25,7 @@ import {
   verifyBookLocatorsRemain,
 } from "../renderer/knowledge/catalog.ts";
 import { listConfirmedRelationViews, listRelationViews, listSuggestedRelationViews } from "../renderer/relations/catalog.ts";
+import { searchDesktopLibrary } from "../renderer/search/run.ts";
 import { initializeDataDir } from "../shared/data-layout.ts";
 import { DEFAULT_ROUTE_ID, NAV_ITEMS } from "../shared/navigation.ts";
 import { PRODUCT_NAME, PRODUCT_VERSION } from "../shared/product.ts";
@@ -418,6 +419,33 @@ async function boot(): Promise<void> {
       cards: listKnowledgeCardViews(sliceWorkspace.db),
       locatorProof: result.locatorProof,
     };
+  });
+
+
+  ipcMain.handle("search:query", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少搜索条件。");
+    }
+    const payload = input as { query?: unknown; mode?: unknown };
+    if (typeof payload.query !== "string") {
+      throw new Error("请输入搜索关键词。");
+    }
+    const mode = payload.mode === "semantic" ? "semantic" : payload.mode === "fulltext" || payload.mode === undefined ? "fulltext" : null;
+    if (mode == null) {
+      throw new Error("无效的搜索模式。");
+    }
+    return searchDesktopLibrary({
+      db: sliceWorkspace.db,
+      dataDir: bootState.dataDir,
+      query: payload.query,
+      mode,
+    });
   });
 
   ipcMain.handle("relations:listSuggested", () => {

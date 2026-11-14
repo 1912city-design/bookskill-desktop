@@ -6,6 +6,7 @@ import type {
   KnowledgeCardView,
 } from "../renderer/knowledge/types.ts";
 import type { KnowledgeRelationView, RelationLists } from "../renderer/relations/types.ts";
+import type { SearchMode, SearchResult } from "@bookskill/core";
 
 export type SliceSnapshotInfo = {
   dataDir: string;
@@ -63,6 +64,7 @@ export type BookskillDesktopBridge = {
     absorbedCardId: string;
   }) => Promise<{ cards: KnowledgeCardView[]; locatorProof: BookLocatorProof[] }>;
   deleteKnowledgeCard: (cardId: string) => Promise<{ cards: KnowledgeCardView[]; locatorProof: BookLocatorProof[] }>;
+  searchLibrary: (input: { query: string; mode?: SearchMode }) => Promise<SearchResult>;
   listSuggestedRelations: () => Promise<KnowledgeRelationView[]>;
   listConfirmedRelations: () => Promise<KnowledgeRelationView[]>;
   suggestRelation: (input: {

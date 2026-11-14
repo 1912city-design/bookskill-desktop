@@ -18,6 +18,8 @@ import { emptyKnowledgeUiState, type KnowledgeUiState } from "./knowledge/types.
 import { renderKnowledgeRoute } from "./knowledge/view.ts";
 import { emptyRelationsUiState, type RelationsUiState } from "./relations/types.ts";
 import { renderRelationsRoute } from "./relations/view.ts";
+import { emptySearchUiState, type SearchUiState } from "./search/types.ts";
+import { renderSearchPanel } from "./search/view.ts";
 
 function escapeHtml(value: string): string {
   return value
@@ -52,10 +54,11 @@ type ShellState = {
   nav: NavigationState;
   library: LibraryUiState;
   knowledge: KnowledgeUiState;
+  search: SearchUiState;
   relations: RelationsUiState;
 };
 
-function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, relations: RelationsUiState): string {
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -103,6 +106,7 @@ function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiSt
     `<nav class="nav" data-testid="nav" aria-label="主导航">${navButtons}</nav>`,
     `</aside>`,
     `<main class="main">`,
+    renderSearchPanel(search),
     `<section class="active-view" data-testid="active-view" data-route="${view.id}">`,
     `<p class="view-kicker">当前入口</p>`,
     `<h1 data-testid="view-title">${view.title}</h1>`,
@@ -529,8 +533,93 @@ function bindRelations(root: HTMLElement, state: ShellState): void {
   });
 }
 
+function bindSearch(root: HTMLElement, state: ShellState): void {
+  root.querySelector<HTMLFormElement>("[data-testid='search-form']")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const query = root.querySelector<HTMLInputElement>("[data-testid='search-query']")?.value ?? "";
+    const modeInput = root.querySelector<HTMLInputElement>("input[name='search-mode']:checked");
+    const mode = modeInput?.value === "semantic" ? "semantic" : "fulltext";
+    state.search.query = query;
+    state.search.mode = mode;
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.searchLibrary) {
+          throw new Error("搜索尚未连接到本机业务库。");
+        }
+        const result = await bridge.searchLibrary({ query, mode });
+        state.search.results = result.results;
+        state.search.fallback = result.fallback;
+        state.search.searched = true;
+        state.search.statusMessage =
+          result.results.length > 0 ? `共 ${result.results.length} 条结果。` : "没有匹配结果。";
+        state.search.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.search.error = formatErrorMessage(error);
+        state.search.searched = true;
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='search-jump']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const hit = button.closest("[data-testid='search-hit']");
+      if (!hit) {
+        return;
+      }
+      const bookId = hit.getAttribute("data-book-id");
+      const chunkId = hit.getAttribute("data-chunk-id");
+      const cardId = hit.getAttribute("data-card-id");
+      const kind = hit.getAttribute("data-record-kind");
+      void (async () => {
+        try {
+          if (kind === "knowledge_card" && cardId) {
+            state.nav.go("knowledge");
+            await ensureKnowledgeCards(state);
+            const selected = state.knowledge.cards.find((card) => card.id === cardId);
+            if (selected) {
+              state.knowledge.selectedCardId = selected.id;
+              state.knowledge.editTitle = selected.title;
+              state.knowledge.editContent = selected.content;
+              state.knowledge.editConditions = selected.conditions ?? "";
+              state.knowledge.editLimitations = selected.limitations ?? "";
+            }
+            state.search.statusMessage = "已跳转到知识卡来源。";
+            paint(root, state);
+            return;
+          }
+          if (!bookId) {
+            return;
+          }
+          const bridge = getBridge();
+          if (!bridge?.loadLibraryBook) {
+            throw new Error("阅读器尚未连接到本机书库。");
+          }
+          state.nav.go("library");
+          await ensureLibraryBooks(state);
+          state.library.openBook = await bridge.loadLibraryBook(bookId);
+          state.library.annotations = (await bridge.loadAnnotations?.(bookId)) ?? [];
+          state.library.focusedChunkId = chunkId || null;
+          state.library.jumpMessage = chunkId ? "已跳转到搜索来源定位。" : "已打开书籍，但缺少可跳转的切片。";
+          state.library.error = null;
+          state.search.statusMessage = "已跳转到书中来源。";
+          paint(root, state);
+          if (chunkId) {
+            root.querySelector(`[data-chunk-id="${chunkId}"]`)?.scrollIntoView({ block: "center" });
+          }
+        } catch (error) {
+          state.search.error = formatErrorMessage(error);
+          paint(root, state);
+        }
+      })();
+    });
+  });
+}
+
 function paint(root: HTMLElement, state: ShellState): void {
-  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.relations));
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
@@ -539,6 +628,7 @@ function paint(root: HTMLElement, state: ShellState): void {
   bindNavigation(root, state);
   bindLibrary(root, state);
   bindKnowledge(root, state);
+  bindSearch(root, state);
   bindRelations(root, state);
 }
 
@@ -663,6 +753,7 @@ async function start(): Promise<void> {
       nav,
       library: emptyLibraryUiState(),
       knowledge: emptyKnowledgeUiState(),
+      search: emptySearchUiState(),
       relations: emptyRelationsUiState(),
     };
     if (nav.current === "library") {
