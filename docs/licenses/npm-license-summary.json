@@ -1,0 +1,201 @@
+{
+  "generated_at": "2026-11-13T17:15:22+08:00 Asia/Shanghai",
+  "lockfile_records": {
+    "frontend": 733,
+    "server": 1078,
+    "collector": 633
+  },
+  "workspace_scoped_rows": 2444,
+  "unique_name_version": 1732,
+  "license_counts": {
+    "MIT": 1382,
+    "Apache-2.0": 103,
+    "ISC": 100,
+    "BSD-3-Clause": 59,
+    "BSD-2-Clause": 32,
+    "UNKNOWN": 10,
+    "LGPL-3.0-or-later": 8,
+    "BlueOak-1.0.0": 6,
+    "0BSD": 4,
+    "Unlicense": 3,
+    "(MPL-2.0 OR Apache-2.0)": 2,
+    "Apache-2.0 AND LGPL-3.0-or-later": 2,
+    "CC-BY-4.0": 2,
+    "MIT-0": 2,
+    "MIT/X11": 2,
+    "(AFL-2.1 OR BSD-3-Clause)": 1,
+    "(BSD-2-Clause OR MIT OR Apache-2.0)": 1,
+    "(MIT AND Zlib)": 1,
+    "(MIT OR CC0-1.0)": 1,
+    "(MIT OR EUPL-1.1+)": 1,
+    "(MIT OR GPL-3.0-or-later)": 1,
+    "(MIT OR WTFPL)": 1,
+    "Apache 2.0": 1,
+    "Apache-2.0 AND LGPL-3.0-or-later AND MIT": 1,
+    "BSD": 1,
+    "CC0-1.0": 1,
+    "MIT AND ISC": 1,
+    "MPL-2.0": 1,
+    "Python-2.0": 1,
+    "SEE LICENSE IN LICENSE.txt": 1
+  },
+  "unknown_unique": 10,
+  "unknown_may_enter_install": 1,
+  "copyleft_or_restricted_unique": 12,
+  "copyleft_or_restricted": [
+    {
+      "name": "@img/sharp-libvips-darwin-arm64",
+      "version_or_commit": "1.0.4",
+      "license_id": "LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-x64",
+      "version_or_commit": "1.0.4",
+      "license_id": "LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm",
+      "version_or_commit": "1.0.5",
+      "license_id": "LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm64",
+      "version_or_commit": "1.0.4",
+      "license_id": "LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-s390x",
+      "version_or_commit": "1.0.4",
+      "license_id": "LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-x64",
+      "version_or_commit": "1.0.4",
+      "license_id": "LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-arm64",
+      "version_or_commit": "1.0.4",
+      "license_id": "LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-x64",
+      "version_or_commit": "1.0.4",
+      "license_id": "LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-wasm32",
+      "version_or_commit": "0.33.5",
+      "license_id": "Apache-2.0 AND LGPL-3.0-or-later AND MIT",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-win32-ia32",
+      "version_or_commit": "0.33.5",
+      "license_id": "Apache-2.0 AND LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "@img/sharp-win32-x64",
+      "version_or_commit": "0.33.5",
+      "license_id": "Apache-2.0 AND LGPL-3.0-or-later",
+      "source_url": "https://sharp.pixelplumbing.com"
+    },
+    {
+      "name": "jszip",
+      "version_or_commit": "3.10.1",
+      "license_id": "(MIT OR GPL-3.0-or-later)",
+      "source_url": "https://github.com/Stuk/jszip#readme"
+    }
+  ],
+  "unknown_packages": [
+    {
+      "name": "@zilliz/milvus2-sdk-node",
+      "version_or_commit": "2.3.5",
+      "source_url": "https://registry.npmjs.org/@zilliz/milvus2-sdk-node/2.3.5",
+      "license_source": "npm-registry license field",
+      "fetch_error": "",
+      "may_enter_install_package": "yes"
+    },
+    {
+      "name": "buffers",
+      "version_or_commit": "0.1.1",
+      "source_url": "git://github.com/substack/node-buffers.git",
+      "license_source": "npm-registry license field",
+      "fetch_error": "",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    },
+    {
+      "name": "cohere-ai",
+      "version_or_commit": "7.9.5",
+      "source_url": "https://github.com/cohere-ai/cohere-typescript#readme",
+      "license_source": "npm-registry license field",
+      "fetch_error": "",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    },
+    {
+      "name": "combine-errors",
+      "version_or_commit": "3.0.3",
+      "source_url": "https://github.com/MatthewMueller/combine-errors#readme",
+      "license_source": "npm-registry license field",
+      "fetch_error": "",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    },
+    {
+      "name": "seq-queue",
+      "version_or_commit": "0.0.5",
+      "source_url": "https://github.com/changchang/seq-queue",
+      "license_source": "npm-registry license field",
+      "fetch_error": "",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    },
+    {
+      "name": "string-width-cjs@npm:string-width",
+      "version_or_commit": "4.2.3",
+      "source_url": "https://registry.npmjs.org/string-width-cjs@npm%3Astring-width/4.2.3",
+      "license_source": "npm-registry 404",
+      "fetch_error": "HTTP 404",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    },
+    {
+      "name": "strip-ansi-cjs@npm:strip-ansi",
+      "version_or_commit": "6.0.1",
+      "source_url": "https://registry.npmjs.org/strip-ansi-cjs@npm%3Astrip-ansi/6.0.1",
+      "license_source": "npm-registry 404",
+      "fetch_error": "HTTP 404",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    },
+    {
+      "name": "voyageai",
+      "version_or_commit": "0.0.3",
+      "source_url": "https://github.com/voyage-ai/typescript-sdk#readme",
+      "license_source": "npm-registry license field",
+      "fetch_error": "",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    },
+    {
+      "name": "wrap-ansi-cjs@npm:wrap-ansi",
+      "version_or_commit": "7.0.0",
+      "source_url": "https://registry.npmjs.org/wrap-ansi-cjs@npm%3Awrap-ansi/7.0.0",
+      "license_source": "npm-registry 404",
+      "fetch_error": "HTTP 404",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    },
+    {
+      "name": "xlsx",
+      "version_or_commit": "0.20.2",
+      "source_url": "https://registry.npmjs.org/xlsx/0.20.2",
+      "license_source": "npm-registry 404",
+      "fetch_error": "HTTP 404",
+      "may_enter_install_package": "no-unless-bundled-by-build"
+    }
+  ]
+}

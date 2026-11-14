@@ -1,0 +1,15 @@
+# Extracted name table from frontend/public/fonts/PlusJakartaSans.ttf
+# Tool: fontTools.ttLib; extracted 2026-11-13 Asia/Shanghai
+# This is evidence, not a license grant.
+ 
+nameID=0: Copyright 2020 The Plus Jakarta Sans Project Authors (https://github.com/tokotype/PlusJakartaSans)
+nameID=1: Plus Jakarta Sans
+nameID=3: 2.071;TOKO;PlusJakartaSans-Regular
+nameID=4: Plus Jakarta Sans Regular
+nameID=5: Version 2.071;gftools[0.9.30]
+nameID=8: Tokotype
+nameID=9: Gumpita Rahayu
+nameID=10: This font designed for Plus Jakarta City of Collaboration by Gumpita Rahayu from Tokotype in 2020.
+nameID=11: https://www.tokotype.com
+nameID=13: This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL
+nameID=14: https://scripts.sil.org/OFL
