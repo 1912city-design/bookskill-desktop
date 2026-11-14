@@ -1,8 +1,11 @@
 import {
   confirmKnowledgeCard,
+  confirmRelation,
   draftKnowledgeCardFromLocator,
   mergeKnowledgeCards,
   openSliceWorkspace,
+  rejectRelation,
+  suggestRelation,
   updateKnowledgeCard,
   type SliceWorkspace,
 } from "@bookskill/core";
@@ -21,6 +24,7 @@ import {
   listKnowledgeCardViews,
   verifyBookLocatorsRemain,
 } from "../renderer/knowledge/catalog.ts";
+import { listConfirmedRelationViews, listRelationViews, listSuggestedRelationViews } from "../renderer/relations/catalog.ts";
 import { initializeDataDir } from "../shared/data-layout.ts";
 import { DEFAULT_ROUTE_ID, NAV_ITEMS } from "../shared/navigation.ts";
 import { PRODUCT_NAME, PRODUCT_VERSION } from "../shared/product.ts";
@@ -414,6 +418,68 @@ async function boot(): Promise<void> {
       cards: listKnowledgeCardViews(sliceWorkspace.db),
       locatorProof: result.locatorProof,
     };
+  });
+
+  ipcMain.handle("relations:listSuggested", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listSuggestedRelationViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("relations:listConfirmed", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listConfirmedRelationViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("relations:suggest", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少要建议的知识关系。");
+    }
+    const payload = input as { fromCardId?: unknown; toCardId?: unknown; relationType?: unknown };
+    if (typeof payload.fromCardId !== "string" || !payload.fromCardId.trim()) {
+      throw new Error("请选择起始知识卡。");
+    }
+    if (typeof payload.toCardId !== "string" || !payload.toCardId.trim()) {
+      throw new Error("请选择目标知识卡。");
+    }
+    if (typeof payload.relationType !== "string" || !payload.relationType.trim()) {
+      throw new Error("请选择关系类型。");
+    }
+    suggestRelation({
+      db: sliceWorkspace.db,
+      fromCardId: payload.fromCardId,
+      toCardId: payload.toCardId,
+      relationType: payload.relationType,
+    });
+    return listRelationViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("relations:confirm", (_event, relationId: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (typeof relationId !== "string") {
+      throw new Error("无效的关系编号。");
+    }
+    confirmRelation({ db: sliceWorkspace.db, relationId });
+    return listRelationViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("relations:reject", (_event, relationId: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (typeof relationId !== "string") {
+      throw new Error("无效的关系编号。");
+    }
+    rejectRelation({ db: sliceWorkspace.db, relationId });
+    return listRelationViews(sliceWorkspace.db);
   });
 
   await app.whenReady();

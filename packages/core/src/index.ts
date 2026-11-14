@@ -45,6 +45,33 @@ export type {
   UpdateKnowledgeCardOptions,
 } from "./knowledge.ts";
 export {
+  ALLOWED_RELATION_TYPES,
+  RELATION_STATUS_REJECTED,
+  RELATION_STATUS_SUGGESTED,
+  RELATION_STATUS_VERIFIED,
+  RELATION_TYPE_CONTRADICTS,
+  RELATION_TYPE_EXAMPLE_OF,
+  RELATION_TYPE_RELATED_TO,
+  RELATION_TYPE_SUPPORTS,
+  confirmRelation,
+  isAllowedRelationType,
+  listConfirmedRelations,
+  listRelations,
+  listSuggestedRelations,
+  loadRelation,
+  proposeRelationType,
+  rejectRelation,
+  suggestRelation,
+} from "./relations.ts";
+export type {
+  AllowedRelationType,
+  ConfirmRelationOptions,
+  KnowledgeRelationRecord,
+  ListRelationsFilter,
+  RejectRelationOptions,
+  SuggestRelationOptions,
+} from "./relations.ts";
+export {
   createRetrospectiveSkill,
   createSkill,
   createSkillVersion,
