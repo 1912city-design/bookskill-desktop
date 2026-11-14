@@ -1,0 +1,14 @@
+{
+  "name": "bot-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "BookSkill Desktop Grok executor: roles, tool guardrails, task state, budget, and audit log (BOT-001)",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test tests/audit.test.js tests/budget.test.js tests/executor.test.js tests/roles.test.js tests/state-machine.test.js tests/tools.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

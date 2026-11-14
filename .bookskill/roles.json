@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "source": "docs/GROK_EXECUTION_SPEC.md section 4.1 and D-021",
+  "roles": [
+    {
+      "id": "orchestrator",
+      "title": "Orchestrator",
+      "responsibilities": [
+        "任务分解、依赖管理、状态跟踪与交接",
+        "从依赖已满足的 Ready 工单补充队列",
+        "生成进度与交接报告"
+      ],
+      "allowedOperations": [
+        "read_project_docs",
+        "read_tasks",
+        "create_task",
+        "update_task",
+        "assign_task",
+        "decompose_task",
+        "create_isolated_branch",
+        "run_tests",
+        "read_ci_results",
+        "generate_report"
+      ],
+      "forbiddenOperations": [
+        "modify_branch_files",
+        "merge_code",
+        "merge_main",
+        "push_main",
+        "merge_own_pr",
+        "auto_merge_integration",
+        "production_release",
+        "read_production_secrets",
+        "delete_production_data",
+        "access_real_user_books",
+        "bypass_payment_or_license",
+        "write_technical_decision",
+        "build_release_candidate",
+        "sign_build"
+      ],
+      "notes": "不直接合并代码。不得把 Auto-merge to integration 或任何 git 合并当作 orchestrator 可调用工具。"
+    },
+    {
+      "id": "product",
+      "title": "Product",
+      "responsibilities": [
+        "页面需求、用户故事、验收条件"
+      ],
+      "allowedOperations": [
+        "read_project_docs",
+        "read_tasks",
+        "create_task",
+        "update_task",
+        "write_requirements",
+        "write_acceptance_criteria",
+        "generate_report",
+        "read_ci_results"
+      ],
+      "forbiddenOperations": [
+        "write_technical_decision",
+        "modify_branch_files",
+        "merge_main",
+        "push_main",
+        "merge_own_pr",
+        "production_release",
+        "read_production_secrets",
+        "delete_production_data",
+        "access_real_user_books",
+        "bypass_payment_or_license",
+        "build_release_candidate",
+        "sign_build"
+      ],
+      "notes": "不得改技术决策。"
+    },
+    {
+      "id": "architect",
+      "title": "Architect",
+      "responsibilities": [
+        "数据模型、接口和技术决策记录",
+        "审查上游集成"
+      ],
+      "allowedOperations": [
+        "read_project_docs",
+        "read_tasks",
+        "create_task",
+        "update_task",
+        "write_technical_decision",
+        "review_upstream",
+        "create_isolated_branch",
+        "modify_branch_files",
+        "run_tests",
+        "create_pull_request",
+        "read_ci_results",
+        "generate_report"
+      ],
+      "forbiddenOperations": [
+        "merge_main",
+        "push_main",
+        "merge_own_pr",
+        "production_release",
+        "read_production_secrets",
+        "delete_production_data",
+        "access_real_user_books",
+        "bypass_payment_or_license"
+      ],
+      "notes": "可记录技术决策与审查上游；不得合并主分支或发布生产。"
+    },
+    {
+      "id": "frontend_engineer",
+      "title": "Frontend Engineer",
+      "responsibilities": [
+        "桌面 UI 与交互"
+      ],
+      "allowedOperations": [
+        "read_project_docs",
+        "read_tasks",
+        "update_task",
+        "create_isolated_branch",
+        "modify_branch_files",
+        "run_tests",
+        "create_pull_request",
+        "read_ci_results",
+        "generate_report"
+      ],
+      "forbiddenOperations": [
+        "merge_main",
+        "push_main",
+        "merge_own_pr",
+        "production_release",
+        "read_production_secrets",
+        "delete_production_data",
+        "access_real_user_books",
+        "bypass_payment_or_license",
+        "write_technical_decision",
+        "build_release_candidate",
+        "sign_build"
+      ],
+      "notes": "仅在隔离分支上修改文件；通过 PR 合入，不得直接合并主分支。"
+    },
+    {
+      "id": "backend_engineer",
+      "title": "Backend Engineer",
+      "responsibilities": [
+        "本地数据、导入、索引和同步"
+      ],
+      "allowedOperations": [
+        "read_project_docs",
+        "read_tasks",
+        "update_task",
+        "create_isolated_branch",
+        "modify_branch_files",
+        "run_tests",
+        "create_pull_request",
+        "read_ci_results",
+        "generate_report"
+      ],
+      "forbiddenOperations": [
+        "merge_main",
+        "push_main",
+        "merge_own_pr",
+        "production_release",
+        "read_production_secrets",
+        "delete_production_data",
+        "access_real_user_books",
+        "bypass_payment_or_license",
+        "write_technical_decision",
+        "build_release_candidate",
+        "sign_build"
+      ],
+      "notes": "仅在隔离分支上修改文件；通过 PR 合入，不得直接合并主分支。"
+    },
+    {
+      "id": "ai_skill_engineer",
+      "title": "AI Skill Engineer",
+      "responsibilities": [
+        "检索、Skill 解析/运行、对话路由和来源引用"
+      ],
+      "allowedOperations": [
+        "read_project_docs",
+        "read_tasks",
+        "update_task",
+        "create_isolated_branch",
+        "modify_branch_files",
+        "run_tests",
+        "create_pull_request",
+        "read_ci_results",
+        "generate_report"
+      ],
+      "forbiddenOperations": [
+        "merge_main",
+        "push_main",
+        "merge_own_pr",
+        "production_release",
+        "read_production_secrets",
+        "delete_production_data",
+        "access_real_user_books",
+        "bypass_payment_or_license",
+        "write_technical_decision",
+        "build_release_candidate",
+        "sign_build"
+      ],
+      "notes": "仅在隔离分支上修改文件；通过 PR 合入，不得直接合并主分支。"
+    },
+    {
+      "id": "qa_security",
+      "title": "QA / Security",
+      "responsibilities": [
+        "独立测试、安全与隐私检查",
+        "有权阻止通过"
+      ],
+      "allowedOperations": [
+        "read_project_docs",
+        "read_tasks",
+        "update_task",
+        "run_tests",
+        "security_review",
+        "veto_pass",
+        "read_ci_results",
+        "create_pull_request",
+        "create_isolated_branch",
+        "modify_branch_files",
+        "generate_report"
+      ],
+      "forbiddenOperations": [
+        "merge_main",
+        "push_main",
+        "merge_own_pr",
+        "production_release",
+        "read_production_secrets",
+        "delete_production_data",
+        "access_real_user_books",
+        "bypass_payment_or_license",
+        "write_technical_decision",
+        "build_release_candidate",
+        "sign_build"
+      ],
+      "notes": "可否决通过。不得合并主分支或发布生产。modify_branch_files 仅用于测试与安全修补，仍须走 PR。"
+    },
+    {
+      "id": "release_engineer",
+      "title": "Release Engineer",
+      "responsibilities": [
+        "构建、签名/发布候选和发布说明"
+      ],
+      "allowedOperations": [
+        "read_project_docs",
+        "read_tasks",
+        "update_task",
+        "create_isolated_branch",
+        "modify_branch_files",
+        "run_tests",
+        "create_pull_request",
+        "read_ci_results",
+        "build_release_candidate",
+        "sign_build",
+        "write_release_notes",
+        "generate_report"
+      ],
+      "forbiddenOperations": [
+        "merge_main",
+        "push_main",
+        "merge_own_pr",
+        "production_release",
+        "read_production_secrets",
+        "delete_production_data",
+        "access_real_user_books",
+        "bypass_payment_or_license"
+      ],
+      "notes": "不能自行发布正式版本。sign_build 仅用于发布候选，不得通向 production_release。"
+    }
+  ]
+}
