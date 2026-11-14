@@ -3,8 +3,9 @@
 - 任务：在已导入书籍、摘录与知识卡上提供可测试的全文搜索；结果标明内容类型（原文 / AI 归纳 / 用户判断）并回链到来源定位。语义检索无嵌入索引时，使用确定性的本机关键词扩展与词面重叠作为 V1 薄实现，并在报告中写明边界。
 - 负责人：ai_skill_engineer（BookSkill AI Skill Engineer）
 - 分支：`feat/SEARCH-001`
-- 基础：`origin/integration` @ `71f8390`（KNOW-001 已在该基础上）。开 PR 前已将本分支变基到当时最新的 `origin/integration`（含随后合入的 GOV-001 / BOT-001 / D-026 文档），以便对 `integration` 的 diff 干净。若变基未执行，则以提交说明为准。
+- 基础：起始于 `origin/integration` @ `71f8390`（KNOW-001 已在该基础上）。开 PR 前已变基到 `origin/integration` @ `1beaf80`（含随后合入的 GOV-001 / BOT-001 / D-026 文档）。
 - 工作区：`/workspace/bookskill-worktrees/SEARCH-001`
+- 实现提交：`117f25ddee0946af5dc48b6472a00201eb5c8bd2`（变基后的功能提交；若随后仅追加本报告哈希记录，以该功能提交为准）
 - 完成时间：2026-11-14 21:02 CST（Asia/Shanghai）
 - 状态：本地实现与测试已完成。已推送 `feat/SEARCH-001` 并准备打开目标为 `integration` 的 PR。**未合入 `main` / `integration`，未发布，未标 Done，未进入 Phase E/F。** 这不是正式发布，也不是 G1 / 可安装发运包。
 - 风险等级：**中（medium）**。未改 `packages/data` 既有迁移，未新增 FTS / 向量表，未调用外部托管向量或搜索服务，未写入真实 API 密钥。搜索在应用层对现有表与批注文件做只读扫描。
