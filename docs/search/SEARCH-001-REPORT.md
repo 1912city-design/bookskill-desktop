@@ -103,3 +103,7 @@ pnpm --filter @bookskill/desktop test
 ## 风险等级说明
 
 **中（medium）。** 只追加只读搜索 API、壳层搜索条和 IPC，未改 schema、导入、知识卡合并 / 删除或默认路由。主要风险是把本机关键词扩展误认为真正的语义检索；报告、API 字段与 UI 均已标明该边界。
+
+## 变基说明（2026-11-14 21:06 Asia/Shanghai）
+
+已将 `feat/SEARCH-001` 变基到 `origin/integration` @ `da3228e`（REL-001 合入后）。冲突仅出现在桌面接线文件：`main.ts`、`preload.cjs`、`renderer/main.ts`、`shell-info.ts`。已同时保留 SEARCH 与 REL 的追加 IPC / 面板，`DEFAULT_ROUTE_ID` 仍为 `chat`。`packages/desktop/test/rel-001.test.ts` 的桥接桩补上了 `searchLibrary`，仅用于类型检查，不改关系行为。未合入，未标 Done。

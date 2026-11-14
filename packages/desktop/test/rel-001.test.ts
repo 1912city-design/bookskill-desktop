@@ -253,6 +253,13 @@ describe("REL-001 knowledge relations route", () => {
       confirmKnowledgeCard: async () => [],
       mergeKnowledgeCards: async () => ({ cards: [], locatorProof: [] }),
       deleteKnowledgeCard: async () => ({ cards: [], locatorProof: [] }),
+      searchLibrary: async () => ({
+        query: "",
+        mode: "fulltext",
+        fallback: "none",
+        backend: "local_deterministic",
+        results: [],
+      }),
       listSuggestedRelations: async () => [],
       listConfirmedRelations: async () => [],
       suggestRelation: async () => ({ suggested: [], confirmed: [] }),
