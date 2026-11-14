@@ -1,47 +1,44 @@
 # PROJECT_STATE
 
-- 更新时间：2026-11-14 00:52 Asia/Shanghai
+- 更新时间：2026-11-14 20:51 Asia/Shanghai
 - 合同：`docs/GROK_EXECUTION_SPEC.md`（SHA-256 `7b2cd11ac44e4dcc5d9f4b219c837ce8ddc2be86856e02327352e545418b64d2`）
-- 发布仓库：已连接，私有仓库 https://github.com/1912city-design/bookskill-desktop
-- 默认分支 `origin/main`：`953ba8d`（合入 REPO-001，PR #1）
-- 集成分支 `origin/integration`：`b941d4f`（合入 REPO-001，PR #2）
+- 发布仓库：已连接，**公开**仓库 https://github.com/1912city-design/bookskill-desktop
+- 默认分支 `origin/main`：`953ba8d`（合入 REPO-001，PR #1）。分支保护：repository ruleset `27261747`，`enforcement: active`（P-001，2026-11-14 20:50 Asia/Shanghai）。
+- 集成分支 `origin/integration`：`71f8390`（[PR #7](https://github.com/1912city-design/bookskill-desktop/pull/7)，P-002 人工确认后合入 DATA/APP/FIXT/VERT/IMPORT/READ/KNOW）
+- `origin/feat/VERT-001`：`6d7914d`（已包含在上述 integration 合入中）
 
-**当前不是正式交付。G1 / G2 未通过。** 第一次 GitHub Actions 已在 `main` 上跑通（[run 43466573707](https://github.com/1912city-design/bookskill-desktop/actions/runs/43466573707)，2026-11-14 00:49:46 Asia/Shanghai，`success`，约 19 秒）。这只证明仓库 CI 基线在 Linux runner 上可执行，不能代替目标 OS 验收。
+**当前不是正式交付。G1 / G2 均已超时且未通过。** 不得宣布 G1、G2 或正式交付。`main` 上第一次 GitHub Actions 成功（[run 43466573707](https://github.com/1912city-design/bookskill-desktop/actions/runs/43466573707)）以及 integration 合入后的 CI 成功，只证明 Linux runner 上的 CI 基线可执行，不能代替目标 OS 验收。
 
-## 本轮推进（2026-11-14 00:36 起）
+## 本轮推进（2026-11-14 20:20 起）
 
-- 用户确认可开 PR，并要求按规格做独立 QA 与闭环合入。
-- [PR #1](https://github.com/1912city-design/bookskill-desktop/pull/1) `feat/REPO-001` → `main` 已于 00:49 Asia/Shanghai 合入（merge `953ba8d`），独立 QA 通过记录：`/workspace/bookskill-qa/REPO-001-PR1/QA_REPORT.md`。
-- [PR #2](https://github.com/1912city-design/bookskill-desktop/pull/2) 已将同一基线合入 `integration`（00:41 Asia/Shanghai，`b941d4f`）。
-- 合入规则已写入 D-025、`docs/policies/merge-policy.yml` 与 `docs/policies/apply-merge-policy.mjs`。
-- 待决策集中在 `docs/PENDING_DECISIONS.md`，计划于 2026-11-14 09:30 Asia/Shanghai 汇总一次，不在推进中逐条询问。
-- Phase D 工单与独立 worktree 已建立；IMPORT-001 交给 backend_engineer 立即开工。READ-001 / KNOW-001 工作树已就绪，实现排在 taste-skill UI 流程之后，以免打断现有 frontend 任务。
-- BookSkill Frontend Engineer 继续只跑完 taste-skill：Inventory → Draw → Build → Assets → Inspect + Gate，只优化 UI，不进入其他阶段。工作区：`/workspace/bookskill-ui-taste`。
+- 负责人确认仓库已公开；接受 L-001 至 L-012（D-026）；确认 P-002 合入 `integration`（不合入 `main`、不发布）。
+- [PR #7](https://github.com/1912city-design/bookskill-desktop/pull/7) 已于 20:21 Asia/Shanghai 合入 `integration`，merge `71f8390`。合入后 push CI：[run 43594409927](https://github.com/1912city-design/bookskill-desktop/actions/runs/43594409927) success（20:21:45 Asia/Shanghai）。本机合并复核：data 11、core 24、desktop 28，全部通过。
+- 本机未找到所称 commit `16dc36d`（分支 `docs/accept-public-and-legal`）。已在当前 `integration` 上重写等价治理文档：B-001 标明公开已连接，B-002 为 ACCEPTED，P-003 关闭，并新增 D-026。
+- P-001：原先存在的 ruleset `27261747` 为 `disabled` 且未匹配 `main`、未填写必过检查。已改为 `active`，作用于 `refs/heads/main`，必过 `lint, test, and build`，禁止强推和删分支，只接受 PR。残差：因只有一个 GitHub 协作者，必过人工批准数设为 0，避免无法合入。细则见 `docs/repo/BRANCH_PROTECTION.md`。
+- SEARCH-001 / REL-001 工单已补验收条件，进入 Ready，从 `origin/integration` 拉独立分支实施。
+- BOT-001、GOV-001 按 D-025 开向 `integration` 的 PR，走独立 QA；不得标 Done，直到 CI + 独立 QA 合入。
 
-## 已完成（本地或已合入，均非正式交付）
+## 已完成（本地或已合入 integration，均非正式交付，未进 main）
 
-- GOV-001：审查交付 Done（不构成法律批准）。分支 `feat/GOV-001` @ `18281a88ae64d38a9af38308490aa937cba28843`。待确认 L-001–L-012；公开发行仍受 B-002 阻塞。未合入。
-- REPO-001：已合入 `integration` 与 `main`。Head 实现链 `adfa28c` / `9072603` / `630b761`。第一次 `main` CI success。不得据此宣布 G1/G2。
-- BOT-001：本地 34/34 通过。分支 `feat/BOT-001` @ `f284b8fb042726e9ae32757613bb0b8afa18c6e2`。远端 PR/CI 现可启动，完成前不得标 Done。
-- DATA-001：本地产物 Done，未合入；合入 `integration` 属高风险，见 P-002。分支 `feat/DATA-001` @ `8bf68e114237653fc86538ed28e47154e9a723e2`。
-- APP-001：本地 Linux 开发骨架 Done；G1 未通过；未合入。分支 `feat/APP-001` @ `f98e9c11a5656c78fa4f3c367faf9d01a4a5bf63`。
-- VERT-001：本地薄切片 Done；未合入；不是正式交付。分支 `feat/VERT-001` @ `7cc95eea53e4fe620332dd0cf804a6063cd5582c`。
-- FIXT-001：许可测试样本仍可用，只读。
+- GOV-001：审查交付完成；L-001–L-012 已于 2026-11-14 接受（D-026）。清单与验证器仍在 `feat/GOV-001`，待自身 PR + QA 后合入。
+- REPO-001：已合入 `integration` 与 `main`。
+- DATA-001 / APP-001 / VERT-001 / FIXT-001 / IMPORT-001 / READ-001 / KNOW-001：已随 [PR #7](https://github.com/1912city-design/bookskill-desktop/pull/7) 合入 `integration`（`71f8390`）。未进 `main`，不是正式交付。
+- D-025 合入策略：已合入 `integration`（PR #3）。
 
 ## 进行中
 
-- IMPORT-001：Ready / In Progress，`feat/IMPORT-001` 基于 `feat/VERT-001`。
-- READ-001 / KNOW-001：Ready，工作树已建，等待 frontend 完成 taste-skill 后再实现。
-- taste-skill UI：既有任务，目录 `/workspace/bookskill-ui-taste`。截至编排时尚无 `EVIDENCE.md`，也未同步到 `prototypes/desktop-shell/`。
-- D-025 合入策略文档：分支 `feat/D-025-merge-policy`，低/中风险，将走 CI + 独立 QA 后自动合入 `integration`。
+- BOT-001：本地 34/34 通过；远端 PR + CI + 独立 QA 启动中，完成前不得标 Done。
+- taste-skill UI：已有 `GATE: PASS`（2026-11-14 01:23）。本轮继续由 frontend_engineer 做桌面壳美学完善（Inventory → Draw → Build → Assets → Inspect + Gate），证据同步到原型。不是正式 G1，也不是可安装发运包。
+- SEARCH-001 / REL-001：工单已就绪，待实现。
+- 本治理文档更新：分支 `docs/accept-public-and-legal`。
 
 ## 明确未完成
 
-- 分支保护未启用（P-001）。
-- 已验收但未合入的功能分支：GOV-001、BOT-001、APP-001、DATA-001（高风险）、VERT-001。
+- 未合入 `main`，未发布。
+- G1 / G2 未通过。G3 / G4 未启动。
 - Phase E / F 仍为 Backlog。
-- 不得宣布 G1、G2 或正式交付。
+- P-004 至 P-012 仍待决策或已记录待后续高风险改动。
 
 ## 阻塞与待决策
 
-见 `docs/BLOCKERS.md` 与 `docs/PENDING_DECISIONS.md`。B-001（仓库未连接）已解除。
+见 `docs/BLOCKERS.md` 与 `docs/PENDING_DECISIONS.md`。B-001 已解除。B-002 已 ACCEPTED。
