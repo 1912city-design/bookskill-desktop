@@ -16,6 +16,8 @@ import { jumpToAnnotation } from "./read/display.ts";
 import { renderLibraryRoute } from "./read/view.ts";
 import { emptyKnowledgeUiState, type KnowledgeUiState } from "./knowledge/types.ts";
 import { renderKnowledgeRoute } from "./knowledge/view.ts";
+import { emptyRelationsUiState, type RelationsUiState } from "./relations/types.ts";
+import { renderRelationsRoute } from "./relations/view.ts";
 
 function escapeHtml(value: string): string {
   return value
@@ -50,9 +52,10 @@ type ShellState = {
   nav: NavigationState;
   library: LibraryUiState;
   knowledge: KnowledgeUiState;
+  relations: RelationsUiState;
 };
 
-function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState): string {
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, relations: RelationsUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -84,7 +87,7 @@ function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiSt
       : view.id === "library"
         ? renderLibraryRoute(library)
         : view.id === "knowledge"
-          ? renderKnowledgeRoute(knowledge)
+          ? `${renderKnowledgeRoute(knowledge)}${renderRelationsRoute(relations, knowledge.cards)}`
         : `<p class="view-note">此入口已可导航。薄切片的导入、知识卡、Skill 与离线对话已接到本机业务库；完整阅读器或 Skill Studio 不在本页范围。</p>`;
 
   return [
@@ -126,6 +129,7 @@ function bindNavigation(root: HTMLElement, state: ShellState): void {
           }
           if (id === "knowledge") {
             await ensureKnowledgeCards(state);
+            await ensureRelations(state);
           }
           paint(root, state);
         } catch (error) {
@@ -321,6 +325,7 @@ function bindKnowledge(root: HTMLElement, state: ShellState): void {
         state.knowledge.statusMessage = "已生成知识卡草稿。确认之前它仍是 draft。";
         state.knowledge.locatorProof = [];
         state.knowledge.error = null;
+        await ensureRelations(state);
         paint(root, state);
       } catch (error) {
         state.knowledge.error = formatErrorMessage(error);
@@ -397,6 +402,7 @@ function bindKnowledge(root: HTMLElement, state: ShellState): void {
         selectKnowledgeCard(state, null);
         state.knowledge.statusMessage = "知识卡已删除。原书仍在，书中定位仍可用。";
         state.knowledge.error = null;
+        await ensureRelations(state);
         paint(root, state);
       } catch (error) {
         state.knowledge.error = formatErrorMessage(error);
@@ -426,6 +432,7 @@ function bindKnowledge(root: HTMLElement, state: ShellState): void {
         state.knowledge.mergeTargetId = "";
         state.knowledge.statusMessage = "已合并知识卡。被吸收的卡片已删除；合并不会自动把草稿变为已确认。";
         state.knowledge.error = null;
+        await ensureRelations(state);
         paint(root, state);
       } catch (error) {
         state.knowledge.error = formatErrorMessage(error);
@@ -435,8 +442,95 @@ function bindKnowledge(root: HTMLElement, state: ShellState): void {
   });
 }
 
+function applyRelationLists(state: ShellState, lists: { suggested: RelationsUiState["suggested"]; confirmed: RelationsUiState["confirmed"] }): void {
+  state.relations.suggested = lists.suggested;
+  state.relations.confirmed = lists.confirmed;
+}
+
+function bindRelations(root: HTMLElement, state: ShellState): void {
+  if (state.nav.current !== "knowledge") {
+    return;
+  }
+
+  root.querySelector<HTMLFormElement>("[data-testid='suggest-relation-form']")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const fromCardId = root.querySelector<HTMLSelectElement>("[data-testid='relation-from']")?.value ?? "";
+    const toCardId = root.querySelector<HTMLSelectElement>("[data-testid='relation-to']")?.value ?? "";
+    const relationType = root.querySelector<HTMLSelectElement>("[data-testid='relation-type-input']")?.value ?? "";
+    state.relations.fromCardId = fromCardId;
+    state.relations.toCardId = toCardId;
+    state.relations.relationType = relationType;
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.suggestRelation) {
+          throw new Error("关系建议尚未连接到本机业务库。");
+        }
+        const lists = await bridge.suggestRelation({ fromCardId, toCardId, relationType });
+        applyRelationLists(state, lists);
+        state.relations.statusMessage = "已生成关系建议。确认之前它不会出现在已确认列表中。";
+        state.relations.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.relations.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='confirm-relation']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const relationId = button.getAttribute("data-relation-id");
+      if (!relationId) {
+        return;
+      }
+      void (async () => {
+        try {
+          const bridge = getBridge();
+          if (!bridge?.confirmRelation) {
+            throw new Error("关系确认尚未连接到本机业务库。");
+          }
+          const lists = await bridge.confirmRelation(relationId);
+          applyRelationLists(state, lists);
+          state.relations.statusMessage = "已确认关系，状态为 verified_by_user。";
+          state.relations.error = null;
+          paint(root, state);
+        } catch (error) {
+          state.relations.error = formatErrorMessage(error);
+          paint(root, state);
+        }
+      })();
+    });
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='reject-relation']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const relationId = button.getAttribute("data-relation-id");
+      if (!relationId) {
+        return;
+      }
+      void (async () => {
+        try {
+          const bridge = getBridge();
+          if (!bridge?.rejectRelation) {
+            throw new Error("关系驳回尚未连接到本机业务库。");
+          }
+          const lists = await bridge.rejectRelation(relationId);
+          applyRelationLists(state, lists);
+          state.relations.statusMessage = "已驳回该建议，不会成为正式关系。";
+          state.relations.error = null;
+          paint(root, state);
+        } catch (error) {
+          state.relations.error = formatErrorMessage(error);
+          paint(root, state);
+        }
+      })();
+    });
+  });
+}
+
 function paint(root: HTMLElement, state: ShellState): void {
-  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge));
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.relations));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
@@ -445,6 +539,7 @@ function paint(root: HTMLElement, state: ShellState): void {
   bindNavigation(root, state);
   bindLibrary(root, state);
   bindKnowledge(root, state);
+  bindRelations(root, state);
 }
 
 async function ensureLibraryBooks(state: ShellState): Promise<void> {
@@ -495,6 +590,33 @@ async function ensureKnowledgeCards(state: ShellState): Promise<void> {
   }
 }
 
+async function ensureRelations(state: ShellState): Promise<void> {
+  const bridge = getBridge();
+  if (!bridge?.listSuggestedRelations && !bridge?.listConfirmedRelations) {
+    state.relations.loaded = true;
+    return;
+  }
+  try {
+    const [suggested, confirmed] = await Promise.all([
+      bridge.listSuggestedRelations ? bridge.listSuggestedRelations() : Promise.resolve(state.relations.suggested),
+      bridge.listConfirmedRelations ? bridge.listConfirmedRelations() : Promise.resolve(state.relations.confirmed),
+    ]);
+    state.relations.suggested = suggested;
+    state.relations.confirmed = confirmed;
+    if (!state.relations.fromCardId && state.knowledge.cards[0]?.id) {
+      state.relations.fromCardId = state.knowledge.cards[0].id;
+    }
+    if (!state.relations.toCardId && state.knowledge.cards[1]?.id) {
+      state.relations.toCardId = state.knowledge.cards[1].id;
+    }
+    state.relations.error = null;
+  } catch (error) {
+    state.relations.error = formatErrorMessage(error);
+  } finally {
+    state.relations.loaded = true;
+  }
+}
+
 async function loadShellInfo(): Promise<ShellInfo> {
   const bridge = getBridge();
   if (bridge) {
@@ -541,12 +663,14 @@ async function start(): Promise<void> {
       nav,
       library: emptyLibraryUiState(),
       knowledge: emptyKnowledgeUiState(),
+      relations: emptyRelationsUiState(),
     };
     if (nav.current === "library") {
       await ensureLibraryBooks(state);
     }
     if (nav.current === "knowledge") {
       await ensureKnowledgeCards(state);
+      await ensureRelations(state);
     }
     paint(root, state);
   } catch (error) {
