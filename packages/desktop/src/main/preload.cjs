@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("bookskillDesktop", {
   confirmKnowledgeCard: (input) => ipcRenderer.invoke("knowledge:confirmCard", input),
   mergeKnowledgeCards: (input) => ipcRenderer.invoke("knowledge:mergeCards", input),
   deleteKnowledgeCard: (cardId) => ipcRenderer.invoke("knowledge:deleteCard", cardId),
+  searchLibrary: (input) => ipcRenderer.invoke("search:query", input),
   listSuggestedRelations: () => ipcRenderer.invoke("relations:listSuggested"),
   listConfirmedRelations: () => ipcRenderer.invoke("relations:listConfirmed"),
   suggestRelation: (input) => ipcRenderer.invoke("relations:suggest", input),

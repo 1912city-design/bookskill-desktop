@@ -127,3 +127,33 @@ export {
   readImportStatusSidecar,
 } from "./import/status.ts";
 export type { FailedImportRecord, ImportStatus, ImportStatusSidecar } from "./import/status.ts";
+
+export {
+  DEFAULT_SEARCH_LIMIT,
+  SEARCH_BACKEND_LOCAL,
+  SEARCH_CONTENT_TYPES,
+  SEARCH_CONTENT_TYPE_AI_SUMMARY,
+  SEARCH_CONTENT_TYPE_ORIGINAL,
+  SEARCH_CONTENT_TYPE_USER_JUDGMENT,
+  SEMANTIC_SEARCH_FALLBACK,
+  collectSearchableRecords,
+  contentTypeForAnnotation,
+  contentTypeForKnowledgeCard,
+  formatSearchLocator,
+  searchLibrary,
+  searchRecords,
+} from "./search/index.ts";
+export type {
+  SearchBackend,
+  SearchContentType,
+  SearchHit,
+  SearchLibraryOptions,
+  SearchMode,
+  SearchQuery,
+  SearchRecordKind,
+  SearchResult,
+  SearchSourceLocator,
+  SearchableRecord,
+  SemanticSearchFallback,
+} from "./search/index.ts";
+
