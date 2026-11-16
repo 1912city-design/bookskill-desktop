@@ -9,6 +9,11 @@ import type { KnowledgeRelationView, RelationLists } from "../renderer/relations
 import type { SearchMode, SearchResult } from "@bookskill/core";
 import type { ChatConversationSummary, ChatConversationView } from "../renderer/chat/types.ts";
 import type {
+  DistillChatContext,
+  DistillationPreviewView,
+  DistillationValidationError,
+} from "../renderer/distill/types.ts";
+import type {
   SkillEditorView,
   SkillInputField,
   SkillListItem,
@@ -38,6 +43,26 @@ export type ShellInfo = {
   schemaVersion: number | null;
   slice: SliceSnapshotInfo | null;
   sliceError: string | null;
+};
+
+
+export type DistillStartBridgeResult = {
+  status: "failed" | "ready" | "invalid";
+  reason: string | null;
+  preview: DistillationPreviewView | null;
+  errors?: DistillationValidationError[];
+};
+
+export type DistillImportBridgeResult = {
+  ok: boolean;
+  preview: DistillationPreviewView | null;
+  errors?: DistillationValidationError[];
+};
+
+export type DistillAttachBridgeResult = {
+  conversation: ChatConversationView;
+  context: DistillChatContext;
+  skillStatus: string;
 };
 
 export type BookskillDesktopBridge = {
@@ -123,4 +148,18 @@ export type BookskillDesktopBridge = {
     confirmedByUser?: boolean;
   }) => Promise<SkillEditorView>;
   instantiateConceptCard: () => Promise<KnowledgeCardView[]>;
+  startDistill: (input: { bookId: string }) => Promise<DistillStartBridgeResult>;
+  importDistillationMarkdown: (input: {
+    markdown: string;
+    sourceFilename?: string;
+    bookId?: string;
+  }) => Promise<DistillImportBridgeResult>;
+  loadDistillation: (id: string) => Promise<DistillationPreviewView>;
+  listDistillations: () => Promise<Array<{ id: string; title: string; source_filename: string; book_id: string; createdAt: string }>>;
+  attachDistillationToChat: (input: {
+    distillationId: string;
+    skillId?: string;
+  }) => Promise<DistillAttachBridgeResult>;
+  loadDistillationChatContext: (conversationId: string) => Promise<DistillChatContext | null>;
 };
+

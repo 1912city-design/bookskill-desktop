@@ -1107,3 +1107,161 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Library distill entry and preview, using existing library tokens. */
+.library-book {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.library-distill,
+.distill-back,
+.distill-view-button,
+.distill-skill-copy,
+.distill-add-to-chat {
+  appearance: none;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.library-distill,
+.distill-back,
+.distill-view-button,
+.distill-skill-copy {
+  background: transparent;
+  color: #93f1f7;
+  border: 1px solid #93f1f7;
+}
+
+.library-distill:disabled,
+.distill-add-to-chat:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.distill-add-to-chat {
+  border: 0;
+  background: #93f1f7;
+  color: #000000;
+  margin-top: 16px;
+}
+
+.distill-surface {
+  margin-top: 24px;
+  padding: 20px 0 0;
+  border-top: 1px solid #222222;
+  color: #ffffff;
+}
+
+.distill-toolbar,
+.distill-import-bar,
+.distill-view-toggle,
+.distill-skill-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.distill-book-label,
+.distill-source-filename,
+.distill-locator,
+.distill-progress,
+.distill-import-label {
+  margin: 0 0 12px;
+  color: #999999;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.distill-error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #1a0a0a;
+  color: #ffb4b4;
+  border: 1px solid #5a2a2a;
+}
+
+.distill-section {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 1px solid #222222;
+  border-radius: 16px;
+  background: #0d0d0d;
+}
+
+.distill-section-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.distill-section-content {
+  margin: 0;
+  white-space: pre-wrap;
+  color: #dddddd;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.distill-skill {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 1px solid #222222;
+  border-radius: 16px;
+}
+
+.distill-skill-name {
+  margin: 0 0 8px;
+}
+
+.distill-skill-triggers,
+.distill-skill-steps,
+.distill-skill-output {
+  margin: 0 0 8px;
+  color: #dddddd;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.distill-raw {
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: #0d0d0d;
+  border: 1px solid #222222;
+  color: #dddddd;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.distill-view-button[data-active="true"] {
+  background: #93f1f7;
+  color: #000000;
+}
+
+.chat-distill-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.chat-distill-badge {
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: color-mix(in srgb, var(--copper) 16%, #fff);
+  color: var(--copper-dark);
+  font-weight: 600;
+}

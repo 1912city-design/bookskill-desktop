@@ -12,17 +12,37 @@ export function renderChatRoute(state: ChatUiState): string {
     state.conversation && state.conversation.turns.length > 0
       ? `<ol class="chat-turns" data-testid="chat-turns">${state.conversation.turns.map(renderTurn).join("")}</ol>`
       : `<p class="chat-empty" data-testid="chat-empty">还没有对话。导入许可的书籍后，可以在这里提问并查看原书来源。</p>`;
+  const distillContext = renderDistillContext(state);
 
   return [
     `<div class="chat-surface" data-testid="chat-surface">`,
     error,
     status,
+    distillContext,
     turns,
     `<form class="chat-form" data-testid="chat-form">`,
     `<label class="chat-label" for="chat-input">提问</label>`,
     `<textarea id="chat-input" class="chat-input" data-testid="chat-input" name="question" rows="3" placeholder="例如：这条原则的原书出处是什么？">${escapeHtml(state.draftQuestion)}</textarea>`,
     `<button type="submit" class="chat-send" data-testid="chat-send">发送</button>`,
     `</form>`,
+    `</div>`,
+  ].join("");
+}
+
+
+function renderDistillContext(state: ChatUiState): string {
+  if (!state.distillContext) {
+    return "";
+  }
+  const context = state.distillContext;
+  const source = context.sourceFilename ? escapeHtml(context.sourceFilename) : "未提供源文件名";
+  const skill = escapeHtml(context.skillName || context.skillId);
+  const status = escapeHtml(context.skillStatus);
+  return [
+    `<div class="chat-distill-context" data-testid="chat-distill-context" data-skill-id="${escapeHtml(context.skillId)}" data-skill-status="${status}">`,
+    `<span class="chat-distill-source">${source}</span>`,
+    `<span class="chat-distill-skill">${skill}</span>`,
+    `<span class="chat-distill-badge">${status === "draft" ? "draft" : status}</span>`,
     `</div>`,
   ].join("");
 }

@@ -293,6 +293,16 @@ describe("REL-001 knowledge relations route", () => {
         throw new Error("unused");
       },
       instantiateConceptCard: async () => [],
+      startDistill: async () => ({ status: "failed", reason: "unused", preview: null }),
+      importDistillationMarkdown: async () => ({ ok: false, preview: null }),
+      loadDistillation: async () => {
+        throw new Error("unused");
+      },
+      listDistillations: async () => [],
+      attachDistillationToChat: async () => {
+        throw new Error("unused");
+      },
+      loadDistillationChatContext: async () => null,
     };
     assert.equal(typeof bridge.suggestRelation, "function");
     assert.equal(emptyKnowledgeUiState().selectedCardId, null);

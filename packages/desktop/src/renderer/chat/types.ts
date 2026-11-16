@@ -1,3 +1,5 @@
+import type { DistillChatContext } from "../distill/types.ts";
+
 export type ChatClaimView = {
   id: string;
   text: string;
@@ -36,6 +38,7 @@ export type ChatUiState = {
   draftQuestion: string;
   error: string | null;
   statusMessage: string | null;
+  distillContext?: DistillChatContext | null;
 };
 
 export function emptyChatUiState(): ChatUiState {
@@ -45,5 +48,6 @@ export function emptyChatUiState(): ChatUiState {
     draftQuestion: "",
     error: null,
     statusMessage: null,
+    distillContext: null,
   };
 }
