@@ -1,0 +1,138 @@
+cwd: /workspace/bookskill-worktrees/DISTILL-001
+when: 2026-11-16 22:39:27 CST (Asia/Shanghai)
+node: v24.22.1
+pnpm: 10.34.6
+command: pnpm --filter @bookskill/core test
+
+
+> @bookskill/core@0.0.0 test /workspace/bookskill-worktrees/DISTILL-001/packages/core
+> node --test --test-reporter=spec test/*.test.ts
+
+▶ DISTILL-001 5-segment distillation pipeline
+  ✔ keeps locked fixture copy bytes unchanged against SHA256SUMS (1.694983ms)
+  ✔ parses all three accepted fixtures into the locked 5 sections and round-trips JSON/Markdown (17.724769ms)
+  ✔ fails validation for a missing section, a retitled section, or an empty Skill section, and writes no Skill (12.903552ms)
+  ✔ imports 孙子兵法 section 5 as draft Skills with standalone exportable text (26.98158ms)
+  ✔ attaches a paragraph locator only when an imported book confirms one, and never invents it (20.107863ms)
+  ✔ refuses unconfigured model generation and does not fake success (6.72782ms)
+  ✔ generates a valid 5-segment result when a configured adapter is injected (1.498378ms)
+✔ DISTILL-001 5-segment distillation pipeline (88.920273ms)
+▶ IMPORT-001 markdown and txt import
+  ✔ imports the licensed Markdown fixture into the BookSkill library (16.559534ms)
+  ✔ imports the licensed plain-text fixture into the BookSkill library (7.989045ms)
+✔ IMPORT-001 markdown and txt import (25.472147ms)
+▶ IMPORT-001 dedup
+  ✔ recognizes a second import of the same Markdown bytes and keeps a single book row (13.248504ms)
+  ✔ treats PDF, EPUB, Markdown, and TXT primer files as distinct books (21.909004ms)
+  ✔ does not create a second row when the same failed bytes are imported again (13.48081ms)
+✔ IMPORT-001 dedup (49.063146ms)
+▶ IMPORT-001 failure status and retry
+  ✔ persists a queryable failed import and leaves an existing successful book untouched (14.774286ms)
+  ✔ retries a failed item after the stored original is replaced, without changing siblings (15.25845ms)
+  ✔ keeps siblings untouched when a retry still fails (12.517547ms)
+  ✔ persists failure for a truncated PDF and does not write AnythingLLM paths (12.306474ms)
+✔ IMPORT-001 failure status and retry (55.905237ms)
+▶ licensed import and locators
+  ✔ imports the licensed EPUB and locates [P1.3] and [P2.2] (20.559556ms)
+  ✔ imports the licensed text PDF and keeps page plus paragraph locators (12.421303ms)
+✔ licensed import and locators (33.942978ms)
+▶ KNOW-001 knowledge card draft, confirm, edit, merge, and delete
+  ✔ starts a card generated from a source as draft (18.43956ms)
+  ✔ confirms a card as verified_by_user without changing source relationships (10.718928ms)
+  ✔ edits a draft without confirming it, leaving status as draft (12.557188ms)
+  ✔ merges sources onto the surviving card without auto-verifying or deleting the book (21.023714ms)
+  ✔ deduplicates sources by source_chunk_id when merging two cards from the same locator (16.807197ms)
+  ✔ does not mark a verified surviving card as changed, and does not auto-verify a draft (19.227473ms)
+  ✔ deletes a card while leaving the original book and locators usable (17.86153ms)
+  ✔ lists cards and does not auto-publish a Skill from the knowledge flow (13.444654ms)
+  ✔ only confirmKnowledgeCard may assign verified_by_user in the knowledge module (0.419336ms)
+✔ KNOW-001 knowledge card draft, confirm, edit, merge, and delete (131.730851ms)
+▶ knowledge cards
+  ✔ drafts a card from [P1.3], keeps sources on confirm, and does not delete the book (31.684204ms)
+✔ knowledge cards (32.407818ms)
+▶ business database path policy
+  ✔ opens the business database under the BookSkill data directory at schema v2 (8.725161ms)
+  ✔ rejects AnythingLLM and mintplex data directories and does not create them (0.61919ms)
+✔ business database path policy (10.213639ms)
+▶ REL-001 knowledge relation suggest, confirm, and reject
+  ✔ creates a suggestion that does not appear in the confirmed-relations list (19.701541ms)
+  ✔ stores a formal relation after user confirm with an allowed relation_type (15.023609ms)
+  ✔ rejects a suggestion so it does not remain as a formal relation (16.439938ms)
+  ✔ rejects an illegal self-loop before writing a row (15.208022ms)
+  ✔ cleans up suggested and confirmed relations when either end card is deleted (30.006618ms)
+  ✔ rejects unsupported types and missing cards, and only confirmRelation may formalize a relation (14.166876ms)
+  ✔ proposes a relation type from card content without writing a row (1.01278ms)
+  ✔ only confirmRelation may assign verified_by_user in the relations module, and knowledge.ts merge still does not insert relations (0.728575ms)
+✔ REL-001 knowledge relation suggest, confirm, and reject (113.491567ms)
+▶ REL-002 local discovery of hidden knowledge relations
+  ✔ discovers a shared source_chunk_id or paragraph locator as a suggested link with reason shared_source (27.15418ms)
+  ✔ discovers reproducible title/body overlap above the documented threshold (9.351876ms)
+  ✔ discovers a case-to-principle type rule as example_of with reason type_rule (9.32046ms)
+  ✔ never writes verified_by_user from discover itself (D-017) (8.05539ms)
+  ✔ is idempotent, does not resurrect confirmed or rejected pair+type, and skips self-loops (14.355123ms)
+  ✔ confirms a discovered suggestion into a formal relation and rejects another so it does not remain formal (8.42977ms)
+  ✔ still cleans up discovered relations when either end card is deleted (9.543199ms)
+  ✔ keeps discover from assigning verified_by_user in source, and leaves P-012 merge/delete contracts untouched (0.488453ms)
+✔ REL-002 local discovery of hidden knowledge relations (87.9229ms)
+▶ SEARCH-001 full-text and local semantic search
+  ✔ returns labeled, jumpable hits for a full-text query on an imported licensed book (32.584362ms)
+  ✔ returns an empty list for a query with no matches, and for a blank query (13.498817ms)
+  ✔ uses a documented local keyword-expansion fallback for semantic queries (10.868029ms)
+  ✔ does not modify books, knowledge-card status, or annotation rows (12.461951ms)
+  ✔ keeps the semantic implementation local and free of hosted vector clients (1.14712ms)
+✔ SEARCH-001 full-text and local semantic search (71.703493ms)
+SEARCH-002 timing records=200 first_query_ms=4.84 warmed_ms=0.95,0.21,0.08,0.07
+▶ SEARCH-002 fuzzy match, index warmup, and ranking
+  ✔ returns jumpable hits for a 1-edit English typo on the imported FIXT-001 book (13.446027ms)
+  ✔ hits English prefixes and Chinese partial substrings, and still ranks a full-phrase match first (20.795043ms)
+  ✔ returns hits when only some query terms match, and an empty list when nothing matches (9.69594ms)
+  ✔ serves warmed typical queries in 50ms over at least 200 records without dropping locators (14.228979ms)
+  ✔ keeps the local semantic fallback declaration and does not write business data (16.876749ms)
+  ✔ stays local and does not add a hosted vector or FTS client (0.874677ms)
+✔ SEARCH-002 fuzzy match, index warmup, and ranking (77.148615ms)
+▶ SKILL-004 templates
+  ✔ lists the nine frozen Skill templates with stable ids and domains (1.493441ms)
+  ✔ does not claim that template copy applies to all users or jobs (0.401959ms)
+  ✔ rejects unknown Skill ids and does not instantiate the concept-card as a Skill (6.530207ms)
+✔ SKILL-004 templates (9.302975ms)
+▶ SKILL-004 instantiateSkillTemplate
+  ✔ instantiates daily.daily-plan as a draft Skill with a first version (6.16999ms)
+  ✔ instantiates daily.weekly-review as a draft Skill with a first version (6.079692ms)
+  ✔ instantiates daily.reading-review as a draft Skill with a first version (6.629879ms)
+  ✔ instantiates life.complex-choice as a draft Skill with a first version (5.745983ms)
+  ✔ instantiates life.family-planning as a draft Skill with a first version (11.476445ms)
+  ✔ instantiates life.habit-plan as a draft Skill with a first version (7.28297ms)
+  ✔ instantiates professional.meeting-prep as a draft Skill with a first version (4.978075ms)
+  ✔ instantiates professional.interview-outline as a draft Skill with a first version (8.99243ms)
+  ✔ instantiates professional.project-retro as a draft Skill with a first version (8.734312ms)
+  ✔ uses an optional name override but still stays draft (4.754008ms)
+✔ SKILL-004 instantiateSkillTemplate (71.670048ms)
+▶ SKILL-004 template examples and validation
+  ✔ daily.daily-plan has a successful example and a boundary example that does not publish (6.398943ms)
+  ✔ daily.weekly-review has a successful example and a boundary example that does not publish (6.436103ms)
+  ✔ daily.reading-review has a successful example and a boundary example that does not publish (4.456887ms)
+  ✔ life.complex-choice has a successful example and a boundary example that does not publish (4.362384ms)
+  ✔ life.family-planning has a successful example and a boundary example that does not publish (3.77114ms)
+  ✔ life.habit-plan has a successful example and a boundary example that does not publish (4.118545ms)
+  ✔ professional.meeting-prep has a successful example and a boundary example that does not publish (4.533721ms)
+  ✔ professional.interview-outline has a successful example and a boundary example that does not publish (4.054704ms)
+  ✔ professional.project-retro has a successful example and a boundary example that does not publish (4.90088ms)
+✔ SKILL-004 template examples and validation (43.48741ms)
+▶ SKILL-004 knowledge.concept-card
+  ✔ lists the concept-card template and instantiates a draft knowledge card, not a Skill (4.820101ms)
+  ✔ rejects an unknown knowledge-card template id and does not auto-verify a custom title draft (5.728557ms)
+✔ SKILL-004 knowledge.concept-card (10.670582ms)
+▶ VERT-001 book-to-skill thin slice
+  ✔ imports, cards, Skill, five follow-ups, citations, feedback, and survives reopen (33.706653ms)
+✔ VERT-001 book-to-skill thin slice (34.449568ms)
+ℹ tests 82
+ℹ suites 17
+ℹ pass 82
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 578.113504
+
+exit_code: 0
+when_end: 2026-11-16 22:39:29 CST (Asia/Shanghai)
