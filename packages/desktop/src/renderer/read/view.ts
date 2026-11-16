@@ -33,15 +33,27 @@ export function renderLibraryRoute(state: LibraryUiState): string {
   return renderLibraryList(state);
 }
 
+function renderLibraryImportControls(): string {
+  return [
+    `<div class="library-import-bar">`,
+    `<button type="button" class="library-import-button" data-testid="library-import">导入许可的 PDF 或 EPUB</button>`,
+    `<label class="library-import-file-label" for="library-import-file">选择文件</label>`,
+    `<input type="file" id="library-import-file" class="library-import-file" data-testid="library-import-file" accept=".pdf,.epub,application/pdf,application/epub+zip,.md,.markdown,.txt,text/markdown,text/plain">`,
+    `</div>`,
+  ].join("");
+}
+
 export function renderLibraryList(state: Pick<LibraryUiState, "books" | "error">): string {
   const error = state.error
     ? `<p class="library-error" data-testid="library-error" role="alert">${escapeHtml(state.error)}</p>`
     : "";
+  const importControls = renderLibraryImportControls();
   if (state.books.length === 0) {
     return [
       `<div class="library-surface" data-testid="library-surface">`,
       error,
       `<p class="library-lead">从已导入的书籍打开阅读器，浏览章节、摘录并写下批注。</p>`,
+      importControls,
       `<p class="library-empty" data-testid="library-empty">还没有已导入的书籍。请先导入许可的 PDF 或 EPUB。</p>`,
       `</div>`,
     ].join("");
@@ -68,6 +80,7 @@ export function renderLibraryList(state: Pick<LibraryUiState, "books" | "error">
     `<div class="library-surface" data-testid="library-surface">`,
     error,
     `<p class="library-lead">从已导入的书籍打开阅读器，浏览章节、摘录并写下批注。</p>`,
+    importControls,
     `<ul class="library-book-list" data-testid="library-book-list">${items}</ul>`,
     `</div>`,
   ].join("");

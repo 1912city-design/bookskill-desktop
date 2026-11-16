@@ -20,6 +20,8 @@ import { emptyRelationsUiState, type RelationsUiState } from "./relations/types.
 import { renderRelationsRoute } from "./relations/view.ts";
 import { emptySearchUiState, type SearchUiState } from "./search/types.ts";
 import { renderSearchPanel } from "./search/view.ts";
+import { emptyChatUiState, type ChatUiState } from "./chat/types.ts";
+import { renderChatRoute } from "./chat/view.ts";
 
 function escapeHtml(value: string): string {
   return value
@@ -56,9 +58,10 @@ type ShellState = {
   knowledge: KnowledgeUiState;
   search: SearchUiState;
   relations: RelationsUiState;
+  chat: ChatUiState;
 };
 
-function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState): string {
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -91,6 +94,8 @@ function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiSt
         ? renderLibraryRoute(library)
         : view.id === "knowledge"
           ? `${renderKnowledgeRoute(knowledge)}${renderRelationsRoute(relations, knowledge.cards)}`
+        : view.id === "chat"
+          ? renderChatRoute(chat)
         : `<p class="view-note">此入口已可导航。薄切片的导入、知识卡、Skill 与离线对话已接到本机业务库；完整阅读器或 Skill Studio 不在本页范围。</p>`;
 
   return [
@@ -135,6 +140,9 @@ function bindNavigation(root: HTMLElement, state: ShellState): void {
             await ensureKnowledgeCards(state);
             await ensureRelations(state);
           }
+          if (id === "chat") {
+            await ensureChat(state);
+          }
           paint(root, state);
         } catch (error) {
           mountError(root, error);
@@ -144,10 +152,72 @@ function bindNavigation(root: HTMLElement, state: ShellState): void {
   });
 }
 
+async function applyImportedBooks(root: HTMLElement, state: ShellState, books: LibraryUiState["books"]): Promise<void> {
+  state.library.books = books;
+  state.library.error = null;
+  try {
+    const bridge = getBridge();
+    if (bridge?.getShellInfo) {
+      state.info = await bridge.getShellInfo();
+    }
+  } catch {
+    // Slice summary refresh is optional; the imported list is the source of truth.
+  }
+  paint(root, state);
+}
+
+function bindLibraryImport(root: HTMLElement, state: ShellState): void {
+  root.querySelector<HTMLButtonElement>("[data-testid='library-import']")?.addEventListener("click", () => {
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.chooseAndImport) {
+          throw new Error("书库尚未连接到导入接口。");
+        }
+        const result = await bridge.chooseAndImport();
+        if (result.canceled) {
+          return;
+        }
+        await applyImportedBooks(root, state, result.books);
+      } catch (error) {
+        state.library.error = formatErrorMessage(error);
+        await ensureLibraryBooks(state);
+        paint(root, state);
+      }
+    })();
+  });
+
+  const fileInput = root.querySelector<HTMLInputElement>("[data-testid='library-import-file']");
+  fileInput?.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    if (!file) {
+      return;
+    }
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.importBookFile) {
+          throw new Error("书库尚未连接到导入接口。");
+        }
+        const books = await bridge.importBookFile(file);
+        fileInput.value = "";
+        await applyImportedBooks(root, state, books);
+      } catch (error) {
+        fileInput.value = "";
+        state.library.error = formatErrorMessage(error);
+        await ensureLibraryBooks(state);
+        paint(root, state);
+      }
+    })();
+  });
+}
+
 function bindLibrary(root: HTMLElement, state: ShellState): void {
   if (state.nav.current !== "library") {
     return;
   }
+
+  bindLibraryImport(root, state);
 
   root.querySelectorAll<HTMLButtonElement>("[data-testid='open-book']").forEach((button) => {
     button.addEventListener("click", () => {
@@ -619,7 +689,7 @@ function bindSearch(root: HTMLElement, state: ShellState): void {
 }
 
 function paint(root: HTMLElement, state: ShellState): void {
-  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations));
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations, state.chat));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
@@ -630,6 +700,66 @@ function paint(root: HTMLElement, state: ShellState): void {
   bindKnowledge(root, state);
   bindSearch(root, state);
   bindRelations(root, state);
+  bindChat(root, state);
+}
+
+function bindChat(root: HTMLElement, state: ShellState): void {
+  if (state.nav.current !== "chat") {
+    return;
+  }
+  root.querySelector<HTMLFormElement>("[data-testid='chat-form']")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const message = root.querySelector<HTMLTextAreaElement>("[data-testid='chat-input']")?.value ?? "";
+    state.chat.draftQuestion = message;
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.ask) {
+          throw new Error("对话尚未连接到本机业务库。");
+        }
+        state.chat.conversation = await bridge.ask({
+          message,
+          conversationId: state.chat.conversation?.id,
+        });
+        state.chat.draftQuestion = "";
+        state.chat.statusMessage = null;
+        state.chat.error = null;
+        try {
+          if (bridge.getShellInfo) {
+            state.info = await bridge.getShellInfo();
+          }
+        } catch {
+          // Slice summary refresh is optional after a turn is persisted.
+        }
+        paint(root, state);
+      } catch (error) {
+        state.chat.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+}
+
+async function ensureChat(state: ShellState): Promise<void> {
+  const bridge = getBridge();
+  if (!bridge?.listConversations && !bridge?.loadConversation) {
+    state.chat.loaded = true;
+    return;
+  }
+  try {
+    if (state.chat.conversation && bridge.loadConversation) {
+      state.chat.conversation = await bridge.loadConversation(state.chat.conversation.id);
+    } else if (bridge.listConversations && bridge.loadConversation) {
+      const listed = await bridge.listConversations();
+      const latest = listed[0];
+      state.chat.conversation = latest ? await bridge.loadConversation(latest.id) : null;
+    }
+    state.chat.error = null;
+  } catch (error) {
+    state.chat.error = formatErrorMessage(error);
+  } finally {
+    state.chat.loaded = true;
+  }
 }
 
 async function ensureLibraryBooks(state: ShellState): Promise<void> {
@@ -755,6 +885,7 @@ async function start(): Promise<void> {
       knowledge: emptyKnowledgeUiState(),
       search: emptySearchUiState(),
       relations: emptyRelationsUiState(),
+      chat: emptyChatUiState(),
     };
     if (nav.current === "library") {
       await ensureLibraryBooks(state);
@@ -762,6 +893,9 @@ async function start(): Promise<void> {
     if (nav.current === "knowledge") {
       await ensureKnowledgeCards(state);
       await ensureRelations(state);
+    }
+    if (nav.current === "chat") {
+      await ensureChat(state);
     }
     paint(root, state);
   } catch (error) {
