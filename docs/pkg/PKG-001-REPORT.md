@@ -53,3 +53,5 @@
 - `scripts/build.mjs` 为 renderer 增加 `node:` stub（仅作分析安全网），并在产出后检查 `renderer.js` 不再引用 `node:` 内置模块
 
 本机 `pnpm --filter @bookskill/desktop build` 现已退出码 0，`renderer.js` 中无 `node:` 引用。desktop 测试仍为 39 passed。
+
+随后 `electron-builder` 因配置里的 `publish: never` 失败（26.x 会把它当成自定义 publisher 模块名）。已改为只在脚本里传 `--publish never`，配置中不再写该键。

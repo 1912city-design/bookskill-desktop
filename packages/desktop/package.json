@@ -5,6 +5,7 @@
   "type": "module",
   "productName": "BookSkill Desktop",
   "description": "BookSkill Desktop application shell. Original BookSkill UI and navigation; not a repackaged AnythingLLM desktop binary.",
+  "author": "BookSkill",
   "main": "./dist/main/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit && node scripts/build.mjs",

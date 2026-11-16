@@ -41,9 +41,11 @@ asar: true
 npmRebuild: false
 nodeGypRebuild: false
 
-# Never auto-publish a GitHub Release or other channel from this config.
-# Official publish requires a separate, human-approved process.
-publish: never
+# Do not set `publish: never` here: electron-builder 26 treats that as a
+# custom publisher module name and fails with
+# "Cannot find module for publisher never".
+# The pack scripts pass `--publish never` so this workflow cannot create
+# a GitHub Release or official publish.
 
 mac:
   # Unsigned development sample. Scripts must also set
