@@ -175,3 +175,29 @@ export type {
   SemanticSearchFallback,
 } from "./search/index.ts";
 
+export {
+  CONCEPT_CARD_TEMPLATE,
+  CONCEPT_CARD_TEMPLATE_ID,
+  DEFAULT_SKILL_TEMPLATE_PERMISSIONS,
+  SKILL_TEMPLATE_DOMAIN_LABELS,
+  SKILL_TEMPLATE_IDS,
+  getSkillTemplate,
+  instantiateKnowledgeCardTemplate,
+  instantiateSkillTemplate,
+  listKnowledgeCardTemplates,
+  listSkillTemplates,
+  validateSkillTemplateInput,
+} from "./skill-templates/index.ts";
+export type {
+  ConceptCardDraft,
+  InstantiateKnowledgeCardTemplateOptions,
+  InstantiateSkillTemplateOptions,
+  KnowledgeCardTemplateSummary,
+  SkillTemplateDefinition,
+  SkillTemplateDomain,
+  SkillTemplateExample,
+  SkillTemplatePermissions,
+  SkillTemplateScopeRule,
+  SkillTemplateSummary,
+  SkillTemplateValidationResult,
+} from "./skill-templates/index.ts";
