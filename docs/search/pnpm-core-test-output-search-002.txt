@@ -1,0 +1,78 @@
+
+> @bookskill/core@0.0.0 test /workspace/bookskill-worktrees/SEARCH-002/packages/core
+> node --test --test-reporter=spec test/*.test.ts
+
+▶ IMPORT-001 markdown and txt import
+  ✔ imports the licensed Markdown fixture into the BookSkill library (22.103357ms)
+  ✔ imports the licensed plain-text fixture into the BookSkill library (13.675301ms)
+✔ IMPORT-001 markdown and txt import (38.463217ms)
+▶ IMPORT-001 dedup
+  ✔ recognizes a second import of the same Markdown bytes and keeps a single book row (15.446126ms)
+  ✔ treats PDF, EPUB, Markdown, and TXT primer files as distinct books (26.554058ms)
+  ✔ does not create a second row when the same failed bytes are imported again (12.994354ms)
+✔ IMPORT-001 dedup (55.306231ms)
+▶ IMPORT-001 failure status and retry
+  ✔ persists a queryable failed import and leaves an existing successful book untouched (12.816078ms)
+  ✔ retries a failed item after the stored original is replaced, without changing siblings (24.04812ms)
+  ✔ keeps siblings untouched when a retry still fails (10.048957ms)
+  ✔ persists failure for a truncated PDF and does not write AnythingLLM paths (14.705402ms)
+✔ IMPORT-001 failure status and retry (62.004703ms)
+▶ licensed import and locators
+  ✔ imports the licensed EPUB and locates [P1.3] and [P2.2] (29.602816ms)
+  ✔ imports the licensed text PDF and keeps page plus paragraph locators (13.176926ms)
+✔ licensed import and locators (44.963041ms)
+▶ KNOW-001 knowledge card draft, confirm, edit, merge, and delete
+  ✔ starts a card generated from a source as draft (32.207746ms)
+  ✔ confirms a card as verified_by_user without changing source relationships (15.637802ms)
+  ✔ edits a draft without confirming it, leaving status as draft (12.962032ms)
+  ✔ merges sources onto the surviving card without auto-verifying or deleting the book (20.912401ms)
+  ✔ deduplicates sources by source_chunk_id when merging two cards from the same locator (17.644151ms)
+  ✔ does not mark a verified surviving card as changed, and does not auto-verify a draft (28.91977ms)
+  ✔ deletes a card while leaving the original book and locators usable (18.52156ms)
+  ✔ lists cards and does not auto-publish a Skill from the knowledge flow (22.318336ms)
+  ✔ only confirmKnowledgeCard may assign verified_by_user in the knowledge module (0.437022ms)
+✔ KNOW-001 knowledge card draft, confirm, edit, merge, and delete (170.946834ms)
+▶ knowledge cards
+  ✔ drafts a card from [P1.3], keeps sources on confirm, and does not delete the book (30.849363ms)
+✔ knowledge cards (31.61072ms)
+▶ business database path policy
+  ✔ opens the business database under the BookSkill data directory at schema v2 (13.367587ms)
+  ✔ rejects AnythingLLM and mintplex data directories and does not create them (0.606058ms)
+✔ business database path policy (14.846432ms)
+▶ REL-001 knowledge relation suggest, confirm, and reject
+  ✔ creates a suggestion that does not appear in the confirmed-relations list (29.537312ms)
+  ✔ stores a formal relation after user confirm with an allowed relation_type (17.773401ms)
+  ✔ rejects a suggestion so it does not remain as a formal relation (13.384687ms)
+  ✔ rejects an illegal self-loop before writing a row (12.679909ms)
+  ✔ cleans up suggested and confirmed relations when either end card is deleted (29.256317ms)
+  ✔ rejects unsupported types and missing cards, and only confirmRelation may formalize a relation (19.549202ms)
+  ✔ proposes a relation type from card content without writing a row (0.387146ms)
+  ✔ only confirmRelation may assign verified_by_user in the relations module, and knowledge.ts merge still does not insert relations (0.624549ms)
+✔ REL-001 knowledge relation suggest, confirm, and reject (124.441895ms)
+▶ SEARCH-001 full-text and local semantic search
+  ✔ returns labeled, jumpable hits for a full-text query on an imported licensed book (41.206824ms)
+  ✔ returns an empty list for a query with no matches, and for a blank query (14.428167ms)
+  ✔ uses a documented local keyword-expansion fallback for semantic queries (14.120112ms)
+  ✔ does not modify books, knowledge-card status, or annotation rows (19.24866ms)
+  ✔ keeps the semantic implementation local and free of hosted vector clients (1.058396ms)
+✔ SEARCH-001 full-text and local semantic search (91.517517ms)
+SEARCH-002 timing records=200 first_query_ms=4.09 warmed_ms=0.26,0.25,0.11,0.12
+▶ SEARCH-002 fuzzy match, index warmup, and ranking
+  ✔ returns jumpable hits for a 1-edit English typo on the imported FIXT-001 book (15.887301ms)
+  ✔ hits English prefixes and Chinese partial substrings, and still ranks a full-phrase match first (14.291277ms)
+  ✔ returns hits when only some query terms match, and an empty list when nothing matches (12.570089ms)
+  ✔ serves warmed typical queries in 50ms over at least 200 records without dropping locators (13.060978ms)
+  ✔ keeps the local semantic fallback declaration and does not write business data (12.645143ms)
+  ✔ stays local and does not add a hosted vector or FTS client (0.816374ms)
+✔ SEARCH-002 fuzzy match, index warmup, and ranking (70.368506ms)
+▶ VERT-001 book-to-skill thin slice
+  ✔ imports, cards, Skill, five follow-ups, citations, feedback, and survives reopen (46.997778ms)
+✔ VERT-001 book-to-skill thin slice (47.901175ms)
+ℹ tests 43
+ℹ suites 11
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 436.766068

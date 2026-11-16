@@ -8,6 +8,10 @@ export type SearchUiState = {
   searched: boolean;
   statusMessage: string | null;
   error: string | null;
+  /** Index into the type-grouped visual list; -1 when nothing is selected. */
+  selectedIndex?: number;
+  /** True after the user has moved the selection with arrow keys. */
+  keyboardActive?: boolean;
 };
 
 export type { SearchHit, SearchMode, SearchResult };
@@ -21,5 +25,7 @@ export function emptySearchUiState(): SearchUiState {
     searched: false,
     statusMessage: null,
     error: null,
+    selectedIndex: -1,
+    keyboardActive: false,
   };
 }

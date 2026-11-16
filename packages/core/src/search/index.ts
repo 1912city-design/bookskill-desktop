@@ -21,6 +21,8 @@ export type {
 } from "./types.ts";
 export { collectSearchableRecords, contentTypeForAnnotation, contentTypeForKnowledgeCard, formatSearchLocator, locatorFromChunkFields } from "./collect.ts";
 export { expandQueryTokens, jaccard } from "./expand.ts";
-export { searchLibrary, searchRecords } from "./query.ts";
+export { libraryIndexFingerprint, searchIndexedRecords, searchLibrary, searchRecords } from "./query.ts";
 export type { SearchLibraryOptions } from "./query.ts";
+export { buildSearchIndex, getOrBuildSearchIndex } from "./memory-index.ts";
+export type { SearchMemoryIndex } from "./memory-index.ts";
 export { normalizeSearchText, significantTokens, tokenize } from "./tokenize.ts";

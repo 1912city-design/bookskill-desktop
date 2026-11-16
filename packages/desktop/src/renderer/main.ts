@@ -18,6 +18,7 @@ import { emptyKnowledgeUiState, type KnowledgeUiState } from "./knowledge/types.
 import { renderKnowledgeRoute } from "./knowledge/view.ts";
 import { emptyRelationsUiState, type RelationsUiState } from "./relations/types.ts";
 import { renderRelationsRoute } from "./relations/view.ts";
+import { applySearchKeyboard } from "./search/keyboard.ts";
 import { emptySearchUiState, type SearchUiState } from "./search/types.ts";
 import { renderSearchPanel } from "./search/view.ts";
 import { emptyChatUiState, type ChatUiState } from "./chat/types.ts";
@@ -621,6 +622,8 @@ function bindSearch(root: HTMLElement, state: ShellState): void {
         state.search.results = result.results;
         state.search.fallback = result.fallback;
         state.search.searched = true;
+        state.search.selectedIndex = result.results.length > 0 ? 0 : -1;
+        state.search.keyboardActive = false;
         state.search.statusMessage =
           result.results.length > 0 ? `共 ${result.results.length} 条结果。` : "没有匹配结果。";
         state.search.error = null;
@@ -685,6 +688,27 @@ function bindSearch(root: HTMLElement, state: ShellState): void {
         }
       })();
     });
+  });
+
+  root.querySelector<HTMLElement>("[data-testid='search-surface']")?.addEventListener("keydown", (event) => {
+    const key = event.key;
+    if (key !== "ArrowDown" && key !== "ArrowUp" && key !== "Enter") {
+      return;
+    }
+    const next = applySearchKeyboard(state.search, key);
+    if (!next.handled) {
+      return;
+    }
+    event.preventDefault();
+    state.search = next.state;
+    if (next.action === "jump") {
+      const selected = root.querySelector<HTMLButtonElement>(
+        "[data-testid='search-hit'][data-selected='true'] [data-testid='search-jump']",
+      );
+      selected?.click();
+      return;
+    }
+    paint(root, state);
   });
 }
 
