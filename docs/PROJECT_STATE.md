@@ -1,10 +1,10 @@
 # PROJECT_STATE
 
-- 更新时间：2026-11-14 20:51 Asia/Shanghai
+- 更新时间：2026-11-16 22:10 Asia/Shanghai
 - 合同：`docs/GROK_EXECUTION_SPEC.md`（SHA-256 `7b2cd11ac44e4dcc5d9f4b219c837ce8ddc2be86856e02327352e545418b64d2`）
 - 发布仓库：已连接，**公开**仓库 https://github.com/1912city-design/bookskill-desktop
 - 默认分支 `origin/main`：`953ba8d`（合入 REPO-001，PR #1）。分支保护：repository ruleset `27261747`，`enforcement: active`（P-001，2026-11-14 20:50 Asia/Shanghai）。
-- 集成分支 `origin/integration`：`71f8390`（[PR #7](https://github.com/1912city-design/bookskill-desktop/pull/7)，P-002 人工确认后合入 DATA/APP/FIXT/VERT/IMPORT/READ/KNOW）
+- 集成分支 `origin/integration`：`5ec4540`（2026-11-16 16:09:35 Asia/Shanghai 合入 PATH-001，[PR #14](https://github.com/1912city-design/bookskill-desktop/pull/14)）。此前已合入 DATA/APP/FIXT/VERT/IMPORT/READ/KNOW（PR #7）、BOT-001（PR #9）、GOV-001（PR #10）、REL-001（PR #11）、SEARCH-001（PR #12）。未进 `main`。
 - `origin/feat/VERT-001`：`6d7914d`（已包含在上述 integration 合入中）
 
 **当前不是正式交付。G1 / G2 均已超时且未通过。** 不得宣布 G1、G2 或正式交付。`main` 上第一次 GitHub Actions 成功（[run 43466573707](https://github.com/1912city-design/bookskill-desktop/actions/runs/43466573707)）以及 integration 合入后的 CI 成功，只证明 Linux runner 上的 CI 基线可执行，不能代替目标 OS 验收。
@@ -42,3 +42,15 @@
 ## 阻塞与待决策
 
 见 `docs/BLOCKERS.md` 与 `docs/PENDING_DECISIONS.md`。B-001 已解除。B-002 已 ACCEPTED。
+
+
+## 本轮推进（2026-11-16 22:10 Asia/Shanghai）
+
+负责人要求提升四项实用性：强化搜索、知识关联建议、模板 + Skill 编辑器、本地版本历史。已拆成可测试工单并启动实现，非正式交付，不宣布 G1/G2。
+
+- 工单：`docs/tickets/SEARCH-002.md`、`REL-002.md`、`SKILL-001.md`、`SKILL-004.md`、`VER-001.md`、`VER-002.md`
+- 立即开工：SEARCH-002（ai_skill_engineer）、SKILL-001（frontend_engineer）、VER-001（backend_engineer）
+- 排队：REL-002（SEARCH-002 开 PR 后）、SKILL-004（REL-002 开 PR 后）、VER-002（VER-001 接口稳定后）
+- VER-001 含知识卡修订表（schema V3），按 D-025 为高风险，独立 QA 通过后仍须人工确认才能合入 `integration`（见 P-013）
+- 未签名 macOS 开发样品 `1378c01`（push run 43829187100）七项核心路径已独立 QA 通过，可作后续功能验证底包；本轮功能须重新打官方包并经独立 QA 后才能称为可在该构建上使用。不得使用已失败的 `f78aa00` 包。
+

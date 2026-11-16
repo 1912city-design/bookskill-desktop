@@ -1,6 +1,6 @@
 # 待决策清单
 
-- 更新时间：2026-11-14 20:51 Asia/Shanghai
+- 更新时间：2026-11-16 22:10 Asia/Shanghai
 - 用途：把需要负责人拍板的事项集中在此，不在推进过程中逐条打扰。
 - 红线（必须等用户）：影响产品核心质量、数据安全、授权、正式发布的决策。
 - 其他事项按 `docs/GROK_EXECUTION_SPEC.md` 与 D-025 / `docs/policies/merge-policy.yml` 自动推进。
@@ -16,6 +16,7 @@
 | P-010 | 数据完整性（后续） | IMPORT-001 去重目前是应用层 `content_hash` 查询，没有数据库唯一索引；失败 sidecar 与 SQLite 不在同一事务。并发重复导入仍可能写出重复行。 | 若补 `content_hash` 唯一索引，属于 schema 迁移，按 D-025 为高风险合入。 | 已记录。不在未确认前改 schema。 | 见 [PR #4](https://github.com/1912city-design/bookskill-desktop/pull/4) 与 `docs/import/IMPORT-001-REPORT.md`。 |
 | P-011 | 数据完整性（后续） | READ-001 批注目前写入 `{dataDir}/library/{bookId}/annotations.json`，不是 SQLite 行；同书并发写入可能互相覆盖，写到一半崩溃时下次加载可能读成空列表。 | 若把批注迁入数据库，属于 schema 迁移，按 D-025 为高风险合入。 | 已记录。不在未确认前改 schema。 | 见 [PR #5](https://github.com/1912city-design/bookskill-desktop/pull/5) 与 `docs/read/READ-001-REPORT.md`。 |
 | P-012 | 数据完整性（后续） | KNOW-001 合并不写入 `knowledge_relations`（避免删除被吸收卡后外键悬空）；被吸收卡上的 Skill 来源链接按既有删除契约去掉，不会自动改挂到保留卡。 | 若要可审计的合并记录，或合并时改挂 Skill 来源，可能需要新表或改变删除契约，按 D-025 为高风险。 | 已记录。不在未确认前改 schema 或删除契约。REL-001 只使用现有 `knowledge_relations` 表做建议/确认，不改合并/删除契约。 | 见 [PR #6](https://github.com/1912city-design/bookskill-desktop/pull/6) 与 `docs/know/KNOW-001-REPORT.md`。 |
+| P-013 | 数据迁移（VER-001） | 知识卡本地修订历史需要 schema V3（`knowledge_card_revisions`）。Skill 历史可先用已有 `skill_versions`。负责人已要求实现可回滚的本机版本历史。 | 按 D-025，数据迁移合入 `integration` 仍须人工确认。实现与独立 QA 可在 `feat/VER-001` 上完成，不得自动合入。 | 实现已启动，待 QA 后再确认是否合入 `integration`。不合入 `main`、不发布。 | 见 `docs/tickets/VER-001.md`。回滚采用追加新版本/新修订，不改写历史行；回滚不得自动确认知识卡（D-017）或自动发布 Skill（D-018）。 |
 
 已由负责人拍板、不再列入等待的事项：
 
