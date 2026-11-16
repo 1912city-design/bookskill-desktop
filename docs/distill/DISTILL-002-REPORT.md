@@ -3,9 +3,9 @@
 - 任务：在现有 BookSkill Desktop 五入口壳里打通「书库上传 / 选择已导入书 → 蒸馏进度 → 锁定 5 段结果预览 → 一键加入对话」的产品路径。预览必须展示锁定 5 段，支持 Markdown / JSON 切换，并可复制 draft Skill；加入对话不得改写 Skill 状态。
 - 负责人：frontend_engineer（本工作树提交身份沿用仓库已有配置 BookSkill Orchestrator `<bookskill-orchestrator@local>`，未另造身份）
 - 分支：`feat/DISTILL-002`
-- 基础：`origin/integration` @ `26ada833b6bb74bc555435ad1385a70a413728ec`（「Merge pull request #17 from 1912city-design/feat/SKILL-001」）。我没有把本分支变基到更新后的 `integration`，也没有变基到 `main` 或其他功能分支。
+- 基础：已变基到 `origin/integration` @ `0e53bebebcf6ae3a21c3b74c57e788e8efaf1516`（「Merge pull request #20 from 1912city-design/feat/COUNCIL-001」，已含 REL-002 / SKILL-004 / COUNCIL-001）。未变基到 `main`。为通过变基后的桌面包类型检查，我在 `rel-002.test.ts` 补了未使用的蒸馏桥接桩（与 `rel-001.test.ts` 相同）。测试日志改名为 `DISTILL-002-pnpm-*-test-output.txt`，避免与 DISTILL-001 的同名文件冲突。
 - 工作区：`/workspace/bookskill-worktrees/DISTILL-002`
-- 完成时间：2026-11-16 22:41 CST（Asia/Shanghai）
+- 完成时间：首次实现 2026-11-16 22:41 CST（Asia/Shanghai）；变基并补桩后重跑测试 2026-11-16 22:46 CST（Asia/Shanghai）
 - 状态：本地实现与测试已完成。将推送 `feat/DISTILL-002` 并打开目标仅为 `integration` 的 PR。**未自行合入 `main` / `integration`，未发布，未标 Done，未宣布完成或可试用。** 这不是 G1，也不是可发运安装包。独立 QA 通过前不能把本票当作已完成。
 - 风险等级：**中（medium）**。只在桌面主进程和渲染层追加蒸馏预览、IPC 与对话上下文侧车；未改 `packages/data` 迁移；未创建 `packages/core/src/distill/**`；未重写 `packages/core/src/skills.ts` 的版本写入核心；未自动确认知识卡（D-017）；未自动发布 Skill（D-018）。未开工 VER-002。未把 AnythingLLM 工作区 / Pin 做成 UI 步骤。
 
@@ -46,8 +46,8 @@ pnpm --filter @bookskill/core test
 pnpm --filter @bookskill/desktop test
 ```
 
-- `pnpm --filter @bookskill/core test`：退出码 **0**；**43 passed，0 failed**。时间：2026-11-16 22:41 CST（Asia/Shanghai）。完整输出：`docs/distill/pnpm-core-test-output.txt`
-- `pnpm --filter @bookskill/desktop test`：退出码 **0**；**62 passed，0 failed**（含本任务新增 6 项，既有 READ/KNOW/SEARCH/REL/PATH/SKILL/NAV 等继续通过；含 `tsc --noEmit` 与 `@bookskill/repo-baseline` 构建）。时间：2026-11-16 22:41 CST（Asia/Shanghai）。完整输出：`docs/distill/pnpm-desktop-test-output.txt`
+- `pnpm --filter @bookskill/core test`：退出码 **0**；**86 passed，0 failed**。时间：2026-11-16 22:45–22:46 CST（Asia/Shanghai）。完整输出：`docs/distill/DISTILL-002-pnpm-core-test-output.txt`
+- `pnpm --filter @bookskill/desktop test`：退出码 **0**；**66 passed，0 failed**（含本任务新增项，既有 READ/KNOW/SEARCH/REL/PATH/SKILL/NAV 等继续通过；含 `tsc --noEmit` 与 `@bookskill/repo-baseline` 构建；`rel-002.test.ts` 已补蒸馏桥接桩）。时间：2026-11-16 22:46 CST（Asia/Shanghai）。完整输出：`docs/distill/DISTILL-002-pnpm-desktop-test-output.txt`
 
 ## 关键 API、通道与 testid
 
@@ -66,7 +66,7 @@ Testids：`library-distill`、`distill-progress`、`distill-error`、`distill-pr
 - 实现：`packages/desktop/src/main/distill-adapter.ts`、`packages/desktop/src/main/distill-path.ts`、`packages/desktop/src/renderer/distill/**`，以及主进程 / preload / 渲染壳 / 书库视图 / 对话视图 / 共享类型 / 样式的追加接线
 - 测试：`packages/desktop/test/distill-002.test.ts`，夹具副本与合成失败样本在 `packages/desktop/test/fixtures/distill/`
 - 报告：`docs/distill/DISTILL-002-REPORT.md`、`docs/distill/pull-request.md`
-- 日志：`docs/distill/pnpm-core-test-output.txt`、`docs/distill/pnpm-desktop-test-output.txt`
+- 日志：`docs/distill/DISTILL-002-pnpm-core-test-output.txt`、`docs/distill/DISTILL-002-pnpm-desktop-test-output.txt`
 
 ## 硬性约束确认
 

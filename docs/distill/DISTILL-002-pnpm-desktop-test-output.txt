@@ -1,0 +1,117 @@
+===== pnpm --filter @bookskill/desktop test =====
+Started: 2026-11-16 22:46:05 CST (Asia/Shanghai)
+Node: v24.22.1
+pnpm: 10.34.6
+
+
+> @bookskill/desktop@0.0.0 test /workspace/bookskill-worktrees/DISTILL-002/packages/desktop
+> pnpm --filter @bookskill/repo-baseline build && tsc -p tsconfig.json --noEmit && node --test --test-reporter=spec test/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/DISTILL-002/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ BookSkill data directory initialization
+  ✔ creates the BookSkill layout under BOOKSKILL_DATA_DIR (1.944953ms)
+  ✔ is idempotent and does not overwrite an existing manifest (1.692046ms)
+  ✔ uses the BookSkill XDG directory name, not an AnythingLLM user-data path (0.595114ms)
+  ✔ rejects an AnythingLLM default user directory and does not create it (0.485597ms)
+  ✔ rejects mintplex and anything-llm path markers (0.159747ms)
+✔ BookSkill data directory initialization (5.910055ms)
+▶ DISTILL-002 library distill preview and chat handoff
+  ✔ keeps locked fixture SHA-256 hashes unchanged (1.479109ms)
+  ✔ parses locked 5-segment fixtures and renders a copyable preview without a packaged Electron window (2.939798ms)
+  ✔ imports the Sunzi fixture as draft Skills, attaches book and skill context to chat, and does not publish (30.23407ms)
+  ✔ rejects missing-section, renamed-title, and empty-skills fixtures without writing a Skill (25.20785ms)
+  ✔ fails startDistill without a model adapter instead of inventing a 5-segment success (4.473689ms)
+  ✔ keeps five nav items, defaults to chat, exposes a library distill entry, and does not value-import the core barrel from renderer/distill (0.687756ms)
+✔ DISTILL-002 library distill preview and chat handoff (68.962861ms)
+▶ render error boundary
+  ✔ returns a visible alert panel instead of an empty document (0.678328ms)
+  ✔ escapes untrusted error text so a failed render cannot inject markup (0.163149ms)
+  ✔ catches a thrown render function and still produces visible output (0.142593ms)
+  ✔ passes through a successful render unchanged (0.154582ms)
+  ✔ formats unknown values without going blank (0.149339ms)
+✔ render error boundary (2.298747ms)
+▶ KNOW-001 knowledge base route
+  ✔ keeps status labels aligned with the draft / verified_by_user contract (0.623385ms)
+  ✔ updates only the knowledge nav description and does not add a new top-level entry (0.808737ms)
+  ✔ renders draft and confirmed cards with sources, and has no auto-confirm or auto-publish controls (0.773686ms)
+  ✔ lists imported books and cards drafted from a licensed EPUB as draft (17.882125ms)
+  ✔ saves edits without confirming, then confirms without dropping sources (28.086428ms)
+  ✔ merges and deletes cards while proving book locators remain (30.079779ms)
+✔ KNOW-001 knowledge base route (79.413081ms)
+▶ BookSkill Desktop navigation
+  ✔ exposes exactly five first-level entries with the contract labels (0.901335ms)
+  ✔ defaults to 问题对话 (0.160976ms)
+  ✔ can navigate to every first-level entry (0.129056ms)
+  ✔ rejects unknown routes so a typo cannot silently show a blank view (0.34075ms)
+  ✔ uses the BookSkill Desktop product name, not an AnythingLLM mark (0.175622ms)
+✔ BookSkill Desktop navigation (2.920335ms)
+▶ PATH-001 library import and chat product path
+  ✔ renders a file picker and import control in empty and populated library views (0.845442ms)
+  ✔ imports licensed EPUB and PDF fixtures through the same helper main will use (22.444307ms)
+  ✔ renders a chat composer and sourced citations after import plus a first question (33.546423ms)
+  ✔ reloads sourced turns from the same data directory after close and reopen (23.707111ms)
+✔ PATH-001 library import and chat product path (81.531276ms)
+▶ READ-001 reader locators, excerpts, and annotations
+  ✔ keeps the contract unconfirmed label identical to @bookskill/core (0.744269ms)
+  ✔ shows chapter and paragraph locators for an imported licensed EPUB (15.201183ms)
+  ✔ shows page and paragraph locators for an imported licensed text PDF (17.757187ms)
+  ✔ creates an excerpt from a selection and jumps back to the original location (17.461438ms)
+  ✔ marks unmatched or unconfirmed sources as unconfirmed and never fakes a precise locator (20.885583ms)
+  ✔ persists annotations in the BookSkill data directory across a fresh store instance (15.880198ms)
+✔ READ-001 reader locators, excerpts, and annotations (88.969468ms)
+▶ REL-001 knowledge relations route
+  ✔ keeps the default route on chat and does not add a top-level nav entry (1.132714ms)
+  ✔ renders suggestions outside the confirmed list, with explicit confirm and reject controls (0.565143ms)
+  ✔ shows a confirmed relation only in the formal list after user confirm (0.158846ms)
+  ✔ suggests, confirms, and rejects relations through the catalog without auto-promoting (40.324982ms)
+  ✔ appends relation IPC to the existing bridge and does not rewrite knowledge merge/delete (0.530603ms)
+✔ REL-001 knowledge relations route (44.418032ms)
+▶ REL-002 relations discovery inbox
+  ✔ keeps the default route on chat (0.751359ms)
+  ✔ renders suggestion reasons and batch confirm/reject controls without auto-confirm (0.638443ms)
+  ✔ discovers suggestions through the catalog, then batch confirms and rejects without auto-promoting (25.248499ms)
+  ✔ appends discovery IPC without rewriting merge/delete or the default route (0.594508ms)
+✔ REL-002 relations discovery inbox (28.191599ms)
+▶ SEARCH-001 desktop search
+  ✔ keeps the default route on chat and does not add a top-level nav entry (1.29861ms)
+  ✔ returns labeled, jumpable hits for a licensed book, including file excerpts and notes (28.514897ms)
+  ✔ returns an empty list when nothing matches, and renders an empty state (7.813155ms)
+  ✔ documents the local semantic fallback and does not invent a hosted vector backend (7.278785ms)
+  ✔ does not modify books, knowledge-card status, or annotation files (14.872829ms)
+  ✔ does not ship a hosted vector client in the desktop search module (0.503491ms)
+✔ SEARCH-001 desktop search (61.346512ms)
+SEARCH-002 desktop timing first_query_ms=4.85 warmed_ms=0.46,0.26,0.14
+▶ SEARCH-002 desktop presentation, keyboard, and fuzzy match
+  ✔ keeps the default route on chat and groups, highlights, and keyboard-selects results (25.526333ms)
+  ✔ returns Chinese partial matches and an empty list for a miss, and remains read-only (12.176568ms)
+  ✔ warms the in-process index for typical desktop queries and keeps the semantic fallback local (100.484273ms)
+  ✔ does not ship a hosted vector client or FTS schema in the desktop search module (0.5525ms)
+✔ SEARCH-002 desktop presentation, keyboard, and fuzzy match (139.719627ms)
+▶ SKILL-001 template picker and Skill editor
+  ✔ lists the nine frozen Skill template ids with editable 2.6 summaries (1.255371ms)
+  ✔ creates a draft Skill from a blank form and from each stable template id (14.250519ms)
+  ✔ refuses auto-published creates, saves, and implicit publish attempts (5.511665ms)
+  ✔ applies explicit draft to tested to published and archive transitions, and rejects illegal ones (7.904885ms)
+  ✔ saves by appending a new skill_versions row and leaves the previous JSON untouched (6.684481ms)
+  ✔ reads missing when_to_use keys as empty strings on existing unpublished skills (5.508519ms)
+  ✔ creates a draft concept card from the template and does not mark it verified_by_user (5.134918ms)
+  ✔ renders create controls, contract fields, current version, and the reserved history entry (6.146886ms)
+  ✔ does not add a sixth route or value-import the core barrel from new skills renderer files (0.802169ms)
+✔ SKILL-001 template picker and Skill editor (54.855773ms)
+▶ desktop shell wiring for the VERT-001 slice
+  ✔ initializes the shell data directory and opens the business database under it (10.837877ms)
+✔ desktop shell wiring for the VERT-001 slice (11.518686ms)
+ℹ tests 66
+ℹ suites 13
+ℹ pass 66
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 546.709407
+
+Finished: 2026-11-16 22:46:08 CST (Asia/Shanghai)
+DESKTOP_EXIT:0

@@ -1,7 +1,7 @@
 # PR：DISTILL-002 书库蒸馏预览与加入对话
 
 - 分支：`feat/DISTILL-002`
-- 基础 / 目标只能是：**`integration`**（`26ada833b6bb74bc555435ad1385a70a413728ec`，已含 SKILL-001）。不要改指向 `main`。本分支没有变基到更新后的 `integration`。
+- 基础 / 目标只能是：**`integration`**（已变基到 `0e53bebebcf6ae3a21c3b74c57e788e8efaf1516`，已含 REL-002 / SKILL-004 / COUNCIL-001）。不要改指向 `main`。
 - 类型：**中风险（medium）**。在现有桌面壳上追加蒸馏预览、IPC 与对话上下文侧车；未改 schema 迁移，未写 `packages/core/src/distill/**`，未重写 core Skill 版本写入，未自动确认知识卡，未自动发布 Skill。
 - 状态：实现与本机测试已完成，用于打开远端 PR。**不要由本任务实现者合并或发布。** 由独立 QA 验证通过后才能合入 `integration`。
 - 未合入 `main` / `integration`，未发布，未标 Done，不是 G1 / 可试用 / 发运包。未开工 VER-002。
@@ -33,8 +33,8 @@ pnpm --filter @bookskill/core test
 pnpm --filter @bookskill/desktop test
 ```
 
-- `pnpm --filter @bookskill/core test`：退出码 **0**；**43 passed，0 failed**；时间 2026-11-16 22:41 CST（Asia/Shanghai）；完整输出 `docs/distill/pnpm-core-test-output.txt`
-- `pnpm --filter @bookskill/desktop test`：退出码 **0**；**62 passed，0 failed**（含新增 6 项，既有 READ/KNOW/SEARCH/REL/PATH/SKILL/NAV 继续通过，含 `tsc --noEmit`）；时间 2026-11-16 22:41 CST（Asia/Shanghai）；完整输出 `docs/distill/pnpm-desktop-test-output.txt`
+- `pnpm --filter @bookskill/core test`：退出码 **0**；**86 passed，0 failed**；时间 2026-11-16 22:45–22:46 CST（Asia/Shanghai）；完整输出 `docs/distill/DISTILL-002-pnpm-core-test-output.txt`
+- `pnpm --filter @bookskill/desktop test`：退出码 **0**；**66 passed，0 failed**（含新增项，既有 READ/KNOW/SEARCH/REL/PATH/SKILL/NAV 继续通过，含 `tsc --noEmit`；`rel-002.test.ts` 已补蒸馏桥接桩）；时间 2026-11-16 22:46 CST（Asia/Shanghai）；完整输出 `docs/distill/DISTILL-002-pnpm-desktop-test-output.txt`
 - 环境：Node v24.22.1，pnpm 10.34.6，Linux x86_64
 
 IPC：`distill:start`、`distill:importMarkdown`、`distill:load`、`distill:list`、`distill:attachToChat`、`distill:loadChatContext`。
