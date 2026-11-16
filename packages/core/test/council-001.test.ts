@@ -65,7 +65,8 @@ describe("COUNCIL-001 locked fixtures", () => {
     for (const [filename, expected] of Object.entries(EXPECTED_FIXTURE_HASHES)) {
       const actual = sha256File(path.join(FIXTURE_DIR, filename));
       assert.equal(actual, expected, `${filename} hash changed`);
-      assert.match(sums, new RegExp(`${expected}\\s+\\S+${filename.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+      const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      assert.match(sums, new RegExp(`${expected}\\s+${escaped}\\s*$`, "m"));
     }
   });
 
@@ -279,8 +280,8 @@ describe("COUNCIL-001 single-seat and roundtable", () => {
 });
 
 describe("COUNCIL-001 isolation and contracts", () => {
-  it("does not add a distill module, schema migration, or sixth top-level nav item", () => {
-    assert.equal(fs.existsSync(path.join(CORE_SRC, "distill")), false);
+  it("keeps council isolated from distill imports, schema migrations, and a sixth top-level nav item", () => {
+    // DISTILL-001 may now own packages/core/src/distill/**; council must still use its local parser.
     const councilFiles = walkTs(path.join(CORE_SRC, "council"));
     for (const filePath of councilFiles) {
       const source = fs.readFileSync(filePath, "utf8");

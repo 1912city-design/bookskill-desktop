@@ -246,6 +246,7 @@ export type {
   RunCouncilRoundtableOptions,
 } from "./council/index.ts";
 
+export {
   DISTILL_DIRNAME,
   DISTILL_TEMPLATE_ID,
   LOCKED_SECTION_TITLES,
