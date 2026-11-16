@@ -14,7 +14,7 @@
 
 当前 Linux 环境缺失：
 
-- macOS 13+ 机器，或 GitHub-hosted `macos-14+` runner
+- macOS 13+ 机器，或 GitHub-hosted `macos-15` runner（macos-14 已退役）
 - Xcode Command Line Tools（`xcodebuild`）
 - `hdiutil`（制作 `.dmg` 所必需）
 - `iconutil`（将 `packages/desktop/resources/icon.png` 转为 `.icns` 所必需）
@@ -80,7 +80,7 @@ pnpm --filter @bookskill/desktop pack:dir
 
 工作流：`.github/workflows/macos-dev-build.yml`，名称「Unsigned macOS 13+ development build」。
 
-- `runs-on: macos-14`（在 14/15 上构建可以，只要 `minimumSystemVersion` 仍是 `13.0`）
+- `runs-on: macos-15`（GitHub 已于 2026-11-02 退役 macos-14，本机实测标注 `macos-14-arm64-us-default` 不受支持。在 macos-15 上构建可以，`minimumSystemVersion` 仍为 `13.0`）
 - 触发：`workflow_dispatch`、向 `integration` 开 pull request、推送到 `feat/PKG-001` 或 `integration`
 - 现有 ubuntu `ci.yml` 的 lint / test / build 任务保持不变
 - 作业环境设置 `CSC_IDENTITY_AUTO_DISCOVERY=false`

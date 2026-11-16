@@ -6,7 +6,7 @@
 
 ## 摘要
 
-为 BookSkill Desktop 接上未签名 macOS 13+ 开发样品的打包路径：electron-builder 配置、`pack:mac` 脚本、文档，以及 `macos-14` GitHub Actions 工作流。当前 Linux 云电脑不能产出可用的 `.dmg` / `.app`；样品必须在 macOS 或该 Actions 作业中构建。
+为 BookSkill Desktop 接上未签名 macOS 13+ 开发样品的打包路径：electron-builder 配置、`pack:mac` 脚本、文档，以及 `macos-15` GitHub Actions 工作流。当前 Linux 云电脑不能产出可用的 `.dmg` / `.app`；样品必须在 macOS 或该 Actions 作业中构建。
 
 这不是正式发布，不是已签名 / 已公证的安装包，也未宣布 G1 通过。
 

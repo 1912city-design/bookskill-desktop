@@ -10,7 +10,7 @@
 
 官方 electron-builder 规则：macOS DMG / `.app` 包装必须在 macOS 上运行。本机已确认缺失：`hdiutil`、`codesign`、`notarytool`、`xcodebuild`、`sw_vers`、`iconutil`、`security`、`lipo`、`pkgbuild`、`productbuild`、`osxcross`、`darling`，以及任何 Apple 签名身份。现有 `pack:dir` 写死 Linux x64 解包目录，脚本自身已写明它不是 V1 目标 OS 安装包。未尝试在 Linux 上打假 DMG，也未用浏览器原型或 Linux 构建代替。
 
-最短可执行路径：在 macOS 13+ 机器上运行 `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter @bookskill/desktop pack:mac`，或等待 / 下载 `.github/workflows/macos-dev-build.yml`（`runs-on: macos-14`）产出的 artifact。
+最短可执行路径：在 macOS 13+ 机器上运行 `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter @bookskill/desktop pack:mac`，或等待 / 下载 `.github/workflows/macos-dev-build.yml`（`runs-on: macos-15`，因 macos-14 已退役）产出的 artifact。
 
 ## 做了什么
 
@@ -38,3 +38,7 @@
 - 不是正式发布，未向 main / integration 合入，未打 GitHub Release
 - 不是已签名 / 已公证安装包；B-003 仍然阻塞正式签名安装包
 - 不是 G1 通过。G1 还需要在目标 OS 上实际启动，并确认 BookSkill 数据目录隔离
+
+## Actions 运行说明
+
+首次推送使用 `runs-on: macos-14`。作业在约 1 秒内被取消，未分配 runner。检查注释为：`The configuration 'macos-14-arm64-us-default' is not supported`。GitHub 已于 2026-11-02 退役 macos-14 镜像。已改为 `runs-on: macos-15`（`minimumSystemVersion` 仍为 13.0），并再次推送。ubuntu `ci.yml` 在同一 SHA 上已成功。

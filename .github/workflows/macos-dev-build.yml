@@ -18,7 +18,10 @@ on:
 jobs:
   macos-dev-build:
     name: Unsigned macOS 13+ development sample
-    runs-on: macos-14
+    # macos-14 was retired on 2026-11-02
+    # (annotation: "The configuration 'macos-14-arm64-us-default' is not supported").
+    # Building on macos-15 is allowed; minimumSystemVersion remains 13.0.
+    runs-on: macos-15
     timeout-minutes: 45
     env:
       # Unsigned sample: do not fail looking for a signing certificate.

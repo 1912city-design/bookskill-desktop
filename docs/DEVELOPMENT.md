@@ -122,7 +122,7 @@ CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter @bookskill/desktop pack:mac
 
 产物目录：`packages/desktop/out/`。打开未签名应用时，在访达中对 `BookSkill Desktop.app` 右键选择「打开」，或到「系统设置 → 隐私与安全性」允许这次打开。不要全局关闭 Gatekeeper。
 
-GitHub Actions 工作流：`.github/workflows/macos-dev-build.yml`（`runs-on: macos-14`，`workflow_dispatch` / 向 `integration` 开 PR / 推送到 `feat/PKG-001` 或 `integration`）。远程成功只说明未签名开发样品已打出，不是 G1，也不是正式发布。
+GitHub Actions 工作流：`.github/workflows/macos-dev-build.yml`（`runs-on: macos-15`，因 GitHub 已于 2026-11-02 退役 macos-14；`minimumSystemVersion` 仍为 13.0。`workflow_dispatch` / 向 `integration` 开 PR / 推送到 `feat/PKG-001` 或 `integration`）。远程成功只说明未签名开发样品已打出，不是 G1，也不是正式发布。
 
 更完整的缺失项、限制和操作步骤见 `docs/pkg/MACOS-DEV-BUILD.md`。
 

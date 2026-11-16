@@ -5,7 +5,7 @@ BookSkill Desktop 的自有 Electron 壳与一级导航。这不是 AnythingLLM 
 当前本机（Linux x86_64 云电脑）只能做开发运行、冒烟，以及未签名的 Linux 解包目录构建。**不能**在这台 Linux 主机上交叉编译或产出可用的 macOS 13+ `.dmg` / `.app`。V1 目标 OS 是 Windows 11 x64 和 macOS 13+。**不能**据此宣布 G1 已通过。
 
 - `pnpm pack:dir`：未签名的 Linux 解包目录，仅供本机开发，不是 V1 安装包，请继续保留。
-- `pnpm pack:mac`：未签名的 macOS 13+ 开发样品（`.dmg` + `.zip`）。必须在 macOS 13+ 机器或 GitHub-hosted `macos-14+` runner 上执行。在 Linux 上会以退出码 1 立即失败，并列出精确缺失项。这不是正式发布，也不是已签名 / 已公证的安装包。
+- `pnpm pack:mac`：未签名的 macOS 13+ 开发样品（`.dmg` + `.zip`）。必须在 macOS 13+ 机器或 GitHub-hosted `macos-15` runner（macos-14 已退役）上执行。在 Linux 上会以退出码 1 立即失败，并列出精确缺失项。这不是正式发布，也不是已签名 / 已公证的安装包。
 - `pnpm pack:win`：未签名的 Windows 11 x64 打包入口。必须在 Windows 上执行；在非 Windows 主机会以退出码 1 失败。
 
 配置见 `electron-builder.yml`（`appId`: `design.city1912.bookskill.desktop`）。说明见 `docs/pkg/MACOS-DEV-BUILD.md`。
