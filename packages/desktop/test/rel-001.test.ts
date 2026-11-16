@@ -272,6 +272,27 @@ describe("REL-001 knowledge relations route", () => {
       ask: async () => ({ id: "", title: "", turns: [] }),
       loadConversation: async () => ({ id: "", title: "", turns: [] }),
       listConversations: async () => [],
+      listSkillTemplates: async () => [],
+      instantiateSkillTemplate: async () => {
+        throw new Error("unused");
+      },
+      createBlankSkill: async () => {
+        throw new Error("unused");
+      },
+      listSkills: async () => [],
+      loadSkill: async () => {
+        throw new Error("unused");
+      },
+      saveSkill: async () => {
+        throw new Error("unused");
+      },
+      updateSkillMetadata: async () => {
+        throw new Error("unused");
+      },
+      transitionSkillStatus: async () => {
+        throw new Error("unused");
+      },
+      instantiateConceptCard: async () => [],
     };
     assert.equal(typeof bridge.suggestRelation, "function");
     assert.equal(emptyKnowledgeUiState().selectedCardId, null);

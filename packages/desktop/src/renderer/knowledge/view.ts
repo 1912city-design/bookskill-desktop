@@ -74,6 +74,16 @@ function renderDraftForm(state: KnowledgeUiState): string {
   ].join("");
 }
 
+function renderConceptTemplate(): string {
+  return [
+    `<div class="knowledge-concept-template">`,
+    `<h2>从模板新建草稿</h2>`,
+    `<p class="knowledge-help">概念卡模板只生成 draft 知识卡，带标题、定义/内容、适用条件、限制和来源占位。确认前不会变为 verified_by_user，也不会伪造来源行。</p>`,
+    `<button type="button" class="knowledge-secondary" data-testid="knowledge-concept-template">从模板新建草稿</button>`,
+    `</div>`,
+  ].join("");
+}
+
 function renderEditor(state: KnowledgeUiState): string {
   const selected = state.cards.find((card) => card.id === state.selectedCardId);
   if (!selected) {
@@ -135,6 +145,7 @@ export function renderKnowledgeRoute(state: KnowledgeUiState): string {
     `<section class="knowledge-list-pane">`,
     `<p class="knowledge-lead">知识卡从来源生成时为草稿（draft）。只有你点「确认」后才会变为已确认（verified_by_user）。AI 不会自动确认卡片，也不会自动发布 Skill。</p>`,
     renderDraftForm(state),
+    renderConceptTemplate(),
     renderCardList(state),
     `</section>`,
     `<section class="knowledge-detail-pane">`,

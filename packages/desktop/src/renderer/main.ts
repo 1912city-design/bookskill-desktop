@@ -22,6 +22,8 @@ import { emptySearchUiState, type SearchUiState } from "./search/types.ts";
 import { renderSearchPanel } from "./search/view.ts";
 import { emptyChatUiState, type ChatUiState } from "./chat/types.ts";
 import { renderChatRoute } from "./chat/view.ts";
+import { draftFromSkill, emptySkillEditorDraft, emptySkillsUiState, type SkillEditorDraft, type SkillsUiState } from "./skills/types.ts";
+import { renderSkillsRoute } from "./skills/view.ts";
 
 function escapeHtml(value: string): string {
   return value
@@ -59,9 +61,10 @@ type ShellState = {
   search: SearchUiState;
   relations: RelationsUiState;
   chat: ChatUiState;
+  skills: SkillsUiState;
 };
 
-function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState): string {
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState, skills: SkillsUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -96,6 +99,8 @@ function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiSt
           ? `${renderKnowledgeRoute(knowledge)}${renderRelationsRoute(relations, knowledge.cards)}`
         : view.id === "chat"
           ? renderChatRoute(chat)
+        : view.id === "skills"
+          ? renderSkillsRoute(skills)
         : `<p class="view-note">此入口已可导航。薄切片的导入、知识卡、Skill 与离线对话已接到本机业务库；完整阅读器或 Skill Studio 不在本页范围。</p>`;
 
   return [
@@ -142,6 +147,9 @@ function bindNavigation(root: HTMLElement, state: ShellState): void {
           }
           if (id === "chat") {
             await ensureChat(state);
+          }
+          if (id === "skills") {
+            await ensureSkills(state);
           }
           paint(root, state);
         } catch (error) {
@@ -397,6 +405,28 @@ function bindKnowledge(root: HTMLElement, state: ShellState): void {
         const created = state.knowledge.cards[0];
         selectKnowledgeCard(state, created?.id ?? null);
         state.knowledge.statusMessage = "已生成知识卡草稿。确认之前它仍是 draft。";
+        state.knowledge.locatorProof = [];
+        state.knowledge.error = null;
+        await ensureRelations(state);
+        paint(root, state);
+      } catch (error) {
+        state.knowledge.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='knowledge-concept-template']")?.addEventListener("click", () => {
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.instantiateConceptCard) {
+          throw new Error("知识库尚未连接到概念卡模板。");
+        }
+        state.knowledge.cards = await bridge.instantiateConceptCard();
+        const created = state.knowledge.cards[0];
+        selectKnowledgeCard(state, created?.id ?? null);
+        state.knowledge.statusMessage = "已从概念卡模板生成草稿。确认之前它仍是 draft。";
         state.knowledge.locatorProof = [];
         state.knowledge.error = null;
         await ensureRelations(state);
@@ -689,7 +719,7 @@ function bindSearch(root: HTMLElement, state: ShellState): void {
 }
 
 function paint(root: HTMLElement, state: ShellState): void {
-  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations, state.chat));
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations, state.chat, state.skills));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
@@ -701,6 +731,7 @@ function paint(root: HTMLElement, state: ShellState): void {
   bindSearch(root, state);
   bindRelations(root, state);
   bindChat(root, state);
+  bindSkills(root, state);
 }
 
 function bindChat(root: HTMLElement, state: ShellState): void {
@@ -837,6 +868,253 @@ async function ensureRelations(state: ShellState): Promise<void> {
   }
 }
 
+function readSkillDraft(root: HTMLElement, fallback: SkillEditorDraft): SkillEditorDraft {
+  return {
+    name: root.querySelector<HTMLInputElement>("[data-testid='skill-name']")?.value ?? fallback.name,
+    domain: root.querySelector<HTMLSelectElement>("[data-testid='skill-domain']")?.value ?? fallback.domain,
+    purpose: root.querySelector<HTMLTextAreaElement>("[data-testid='skill-purpose']")?.value ?? fallback.purpose,
+    whenToUse: root.querySelector<HTMLTextAreaElement>("[data-testid='skill-when-to-use']")?.value ?? fallback.whenToUse,
+    whenNotToUse: root.querySelector<HTMLTextAreaElement>("[data-testid='skill-when-not-to-use']")?.value ?? fallback.whenNotToUse,
+    inputsText: root.querySelector<HTMLTextAreaElement>("[data-testid='skill-inputs']")?.value ?? fallback.inputsText,
+    stepsText: root.querySelector<HTMLTextAreaElement>("[data-testid='skill-steps']")?.value ?? fallback.stepsText,
+    rulesText: root.querySelector<HTMLTextAreaElement>("[data-testid='skill-rules']")?.value ?? fallback.rulesText,
+    outputSchemaText: root.querySelector<HTMLTextAreaElement>("[data-testid='skill-output-schema']")?.value ?? fallback.outputSchemaText,
+    network: root.querySelector<HTMLInputElement>("[data-testid='skill-permission-network']")?.checked ?? fallback.network,
+    writeFiles: root.querySelector<HTMLInputElement>("[data-testid='skill-permission-write-files']")?.checked ?? fallback.writeFiles,
+    modelProvider: root.querySelector<HTMLInputElement>("[data-testid='skill-permission-model']")?.value ?? fallback.modelProvider,
+  };
+}
+
+function parseEditorJson<T>(raw: string, label: string): T {
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    throw new Error(`${label} 不是合法的 JSON。`);
+  }
+}
+
+function parseEditorRules(raw: string): string[] {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return [];
+  }
+  if (trimmed.startsWith("[")) {
+    const parsed = parseEditorJson<unknown>(trimmed, "规则");
+    return Array.isArray(parsed) ? parsed.map((entry) => (typeof entry === "string" ? entry : JSON.stringify(entry))) : [];
+  }
+  return trimmed.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+}
+
+function applyOpenedSkill(state: ShellState, skill: NonNullable<SkillsUiState["editor"]>): void {
+  state.skills.editor = skill;
+  state.skills.selectedSkillId = skill.id;
+  state.skills.draft = draftFromSkill(skill);
+}
+
+async function refreshSkillList(state: ShellState): Promise<void> {
+  const bridge = getBridge();
+  if (bridge?.listSkills) {
+    state.skills.skills = await bridge.listSkills();
+  }
+  if (bridge?.getShellInfo) {
+    try {
+      state.info = await bridge.getShellInfo();
+    } catch {
+      // Slice summary refresh is optional after a Skill write.
+    }
+  }
+}
+
+function bindSkills(root: HTMLElement, state: ShellState): void {
+  if (state.nav.current !== "skills") {
+    return;
+  }
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='open-skill']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const skillId = button.getAttribute("data-skill-id");
+      if (!skillId) {
+        return;
+      }
+      void (async () => {
+        try {
+          const bridge = getBridge();
+          if (!bridge?.loadSkill) {
+            throw new Error("Skills 尚未连接到本机业务库。");
+          }
+          applyOpenedSkill(state, await bridge.loadSkill(skillId));
+          state.skills.error = null;
+          state.skills.statusMessage = null;
+          paint(root, state);
+        } catch (error) {
+          state.skills.error = formatErrorMessage(error);
+          paint(root, state);
+        }
+      })();
+    });
+  });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='skill-create-blank']")?.addEventListener("click", () => {
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.createBlankSkill) {
+          throw new Error("Skills 尚未连接到本机业务库。");
+        }
+        const created = await bridge.createBlankSkill();
+        await refreshSkillList(state);
+        applyOpenedSkill(state, created);
+        state.skills.statusMessage = "已从空白表单生成草稿。保存或创建都不会自动发布。";
+        state.skills.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.skills.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='skill-instantiate']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const templateId = button.getAttribute("data-template-id");
+      if (!templateId) {
+        return;
+      }
+      void (async () => {
+        try {
+          const bridge = getBridge();
+          if (!bridge?.instantiateSkillTemplate) {
+            throw new Error("Skills 尚未连接到本机业务库。");
+          }
+          const created = await bridge.instantiateSkillTemplate({ templateId });
+          await refreshSkillList(state);
+          applyOpenedSkill(state, created);
+          state.skills.statusMessage = "已从模板生成草稿。模板不会自动发布。";
+          state.skills.error = null;
+          paint(root, state);
+        } catch (error) {
+          state.skills.error = formatErrorMessage(error);
+          paint(root, state);
+        }
+      })();
+    });
+  });
+
+  root.querySelector<HTMLFormElement>("[data-testid='skill-editor']")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const skillId = state.skills.selectedSkillId;
+    if (!skillId) {
+      return;
+    }
+    const draft = readSkillDraft(root, state.skills.draft);
+    state.skills.draft = draft;
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.saveSkill) {
+          throw new Error("Skills 尚未连接到本机业务库。");
+        }
+        const saved = await bridge.saveSkill({
+          skillId,
+          name: draft.name,
+          domain: draft.domain,
+          purpose: draft.purpose,
+          whenToUse: draft.whenToUse,
+          whenNotToUse: draft.whenNotToUse,
+          inputs: parseEditorJson(draft.inputsText, "输入"),
+          steps: parseEditorJson(draft.stepsText, "步骤"),
+          rules: parseEditorRules(draft.rulesText),
+          outputSchema: parseEditorJson(draft.outputSchemaText, "输出 schema"),
+          permissions: {
+            network: draft.network,
+            writeFiles: draft.writeFiles,
+            modelProvider: draft.modelProvider,
+          },
+        });
+        await refreshSkillList(state);
+        applyOpenedSkill(state, saved);
+        state.skills.statusMessage = "已保存为新版本。既有版本行未被改写，保存不会发布。";
+        state.skills.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.skills.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  const transition = (action: "mark_tested" | "publish" | "archive", message: string, confirmedByUser?: boolean) => {
+    const skillId = state.skills.selectedSkillId;
+    if (!skillId) {
+      return;
+    }
+    if (root.querySelector("[data-testid='skill-editor']")) {
+      state.skills.draft = readSkillDraft(root, state.skills.draft);
+    }
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.transitionSkillStatus) {
+          throw new Error("Skills 尚未连接到本机业务库。");
+        }
+        const updated = await bridge.transitionSkillStatus({
+          skillId,
+          action,
+          confirmedByUser,
+        });
+        await refreshSkillList(state);
+        applyOpenedSkill(state, updated);
+        state.skills.statusMessage = message;
+        state.skills.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.skills.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  };
+
+  root.querySelector<HTMLButtonElement>("[data-testid='skill-mark-tested']")?.addEventListener("click", () => {
+    transition("mark_tested", "已标记为已测试。");
+  });
+  root.querySelector<HTMLButtonElement>("[data-testid='skill-publish']")?.addEventListener("click", () => {
+    transition("publish", "已由你显式发布。", true);
+  });
+  root.querySelector<HTMLButtonElement>("[data-testid='skill-archive']")?.addEventListener("click", () => {
+    transition("archive", "已归档。");
+  });
+}
+
+async function ensureSkills(state: ShellState): Promise<void> {
+  const bridge = getBridge();
+  if (!bridge?.listSkillTemplates && !bridge?.listSkills) {
+    state.skills.loaded = true;
+    return;
+  }
+  try {
+    const [templates, skills] = await Promise.all([
+      bridge.listSkillTemplates ? bridge.listSkillTemplates() : Promise.resolve(state.skills.templates),
+      bridge.listSkills ? bridge.listSkills() : Promise.resolve(state.skills.skills),
+    ]);
+    state.skills.templates = templates;
+    state.skills.skills = skills;
+    if (state.skills.selectedSkillId && bridge.loadSkill) {
+      if (!skills.some((skill) => skill.id === state.skills.selectedSkillId)) {
+        state.skills.selectedSkillId = null;
+        state.skills.editor = null;
+        state.skills.draft = emptySkillEditorDraft();
+      } else {
+        applyOpenedSkill(state, await bridge.loadSkill(state.skills.selectedSkillId));
+      }
+    }
+    state.skills.error = null;
+  } catch (error) {
+    state.skills.error = formatErrorMessage(error);
+  } finally {
+    state.skills.loaded = true;
+  }
+}
+
 async function loadShellInfo(): Promise<ShellInfo> {
   const bridge = getBridge();
   if (bridge) {
@@ -886,6 +1164,7 @@ async function start(): Promise<void> {
       search: emptySearchUiState(),
       relations: emptyRelationsUiState(),
       chat: emptyChatUiState(),
+      skills: emptySkillsUiState(),
     };
     if (nav.current === "library") {
       await ensureLibraryBooks(state);
@@ -896,6 +1175,9 @@ async function start(): Promise<void> {
     }
     if (nav.current === "chat") {
       await ensureChat(state);
+    }
+    if (nav.current === "skills") {
+      await ensureSkills(state);
     }
     paint(root, state);
   } catch (error) {

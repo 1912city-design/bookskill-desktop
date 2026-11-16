@@ -54,4 +54,13 @@ contextBridge.exposeInMainWorld("bookskillDesktop", {
   ask: (input) => ipcRenderer.invoke("conversation:ask", input),
   loadConversation: (conversationId) => ipcRenderer.invoke("conversation:load", conversationId),
   listConversations: () => ipcRenderer.invoke("conversation:list"),
+  listSkillTemplates: () => ipcRenderer.invoke("skills:listTemplates"),
+  instantiateSkillTemplate: (input) => ipcRenderer.invoke("skills:instantiateTemplate", input),
+  createBlankSkill: (input) => ipcRenderer.invoke("skills:createBlank", input),
+  listSkills: () => ipcRenderer.invoke("skills:list"),
+  loadSkill: (skillId) => ipcRenderer.invoke("skills:load", skillId),
+  saveSkill: (input) => ipcRenderer.invoke("skills:save", input),
+  updateSkillMetadata: (input) => ipcRenderer.invoke("skills:updateMetadata", input),
+  transitionSkillStatus: (input) => ipcRenderer.invoke("skills:transitionStatus", input),
+  instantiateConceptCard: () => ipcRenderer.invoke("knowledge:instantiateConceptTemplate"),
 });
