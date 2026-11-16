@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-- 更新时间：2026-11-14 20:51 Asia/Shanghai
+- 更新时间：2026-11-16 22:31 Asia/Shanghai
 - 合同：`docs/GROK_EXECUTION_SPEC.md`（SHA-256 `7b2cd11ac44e4dcc5d9f4b219c837ce8ddc2be86856e02327352e545418b64d2`）
 - 发布仓库：已连接，**公开**仓库 https://github.com/1912city-design/bookskill-desktop
 - 默认分支 `origin/main`：`953ba8d`（合入 REPO-001，PR #1）。分支保护：repository ruleset `27261747`，`enforcement: active`（P-001，2026-11-14 20:50 Asia/Shanghai）。
@@ -42,3 +42,16 @@
 ## 阻塞与待决策
 
 见 `docs/BLOCKERS.md` 与 `docs/PENDING_DECISIONS.md`。B-001 已解除。B-002 已 ACCEPTED。
+
+
+## 本轮推进（2026-11-16 22:31 Asia/Shanghai）
+
+当前 `origin/integration`：`26ada833`（已含 SEARCH-002、SKILL-001）。`origin/main` 仍为 `953ba8d`。
+
+负责人要求落地完整蒸馏工作台模块。已拆票并立即启动 P0，且：
+
+- 锁定 5 段模板与三本定稿原件只读（D-027）
+- 不以 AnythingLLM 工作区 Pin 为产品路径（D-028）
+- VER-001 PR #15 仍开放，未把 22:30 的新需求视为合入确认（P-013）
+
+P0 进行中：DISTILL-001、DISTILL-002、COUNCIL-001。P1/P2 仍为 Backlog：GRAPH-001、DISTILL-003、SKILL-FUSE-001。非正式交付，未宣布 G1/G2。

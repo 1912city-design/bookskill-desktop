@@ -1,6 +1,7 @@
 # TASKS
 
-- 更新时间：2026-11-14 20:51 Asia/Shanghai
+- 更新时间：2026-11-16 22:31 Asia/Shanghai
+- 上次更新已作废，以本行时间为准：2026-11-14 20:51 Asia/Shanghai
 - 状态机：`Backlog → Ready → In Progress → Pull Request → CI → Independent QA → Auto-merge to integration（低/中风险）或 Human Approval（高风险）→ Done`
 - 合入规则：D-025 与 `docs/policies/merge-policy.yml`。低/中风险在 CI + 独立 QA 通过后由 Orchestrator 自动合入 `integration`，不逐个询问。高风险与生产发布、以及分支保护启用前合入 `main`，须人工确认（记入 `docs/PENDING_DECISIONS.md`）。
 - 并行规则：最多 6 个互不冲突的开发任务；每个子系统同一时间只允许一个实现 Agent 修改；独立分支或 worktree。
@@ -22,6 +23,13 @@
 | KNOW-001 | 见 `docs/tickets/KNOW-001.md`（`knowledge` 核心与 `packages/desktop/src/renderer/knowledge/**`、`docs/know/**`） | 导入管道、阅读 UI、taste-skill 原型树、治理文件 |
 | SEARCH-001 | 见 `docs/tickets/SEARCH-001.md`（搜索核心与 `packages/desktop/src/renderer/search/**`、`docs/search/**`） | 知识关系实现、导入管道、阅读 UI、taste-skill 原型树、治理文件 |
 | REL-001 | 见 `docs/tickets/REL-001.md`（关系建议/确认与 `packages/desktop/src/renderer/relations/**`、`docs/rel/**`） | 搜索实现、导入管道、阅读 UI、taste-skill 原型树、治理文件；不得改 KNOW-001 合并/删除契约 |
+| DISTILL-001 | 见 `docs/tickets/DISTILL-001.md`（`packages/core/src/distill/**`、`docs/distill/**`、只读夹具） | 桌面 UI、`packages/data` 迁移、搜索/关系实现、锁定模板与定稿原件、治理文件 |
+| DISTILL-002 | 见 `docs/tickets/DISTILL-002.md`（`packages/desktop/src/renderer/distill/**`、书库/对话追加接线、`docs/distill/**`） | `packages/core/src/distill/**`、`packages/data`、治理文件、第六个一级导航 |
+| COUNCIL-001 | 见 `docs/tickets/COUNCIL-001.md`（`packages/core/src/council/**`、可选最小 desktop 接线、`docs/council/**`） | `packages/core/src/distill/**`、`packages/data`、锁定原件、第六个一级导航 |
+| GRAPH-001 | 见 `docs/tickets/GRAPH-001.md` | P0 实现路径；锁定原件；AnythingLLM 内部库 |
+| DISTILL-003 | 见 `docs/tickets/DISTILL-003.md` | 转录集成、锁定原件 |
+| SKILL-FUSE-001 | 见 `docs/tickets/SKILL-FUSE-001.md` | 改写已有 Skill 版本、自动发布 |
+
 
 本地 worktree：
 
@@ -68,5 +76,25 @@
 | PKG-001 | F | Backlog | release_engineer | APP-001, REPO-001 | 双平台可重复打包 |
 | QA-001 | F | Backlog | qa_security | AT 所需功能任务 | 端到端、安全、隐私、升级回归 |
 | REL-001 | F | Backlog | release_engineer | QA-001, GOV-001, PKG-001 | 候选发布包与发行文档 |
-
+| DISTILL-001 | E | Ready（已开工） | ai_skill_engineer | IMPORT-001, VERT-001, SKILL-001 | 锁定 5 段蒸馏流水线：解析/校验/draft Skill |
+| DISTILL-002 | E | Ready（已开工） | frontend_engineer | DISTILL-001（可按冻结 API 并行） | 上传→进度→预览→加入对话 |
+| COUNCIL-001 | E | Ready（已开工） | ai_skill_engineer | 三本定稿夹具 | 智囊团 MVP：三席 + 圆桌 + 来源 |
+| GRAPH-001 | E | Backlog | ai_skill_engineer | DISTILL-001 | 蒸馏结果转可交互图谱 |
+| DISTILL-003 | E | Backlog | ai_skill_engineer | DISTILL-001, COUNCIL-001 | 多源文本蒸馏（先文本，后转录） |
+| SKILL-FUSE-001 | E | Backlog | ai_skill_engineer | DISTILL-001, SKILL-001, COUNCIL-001 | 手动融合两个 Skill 为新草稿 |
 工单正文见 `docs/tickets/`。缺少验收条件的工单不得进入 Ready。
+
+
+## 本轮推进（2026-11-16 22:31 Asia/Shanghai）
+
+负责人要求把「书籍蒸馏 → 可调用 Skill、知识图谱、智囊团、多源蒸馏、Skill 融合、工作台流程」拆成可执行任务并开始落地，且保留已有蒸馏结果和 5 段模板。已按 D-027 / D-028 写入工单，不覆盖原件，不以 AnythingLLM 工作区 Pin 为产品路径。
+
+立即开工（P0）：
+
+- DISTILL-001：`/workspace/bookskill-worktrees/DISTILL-001`，`feat/DISTILL-001`
+- DISTILL-002：`/workspace/bookskill-worktrees/DISTILL-002`，`feat/DISTILL-002`
+- COUNCIL-001：`/workspace/bookskill-worktrees/COUNCIL-001`，`feat/COUNCIL-001`
+
+排队（P1/P2）：GRAPH-001、DISTILL-003、SKILL-FUSE-001。工作台页面映射到现有五级导航（书库 / 知识库 / 问题对话等），P0 不新增一级导航。
+
+并行中、不混入本轮实现：SEARCH-002 与 SKILL-001 已合入 `origin/integration` @ `26ada833`；REL-002 [PR #18](https://github.com/1912city-design/bookskill-desktop/pull/18)、SKILL-004 [PR #19](https://github.com/1912city-design/bookskill-desktop/pull/19) 正独立 QA；VER-001 [PR #15](https://github.com/1912city-design/bookskill-desktop/pull/15) 仍开放，等待合入确认（P-013）。不得合入 `main`，不得发布，不得宣布完成。

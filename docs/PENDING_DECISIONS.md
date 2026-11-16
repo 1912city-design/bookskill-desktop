@@ -17,6 +17,8 @@
 | P-011 | 数据完整性（后续） | READ-001 批注目前写入 `{dataDir}/library/{bookId}/annotations.json`，不是 SQLite 行；同书并发写入可能互相覆盖，写到一半崩溃时下次加载可能读成空列表。 | 若把批注迁入数据库，属于 schema 迁移，按 D-025 为高风险合入。 | 已记录。不在未确认前改 schema。 | 见 [PR #5](https://github.com/1912city-design/bookskill-desktop/pull/5) 与 `docs/read/READ-001-REPORT.md`。 |
 | P-012 | 数据完整性（后续） | KNOW-001 合并不写入 `knowledge_relations`（避免删除被吸收卡后外键悬空）；被吸收卡上的 Skill 来源链接按既有删除契约去掉，不会自动改挂到保留卡。 | 若要可审计的合并记录，或合并时改挂 Skill 来源，可能需要新表或改变删除契约，按 D-025 为高风险。 | 已记录。不在未确认前改 schema 或删除契约。REL-001 只使用现有 `knowledge_relations` 表做建议/确认，不改合并/删除契约。 | 见 [PR #6](https://github.com/1912city-design/bookskill-desktop/pull/6) 与 `docs/know/KNOW-001-REPORT.md`。 |
 
+| P-013 | 数据迁移（VER-001） | 知识卡本地修订历史需要 schema V3。按 D-025，合入 `integration` 须人工确认。 | 独立 QA 已在 [PR #15](https://github.com/1912city-design/bookskill-desktop/pull/15) 上完成并通过，PR 仍开放。 | 等待负责人确认是否只合入 `integration`（不合入 `main`、不发布）。2026-11-16 22:30 的新需求不是对该确认的答复，故 PR 保持开放，不自动合入。 | 见 `docs/tickets/VER-001.md`。 |
+
 已由负责人拍板、不再列入等待的事项：
 
 - 发布仓库：`https://github.com/1912city-design/bookskill-desktop`。2026-11-14 已由负责人确认改为**公开**仓库（可见性 `PUBLIC`）。
