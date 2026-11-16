@@ -153,12 +153,15 @@ function splitSections(markdown: string): Array<{ id: number; title: string; con
   const sections: Array<{ id: number; title: string; content: string }> = [];
   for (let index = 0; index < matches.length; index += 1) {
     const current = matches[index];
+    if (!current) {
+      continue;
+    }
     const next = matches[index + 1];
     const start = (current.index ?? 0) + current[0].length;
     const end = next?.index ?? markdown.length;
     sections.push({
       id: Number(current[1]),
-      title: current[2].trim(),
+      title: (current[2] ?? "").trim(),
       content: trimSectionBody(markdown.slice(start, end)),
     });
   }
@@ -270,6 +273,9 @@ export function parseSkills(content: string): DistillationSkill[] {
   const skills: DistillationSkill[] = [];
   for (let index = 0; index < matches.length; index += 1) {
     const current = matches[index];
+    if (!current) {
+      continue;
+    }
     const next = matches[index + 1];
     const start = (current.index ?? 0) + current[0].length;
     const end = next?.index ?? content.length;
@@ -298,13 +304,20 @@ function extractSkillFields(body: string): Map<string, string> {
   const matches = [...body.matchAll(FIELD_HEADER_RE)];
   for (let index = 0; index < matches.length; index += 1) {
     const current = matches[index];
+    if (!current) {
+      continue;
+    }
+    const key = current[1];
+    if (!key) {
+      continue;
+    }
     const next = matches[index + 1];
     const firstLine = current[2] ?? "";
     const start = (current.index ?? 0) + current[0].length;
     const end = next?.index ?? body.length;
     const rest = body.slice(start, end);
     const combined = firstLine.trim() ? `${firstLine.trim()}\n${rest}` : rest;
-    fields.set(current[1], combined.replace(/^\s*\n/, "").trim());
+    fields.set(key, combined.replace(/^\s*\n/, "").trim());
   }
   return fields;
 }
