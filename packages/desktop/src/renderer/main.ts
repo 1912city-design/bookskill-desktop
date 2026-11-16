@@ -23,6 +23,8 @@ import { emptySearchUiState, type SearchUiState } from "./search/types.ts";
 import { renderSearchPanel } from "./search/view.ts";
 import { emptyChatUiState, type ChatUiState } from "./chat/types.ts";
 import { renderChatRoute } from "./chat/view.ts";
+import { emptyDistillUiState, type DistillUiState } from "./distill/types.ts";
+import { renderDistillRoute } from "./distill/view.ts";
 import { draftFromSkill, emptySkillEditorDraft, emptySkillsUiState, type SkillEditorDraft, type SkillsUiState } from "./skills/types.ts";
 import { renderSkillsRoute } from "./skills/view.ts";
 
@@ -63,9 +65,10 @@ type ShellState = {
   relations: RelationsUiState;
   chat: ChatUiState;
   skills: SkillsUiState;
+  distill: DistillUiState;
 };
 
-function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState, skills: SkillsUiState): string {
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState, skills: SkillsUiState, distill: DistillUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -95,7 +98,9 @@ function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiSt
           <div><dt>版本</dt><dd>${info.version}</dd></div>
         </dl>`
       : view.id === "library"
-        ? renderLibraryRoute(library)
+        ? distill.phase !== "idle"
+          ? renderDistillRoute(distill)
+          : renderLibraryRoute(library)
         : view.id === "knowledge"
           ? `${renderKnowledgeRoute(knowledge)}${renderRelationsRoute(relations, knowledge.cards)}`
         : view.id === "chat"
@@ -808,7 +813,7 @@ function bindSearch(root: HTMLElement, state: ShellState): void {
 }
 
 function paint(root: HTMLElement, state: ShellState): void {
-  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations, state.chat, state.skills));
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations, state.chat, state.skills, state.distill));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
@@ -816,11 +821,172 @@ function paint(root: HTMLElement, state: ShellState): void {
   document.title = `${state.nav.currentItem.label} · ${PRODUCT_NAME}`;
   bindNavigation(root, state);
   bindLibrary(root, state);
+  bindDistill(root, state);
   bindKnowledge(root, state);
   bindSearch(root, state);
   bindRelations(root, state);
   bindChat(root, state);
   bindSkills(root, state);
+}
+
+
+function closeDistillPanel(state: ShellState): void {
+  state.distill = emptyDistillUiState();
+}
+
+async function openDistillForBook(root: HTMLElement, state: ShellState, bookId: string, bookTitle: string, parseStatus: string | null): Promise<void> {
+  if (parseStatus && parseStatus !== "parsed") {
+    state.library.error = "该书尚未解析完成，无法开始蒸馏。";
+    paint(root, state);
+    return;
+  }
+  state.distill.phase = "running";
+  state.distill.bookId = bookId;
+  state.distill.bookTitle = bookTitle;
+  state.distill.error = null;
+  state.distill.preview = null;
+  state.distill.viewMode = "preview";
+  paint(root, state);
+  try {
+    const bridge = getBridge();
+    if (!bridge?.startDistill) {
+      throw new Error("蒸馏尚未连接到本机接口。");
+    }
+    const result = await bridge.startDistill({ bookId });
+    if (result.status === "ready" && result.preview) {
+      state.distill.phase = "preview";
+      state.distill.preview = result.preview;
+      state.distill.error = null;
+    } else {
+      state.distill.phase = "failed";
+      state.distill.preview = null;
+      state.distill.error = result.reason ?? "蒸馏失败。";
+    }
+    paint(root, state);
+  } catch (error) {
+    state.distill.phase = "failed";
+    state.distill.preview = null;
+    state.distill.error = formatErrorMessage(error);
+    paint(root, state);
+  }
+}
+
+function bindDistill(root: HTMLElement, state: ShellState): void {
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='library-distill']").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const bookId = button.getAttribute("data-book-id");
+      const bookTitle = button.getAttribute("data-book-title") ?? "";
+      const parseStatus = button.getAttribute("data-parse-status");
+      if (!bookId) {
+        return;
+      }
+      void openDistillForBook(root, state, bookId, bookTitle, parseStatus);
+    });
+  });
+
+  if (state.nav.current !== "library") {
+    return;
+  }
+
+  root.querySelector<HTMLButtonElement>("[data-testid='distill-back']")?.addEventListener("click", () => {
+    closeDistillPanel(state);
+    paint(root, state);
+  });
+
+  const fileInput = root.querySelector<HTMLInputElement>("[data-testid='distill-import-markdown-file']");
+  fileInput?.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    if (!file) {
+      return;
+    }
+    void (async () => {
+      try {
+        const markdown = await file.text();
+        const bridge = getBridge();
+        if (!bridge?.importDistillationMarkdown) {
+          throw new Error("蒸馏尚未连接到导入接口。");
+        }
+        state.distill.phase = "running";
+        state.distill.error = null;
+        paint(root, state);
+        const result = await bridge.importDistillationMarkdown({
+          markdown,
+          sourceFilename: file.name,
+          bookId: state.distill.bookId ?? undefined,
+        });
+        if (!result.ok || !result.preview) {
+          state.distill.phase = "failed";
+          state.distill.preview = null;
+          state.distill.error = (result.errors ?? []).map((item) => item.message).join(" ") || "蒸馏结果未通过结构校验。";
+          paint(root, state);
+          return;
+        }
+        state.distill.phase = "preview";
+        state.distill.preview = result.preview;
+        state.distill.error = null;
+        state.distill.viewMode = "preview";
+        paint(root, state);
+      } catch (error) {
+        state.distill.phase = "failed";
+        state.distill.preview = null;
+        state.distill.error = formatErrorMessage(error);
+        paint(root, state);
+      } finally {
+        fileInput.value = "";
+      }
+    })();
+  });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='distill-view-preview']")?.addEventListener("click", () => {
+    state.distill.viewMode = "preview";
+    paint(root, state);
+  });
+  root.querySelector<HTMLButtonElement>("[data-testid='distill-view-markdown']")?.addEventListener("click", () => {
+    state.distill.viewMode = "markdown";
+    paint(root, state);
+  });
+  root.querySelector<HTMLButtonElement>("[data-testid='distill-view-json']")?.addEventListener("click", () => {
+    state.distill.viewMode = "json";
+    paint(root, state);
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='distill-skill-copy-markdown'], [data-testid='distill-skill-copy-json']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const article = button.closest("[data-testid='distill-skill']");
+      const copyKind = button.getAttribute("data-testid") === "distill-skill-copy-json" ? "json" : "markdown";
+      const payload = article?.querySelector<HTMLElement>(`[data-copy='${copyKind}']`)?.textContent ?? "";
+      if (payload && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        void navigator.clipboard.writeText(payload);
+      }
+    });
+  });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='distill-add-to-chat']")?.addEventListener("click", () => {
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        const distillationId = state.distill.preview?.id;
+        if (!bridge?.attachDistillationToChat || !distillationId) {
+          throw new Error("还没有可加入对话的蒸馏结果。");
+        }
+        const result = await bridge.attachDistillationToChat({ distillationId });
+        state.chat.conversation = result.conversation;
+        state.chat.distillContext = result.context;
+        state.chat.error = null;
+        state.chat.statusMessage = "已把该书与 draft Skill 设为当前对话上下文。";
+        state.chat.draftQuestion = "";
+        closeDistillPanel(state);
+        state.nav.go("chat");
+        paint(root, state);
+      } catch (error) {
+        state.distill.error = formatErrorMessage(error);
+        state.distill.phase = state.distill.preview ? "preview" : "failed";
+        paint(root, state);
+      }
+    })();
+  });
 }
 
 function bindChat(root: HTMLElement, state: ShellState): void {
@@ -873,6 +1039,9 @@ async function ensureChat(state: ShellState): Promise<void> {
       const listed = await bridge.listConversations();
       const latest = listed[0];
       state.chat.conversation = latest ? await bridge.loadConversation(latest.id) : null;
+    }
+    if (state.chat.conversation && bridge.loadDistillationChatContext) {
+      state.chat.distillContext = await bridge.loadDistillationChatContext(state.chat.conversation.id);
     }
     state.chat.error = null;
   } catch (error) {
@@ -1254,6 +1423,7 @@ async function start(): Promise<void> {
       relations: emptyRelationsUiState(),
       chat: emptyChatUiState(),
       skills: emptySkillsUiState(),
+      distill: emptyDistillUiState(),
     };
     if (nav.current === "library") {
       await ensureLibraryBooks(state);

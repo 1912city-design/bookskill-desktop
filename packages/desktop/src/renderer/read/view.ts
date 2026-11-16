@@ -71,6 +71,7 @@ export function renderLibraryList(state: Pick<LibraryUiState, "books" | "error">
         `<span class="library-book-title">${escapeHtml(book.title)}</span>`,
         `<span class="library-book-meta">${author} · ${escapeHtml(format)} · ${escapeHtml(status)}</span>`,
         `</button>`,
+        `<button type="button" class="library-distill" data-testid="library-distill" data-book-id="${escapeHtml(book.id)}" data-book-title="${escapeHtml(book.title)}" data-parse-status="${escapeHtml(book.parseStatus)}"${parsed ? "" : " disabled"}>蒸馏</button>`,
         `</li>`,
       ].join("");
     })
@@ -125,6 +126,7 @@ export function renderReaderView(model: ReaderViewModel): string {
     `<div class="reader-surface" data-testid="reader-surface" data-book-id="${escapeHtml(book.id)}">`,
     `<div class="reader-toolbar">`,
     `<button type="button" class="reader-back" data-testid="reader-back">返回书库</button>`,
+    `<button type="button" class="library-distill" data-testid="library-distill" data-book-id="${escapeHtml(book.id)}" data-book-title="${escapeHtml(book.title)}" data-parse-status="${escapeHtml(book.parseStatus)}">蒸馏</button>`,
     `</div>`,
     error,
     `<header class="reader-header">`,

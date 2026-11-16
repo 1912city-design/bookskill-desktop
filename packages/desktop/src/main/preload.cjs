@@ -66,4 +66,10 @@ contextBridge.exposeInMainWorld("bookskillDesktop", {
   updateSkillMetadata: (input) => ipcRenderer.invoke("skills:updateMetadata", input),
   transitionSkillStatus: (input) => ipcRenderer.invoke("skills:transitionStatus", input),
   instantiateConceptCard: () => ipcRenderer.invoke("knowledge:instantiateConceptTemplate"),
+  startDistill: (input) => ipcRenderer.invoke("distill:start", input),
+  importDistillationMarkdown: (input) => ipcRenderer.invoke("distill:importMarkdown", input),
+  loadDistillation: (id) => ipcRenderer.invoke("distill:load", id),
+  listDistillations: () => ipcRenderer.invoke("distill:list"),
+  attachDistillationToChat: (input) => ipcRenderer.invoke("distill:attachToChat", input),
+  loadDistillationChatContext: (conversationId) => ipcRenderer.invoke("distill:loadChatContext", conversationId),
 });

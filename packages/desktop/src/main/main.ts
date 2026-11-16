@@ -45,6 +45,14 @@ import {
   startProductConversation,
 } from "./conversation-path.ts";
 import { importLibraryBook } from "./library-import.ts";
+import { listDistillations } from "./distill-adapter.ts";
+import {
+  attachDistillationToChat,
+  importDistillationMarkdown,
+  loadDistillationChatContext,
+  previewFromStored,
+  startDistill,
+} from "./distill-path.ts";
 import {
   createBlankSkill,
   instantiateConceptCard,
@@ -847,6 +855,107 @@ async function boot(): Promise<void> {
     instantiateConceptCard(sliceWorkspace.db);
     return listKnowledgeCardViews(sliceWorkspace.db);
   });
+
+
+  ipcMain.handle("distill:start", async (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("请选择要蒸馏的书籍。");
+    }
+    const payload = input as { bookId?: unknown };
+    if (typeof payload.bookId !== "string" || !payload.bookId.trim()) {
+      throw new Error("请选择要蒸馏的书籍。");
+    }
+    return await startDistill({
+      db: sliceWorkspace.db,
+      dataDir: bootState.dataDir,
+      bookId: payload.bookId,
+    });
+  });
+
+  ipcMain.handle("distill:importMarkdown", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("请提供蒸馏 Markdown。");
+    }
+    const payload = input as { markdown?: unknown; sourceFilename?: unknown; bookId?: unknown };
+    if (typeof payload.markdown !== "string" || !payload.markdown.trim()) {
+      throw new Error("请提供蒸馏 Markdown。");
+    }
+    const result = importDistillationMarkdown({
+      db: sliceWorkspace.db,
+      dataDir: bootState.dataDir,
+      markdown: payload.markdown,
+      sourceFilename: typeof payload.sourceFilename === "string" ? payload.sourceFilename : undefined,
+      bookId: typeof payload.bookId === "string" ? payload.bookId : undefined,
+    });
+    if (result.ok) {
+      bootState.slice = sliceWorkspace.snapshot();
+    }
+    return result;
+  });
+
+  ipcMain.handle("distill:load", (_event, id: unknown) => {
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (typeof id !== "string" || !id.trim()) {
+      throw new Error("无效的蒸馏结果编号。");
+    }
+    return previewFromStored(bootState.dataDir, id);
+  });
+
+  ipcMain.handle("distill:list", () => {
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    return listDistillations(bootState.dataDir);
+  });
+
+  ipcMain.handle("distill:attachToChat", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("请选择要加入对话的蒸馏结果。");
+    }
+    const payload = input as { distillationId?: unknown; skillId?: unknown };
+    if (typeof payload.distillationId !== "string" || !payload.distillationId.trim()) {
+      throw new Error("请选择要加入对话的蒸馏结果。");
+    }
+    const result = attachDistillationToChat({
+      db: sliceWorkspace.db,
+      dataDir: bootState.dataDir,
+      distillationId: payload.distillationId,
+      skillId: typeof payload.skillId === "string" ? payload.skillId : undefined,
+    });
+    bootState.slice = sliceWorkspace.snapshot();
+    return result;
+  });
+
+  ipcMain.handle("distill:loadChatContext", (_event, conversationId: unknown) => {
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (typeof conversationId !== "string" || !conversationId.trim()) {
+      return null;
+    }
+    return loadDistillationChatContext(bootState.dataDir, conversationId);
+  });
+
 
   await app.whenReady();
   mainWindow = createMainWindow(bootState.bootError);
