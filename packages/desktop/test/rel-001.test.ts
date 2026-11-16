@@ -265,6 +265,13 @@ describe("REL-001 knowledge relations route", () => {
       suggestRelation: async () => ({ suggested: [], confirmed: [] }),
       confirmRelation: async () => ({ suggested: [], confirmed: [] }),
       rejectRelation: async () => ({ suggested: [], confirmed: [] }),
+      importBook: async () => [],
+      importBookFile: async () => [],
+      chooseAndImport: async () => ({ canceled: true, books: [] }),
+      startConversation: async () => ({ id: "", title: "", turns: [] }),
+      ask: async () => ({ id: "", title: "", turns: [] }),
+      loadConversation: async () => ({ id: "", title: "", turns: [] }),
+      listConversations: async () => [],
     };
     assert.equal(typeof bridge.suggestRelation, "function");
     assert.equal(emptyKnowledgeUiState().selectedCardId, null);

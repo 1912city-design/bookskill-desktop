@@ -10,7 +10,7 @@ import {
   type SliceWorkspace,
 } from "@bookskill/core";
 import { resolveBusinessDbPath } from "@bookskill/data";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,6 +30,14 @@ import { initializeDataDir } from "../shared/data-layout.ts";
 import { DEFAULT_ROUTE_ID, NAV_ITEMS } from "../shared/navigation.ts";
 import { PRODUCT_NAME, PRODUCT_VERSION } from "../shared/product.ts";
 import type { ShellInfo, SliceSnapshotInfo } from "../shared/shell-info.ts";
+import {
+  askOnProductPath,
+  listConversationSummaries,
+  loadConversationView,
+  loadLatestConversationView,
+  startProductConversation,
+} from "./conversation-path.ts";
+import { importLibraryBook } from "./library-import.ts";
 
 const MAIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const RENDERER_DIR = path.join(MAIN_DIR, "../renderer");
@@ -269,13 +277,66 @@ async function boot(): Promise<void> {
     sliceError: bootState.sliceError,
   };
 
-  ipcMain.handle("shell:getInfo", () => shellInfo);
+  ipcMain.handle("shell:getInfo", (): ShellInfo => ({
+    ...shellInfo,
+    businessDbPath: sliceWorkspace?.dbPath ?? bootState.businessDbPath,
+    schemaVersion: sliceWorkspace?.schemaVersion ?? bootState.schemaVersion,
+    slice: sliceWorkspace?.snapshot() ?? bootState.slice,
+    sliceError: sliceWorkspace ? null : bootState.sliceError,
+  }));
 
   ipcMain.handle("library:listBooks", () => {
     if (!sliceWorkspace) {
       throw new Error("业务库尚未打开。");
     }
     return listImportedBooks(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("library:import", (_event, filePath: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    const result = importLibraryBook({
+      db: sliceWorkspace.db,
+      dataDir: bootState.dataDir,
+      filePath: typeof filePath === "string" ? filePath : "",
+    });
+    bootState.slice = sliceWorkspace.snapshot();
+    return result.books;
+  });
+
+  ipcMain.handle("library:chooseAndImport", async (event) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    const window = BrowserWindow.fromWebContents(event.sender) ?? mainWindow ?? undefined;
+    const options = {
+      title: "导入许可的 PDF 或 EPUB",
+      properties: ["openFile" as const],
+      filters: [
+        { name: "许可的 PDF 或 EPUB", extensions: ["pdf", "epub"] },
+        { name: "Markdown 或 TXT", extensions: ["md", "markdown", "txt"] },
+      ],
+    };
+    const picked = window
+      ? await dialog.showOpenDialog(window, options)
+      : await dialog.showOpenDialog(options);
+    if (picked.canceled || !picked.filePaths[0]) {
+      return { canceled: true, books: listImportedBooks(sliceWorkspace.db) };
+    }
+    const result = importLibraryBook({
+      db: sliceWorkspace.db,
+      dataDir: bootState.dataDir,
+      filePath: picked.filePaths[0],
+    });
+    bootState.slice = sliceWorkspace.snapshot();
+    return { canceled: false, books: result.books };
   });
 
   ipcMain.handle("library:loadBook", (_event, bookId: unknown) => {
@@ -508,6 +569,60 @@ async function boot(): Promise<void> {
     }
     rejectRelation({ db: sliceWorkspace.db, relationId });
     return listRelationViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("conversation:start", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    const title =
+      input && typeof input === "object" && typeof (input as { title?: unknown }).title === "string"
+        ? (input as { title: string }).title
+        : undefined;
+    const conversation = startProductConversation(sliceWorkspace.db, title);
+    bootState.slice = sliceWorkspace.snapshot();
+    return conversation;
+  });
+
+  ipcMain.handle("conversation:ask", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("请输入要问的问题。");
+    }
+    const payload = input as { message?: unknown; conversationId?: unknown; title?: unknown };
+    if (typeof payload.message !== "string") {
+      throw new Error("请输入要问的问题。");
+    }
+    const conversation = askOnProductPath(sliceWorkspace.db, {
+      message: payload.message,
+      conversationId: typeof payload.conversationId === "string" ? payload.conversationId : undefined,
+      title: typeof payload.title === "string" ? payload.title : undefined,
+    });
+    bootState.slice = sliceWorkspace.snapshot();
+    return conversation;
+  });
+
+  ipcMain.handle("conversation:load", (_event, conversationId: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (typeof conversationId !== "string" || !conversationId.trim()) {
+      const latest = loadLatestConversationView(sliceWorkspace.db);
+      if (!latest) {
+        throw new Error("还没有可打开的对话。");
+      }
+      return latest;
+    }
+    return loadConversationView(sliceWorkspace.db, conversationId);
+  });
+
+  ipcMain.handle("conversation:list", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listConversationSummaries(sliceWorkspace.db);
   });
 
   await app.whenReady();
