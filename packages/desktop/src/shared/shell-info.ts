@@ -7,6 +7,7 @@ import type {
 } from "../renderer/knowledge/types.ts";
 import type { KnowledgeRelationView, RelationLists } from "../renderer/relations/types.ts";
 import type { SearchMode, SearchResult } from "@bookskill/core";
+import type { ChatConversationSummary, ChatConversationView } from "../renderer/chat/types.ts";
 
 export type SliceSnapshotInfo = {
   dataDir: string;
@@ -74,4 +75,11 @@ export type BookskillDesktopBridge = {
   }) => Promise<RelationLists>;
   confirmRelation: (relationId: string) => Promise<RelationLists>;
   rejectRelation: (relationId: string) => Promise<RelationLists>;
+  importBook: (filePath: string) => Promise<LibraryBookSummary[]>;
+  importBookFile: (file: File | { path?: string }) => Promise<LibraryBookSummary[]>;
+  chooseAndImport: () => Promise<{ canceled: boolean; books: LibraryBookSummary[] }>;
+  startConversation: (input?: { title?: string }) => Promise<ChatConversationView>;
+  ask: (input: { message: string; conversationId?: string }) => Promise<ChatConversationView>;
+  loadConversation: (conversationId: string) => Promise<ChatConversationView>;
+  listConversations: () => Promise<ChatConversationSummary[]>;
 };

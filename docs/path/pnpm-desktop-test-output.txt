@@ -1,0 +1,78 @@
+
+> @bookskill/desktop@0.0.0 test /workspace/bookskill-worktrees/PATH-001/packages/desktop
+> pnpm --filter @bookskill/repo-baseline build && tsc -p tsconfig.json --noEmit && node --test --test-reporter=spec test/*.test.ts
+
+
+> @bookskill/repo-baseline@0.0.0 build /workspace/bookskill-worktrees/PATH-001/packages/repo-baseline
+> tsc -p tsconfig.build.json
+
+▶ BookSkill data directory initialization
+  ✔ creates the BookSkill layout under BOOKSKILL_DATA_DIR (1.86687ms)
+  ✔ is idempotent and does not overwrite an existing manifest (1.640346ms)
+  ✔ uses the BookSkill XDG directory name, not an AnythingLLM user-data path (4.665496ms)
+  ✔ rejects an AnythingLLM default user directory and does not create it (0.637396ms)
+  ✔ rejects mintplex and anything-llm path markers (0.164111ms)
+✔ BookSkill data directory initialization (9.957692ms)
+▶ render error boundary
+  ✔ returns a visible alert panel instead of an empty document (0.761316ms)
+  ✔ escapes untrusted error text so a failed render cannot inject markup (0.16501ms)
+  ✔ catches a thrown render function and still produces visible output (0.143342ms)
+  ✔ passes through a successful render unchanged (0.149223ms)
+  ✔ formats unknown values without going blank (0.19543ms)
+✔ render error boundary (2.379638ms)
+▶ KNOW-001 knowledge base route
+  ✔ keeps status labels aligned with the draft / verified_by_user contract (0.557022ms)
+  ✔ updates only the knowledge nav description and does not add a new top-level entry (0.61562ms)
+  ✔ renders draft and confirmed cards with sources, and has no auto-confirm or auto-publish controls (0.572719ms)
+  ✔ lists imported books and cards drafted from a licensed EPUB as draft (24.432552ms)
+  ✔ saves edits without confirming, then confirms without dropping sources (15.832439ms)
+  ✔ merges and deletes cards while proving book locators remain (15.463255ms)
+✔ KNOW-001 knowledge base route (58.532399ms)
+▶ BookSkill Desktop navigation
+  ✔ exposes exactly five first-level entries with the contract labels (1.170969ms)
+  ✔ defaults to 问题对话 (0.176908ms)
+  ✔ can navigate to every first-level entry (0.127493ms)
+  ✔ rejects unknown routes so a typo cannot silently show a blank view (0.309581ms)
+  ✔ uses the BookSkill Desktop product name, not an AnythingLLM mark (0.180301ms)
+✔ BookSkill Desktop navigation (3.073717ms)
+▶ PATH-001 library import and chat product path
+  ✔ renders a file picker and import control in empty and populated library views (1.096335ms)
+  ✔ imports licensed EPUB and PDF fixtures through the same helper main will use (20.826029ms)
+  ✔ renders a chat composer and sourced citations after import plus a first question (20.356464ms)
+  ✔ reloads sourced turns from the same data directory after close and reopen (14.58491ms)
+✔ PATH-001 library import and chat product path (58.152704ms)
+▶ READ-001 reader locators, excerpts, and annotations
+  ✔ keeps the contract unconfirmed label identical to @bookskill/core (0.607238ms)
+  ✔ shows chapter and paragraph locators for an imported licensed EPUB (18.952607ms)
+  ✔ shows page and paragraph locators for an imported licensed text PDF (16.346615ms)
+  ✔ creates an excerpt from a selection and jumps back to the original location (10.359163ms)
+  ✔ marks unmatched or unconfirmed sources as unconfirmed and never fakes a precise locator (7.021464ms)
+  ✔ persists annotations in the BookSkill data directory across a fresh store instance (8.950712ms)
+✔ READ-001 reader locators, excerpts, and annotations (63.231078ms)
+▶ REL-001 knowledge relations route
+  ✔ keeps the default route on chat and does not add a top-level nav entry (1.048997ms)
+  ✔ renders suggestions outside the confirmed list, with explicit confirm and reject controls (0.516246ms)
+  ✔ shows a confirmed relation only in the formal list after user confirm (0.154837ms)
+  ✔ suggests, confirms, and rejects relations through the catalog without auto-promoting (40.78302ms)
+  ✔ appends relation IPC to the existing bridge and does not rewrite knowledge merge/delete (1.154174ms)
+✔ REL-001 knowledge relations route (44.671005ms)
+▶ SEARCH-001 desktop search
+  ✔ keeps the default route on chat and does not add a top-level nav entry (1.333833ms)
+  ✔ returns labeled, jumpable hits for a licensed book, including file excerpts and notes (12.848976ms)
+  ✔ returns an empty list when nothing matches, and renders an empty state (7.454569ms)
+  ✔ documents the local semantic fallback and does not invent a hosted vector backend (9.051473ms)
+  ✔ does not modify books, knowledge-card status, or annotation files (11.321511ms)
+  ✔ does not ship a hosted vector client in the desktop search module (0.412418ms)
+✔ SEARCH-001 desktop search (43.543651ms)
+▶ desktop shell wiring for the VERT-001 slice
+  ✔ initializes the shell data directory and opens the business database under it (13.11928ms)
+✔ desktop shell wiring for the VERT-001 slice (13.780626ms)
+ℹ tests 43
+ℹ suites 9
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 315.419911
+EXIT:0
