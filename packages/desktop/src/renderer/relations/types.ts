@@ -12,6 +12,7 @@ import {
 export type KnowledgeRelationView = KnowledgeRelationRecord & {
   fromCardTitle: string;
   toCardTitle: string;
+  reason?: string | null;
 };
 
 export type RelationLists = {
@@ -65,4 +66,17 @@ export function relationStatusLabel(status: string): string {
 
 export function relationTypeLabel(relationType: string): string {
   return RELATION_TYPE_OPTIONS.find((option) => option.value === relationType)?.label ?? relationType;
+}
+
+export function discoveryReasonLabel(reason: string | null | undefined): string {
+  if (reason === "shared_source") {
+    return "共用来源段落（shared_source）";
+  }
+  if (reason === "text_overlap") {
+    return "标题/正文相似（text_overlap）";
+  }
+  if (reason === "type_rule") {
+    return "类型规则（type_rule）";
+  }
+  return "";
 }

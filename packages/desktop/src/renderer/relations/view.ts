@@ -2,6 +2,7 @@ import { escapeHtml } from "../../shared/error-boundary.ts";
 import type { KnowledgeCardView } from "../knowledge/types.ts";
 import {
   RELATION_TYPE_OPTIONS,
+  discoveryReasonLabel,
   relationStatusLabel,
   relationTypeLabel,
   type KnowledgeRelationView,
@@ -18,15 +19,28 @@ function renderCardOptions(cards: KnowledgeCardView[], selectedId: string, empty
   return `<option value="">${escapeHtml(emptyLabel)}</option>${options}`;
 }
 
-function renderRelationItem(relation: KnowledgeRelationView, actions: string): string {
+function renderReason(relation: KnowledgeRelationView): string {
+  const label = discoveryReasonLabel(relation.reason);
+  if (!relation.reason || !label) {
+    return "";
+  }
+  return `<p class="knowledge-help" data-testid="relation-reason" data-reason="${escapeHtml(relation.reason)}">建议理由：${escapeHtml(label)}</p>`;
+}
+
+function renderRelationItem(relation: KnowledgeRelationView, actions: string, selectable = false): string {
+  const checkbox = selectable
+    ? `<label class="knowledge-help"><input type="checkbox" data-testid="select-relation" data-relation-id="${escapeHtml(relation.id)}" /> 选择</label>`
+    : "";
   return [
     `<article class="knowledge-card" data-testid="relation-item" data-relation-id="${escapeHtml(relation.id)}" data-status="${escapeHtml(relation.status)}" data-relation-type="${escapeHtml(relation.relationType)}">`,
+    checkbox,
     `<p class="knowledge-card-title">${escapeHtml(relation.fromCardTitle)} → ${escapeHtml(relation.toCardTitle)}</p>`,
     `<p class="knowledge-card-meta">`,
     `<span class="knowledge-status" data-testid="relation-status" data-status="${escapeHtml(relation.status)}">${escapeHtml(relationStatusLabel(relation.status))}</span>`,
     `<span class="knowledge-status-code" data-testid="relation-status-code">${escapeHtml(relation.status)}</span>`,
     `<span data-testid="relation-type">${escapeHtml(relationTypeLabel(relation.relationType))}</span>`,
     `</p>`,
+    renderReason(relation),
     actions,
     `</article>`,
   ].join("");
@@ -46,10 +60,17 @@ function renderSuggestedList(state: RelationsUiState): string {
           `<button type="button" class="knowledge-danger" data-testid="reject-relation" data-relation-id="${escapeHtml(relation.id)}">驳回建议</button>`,
           `</div>`,
         ].join(""),
+        true,
       ),
     )
     .join("");
-  return `<div class="knowledge-card-list" data-testid="suggested-relations">${items}</div>`;
+  return [
+    `<div class="knowledge-actions">`,
+    `<button type="button" class="knowledge-primary" data-testid="confirm-selected-relations">批量确认所选建议</button>`,
+    `<button type="button" class="knowledge-danger" data-testid="reject-selected-relations">批量驳回所选建议</button>`,
+    `</div>`,
+    `<div class="knowledge-card-list" data-testid="suggested-relations">${items}</div>`,
+  ].join("");
 }
 
 function renderConfirmedList(state: RelationsUiState): string {
@@ -86,6 +107,10 @@ function renderSuggestForm(state: RelationsUiState, cards: KnowledgeCardView[]):
     `</select>`,
     `<button type="submit" class="knowledge-secondary" data-testid="suggest-relation"${disabled}>生成建议</button>`,
     `</form>`,
+    `<div class="knowledge-actions">`,
+    `<button type="button" class="knowledge-secondary" data-testid="discover-relations"${disabled}>发现隐藏关联</button>`,
+    `<p class="knowledge-help">本机按共用来源、正文重叠和类型规则扫描书库，结果只写成 suggested。发现过程不会把关系写成正式关系。</p>`,
+    `</div>`,
   ].join("");
 }
 

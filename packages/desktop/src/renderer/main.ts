@@ -632,6 +632,71 @@ function bindRelations(root: HTMLElement, state: ShellState): void {
       })();
     });
   });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='discover-relations']")?.addEventListener("click", () => {
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.discoverKnowledgeRelations) {
+          throw new Error("隐藏关联发现尚未连接到本机业务库。");
+        }
+        const lists = await bridge.discoverKnowledgeRelations();
+        applyRelationLists(state, lists);
+        state.relations.statusMessage = "已完成本机发现。新的联系仍是 suggested，确认之前不会成为正式关系。";
+        state.relations.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.relations.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  function selectedRelationIds(): string[] {
+    return Array.from(root.querySelectorAll<HTMLInputElement>("[data-testid='select-relation']:checked"))
+      .map((input) => input.getAttribute("data-relation-id"))
+      .filter((value): value is string => Boolean(value));
+  }
+
+  root.querySelector<HTMLButtonElement>("[data-testid='confirm-selected-relations']")?.addEventListener("click", () => {
+    const relationIds = selectedRelationIds();
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.confirmSuggestedRelations) {
+          throw new Error("批量确认尚未连接到本机业务库。");
+        }
+        const lists = await bridge.confirmSuggestedRelations(relationIds);
+        applyRelationLists(state, lists);
+        state.relations.statusMessage = "已批量确认所选建议，状态为 verified_by_user。";
+        state.relations.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.relations.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+
+  root.querySelector<HTMLButtonElement>("[data-testid='reject-selected-relations']")?.addEventListener("click", () => {
+    const relationIds = selectedRelationIds();
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.rejectSuggestedRelations) {
+          throw new Error("批量驳回尚未连接到本机业务库。");
+        }
+        const lists = await bridge.rejectSuggestedRelations(relationIds);
+        applyRelationLists(state, lists);
+        state.relations.statusMessage = "已批量驳回所选建议，不会成为正式关系。";
+        state.relations.error = null;
+        paint(root, state);
+      } catch (error) {
+        state.relations.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
 }
 
 function bindSearch(root: HTMLElement, state: ShellState): void {
