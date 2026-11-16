@@ -38,6 +38,21 @@ import {
   startProductConversation,
 } from "./conversation-path.ts";
 import { importLibraryBook } from "./library-import.ts";
+import {
+  createBlankSkill,
+  instantiateConceptCard,
+  instantiateSkillTemplate,
+  listSkillTemplates,
+  listSkills,
+  loadSkillEditorView,
+  parseJsonField,
+  parseRulesText,
+  saveSkill,
+  transitionSkillStatus,
+  updateSkillMetadata,
+  type SkillStatusAction,
+} from "./skills-editor.ts";
+import type { SkillInputField, SkillStepField } from "../renderer/skills/types.ts";
 
 const MAIN_DIR = path.dirname(fileURLToPath(import.meta.url));
 const RENDERER_DIR = path.join(MAIN_DIR, "../renderer");
@@ -623,6 +638,180 @@ async function boot(): Promise<void> {
       throw new Error("业务库尚未打开。");
     }
     return listConversationSummaries(sliceWorkspace.db);
+  });
+
+
+  ipcMain.handle("skills:listTemplates", () => listSkillTemplates());
+
+  ipcMain.handle("skills:list", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listSkills(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("skills:load", (_event, skillId: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (typeof skillId !== "string" || !skillId.trim()) {
+      throw new Error("无效的 Skill 编号。");
+    }
+    return loadSkillEditorView(sliceWorkspace.db, skillId);
+  });
+
+  ipcMain.handle("skills:createBlank", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    const name =
+      input && typeof input === "object" && typeof (input as { name?: unknown }).name === "string"
+        ? (input as { name: string }).name
+        : undefined;
+    const status =
+      input && typeof input === "object" && typeof (input as { status?: unknown }).status === "string"
+        ? (input as { status: string }).status
+        : undefined;
+    return createBlankSkill(sliceWorkspace.db, { name, status });
+  });
+
+  ipcMain.handle("skills:instantiateTemplate", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少要实例化的模板。");
+    }
+    const payload = input as { templateId?: unknown; name?: unknown; status?: unknown };
+    if (typeof payload.templateId !== "string" || !payload.templateId.trim()) {
+      throw new Error("请选择一个 Skill 模板。");
+    }
+    return instantiateSkillTemplate({
+      db: sliceWorkspace.db,
+      templateId: payload.templateId,
+      name: typeof payload.name === "string" ? payload.name : undefined,
+      status: typeof payload.status === "string" ? payload.status : undefined,
+    });
+  });
+
+  ipcMain.handle("skills:updateMetadata", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少要更新的 Skill 元数据。");
+    }
+    const payload = input as { skillId?: unknown; name?: unknown; domain?: unknown; purpose?: unknown };
+    if (typeof payload.skillId !== "string" || !payload.skillId.trim()) {
+      throw new Error("无效的 Skill 编号。");
+    }
+    return updateSkillMetadata(sliceWorkspace.db, {
+      skillId: payload.skillId,
+      name: typeof payload.name === "string" ? payload.name : undefined,
+      domain: typeof payload.domain === "string" ? payload.domain : undefined,
+      purpose: typeof payload.purpose === "string" ? payload.purpose : undefined,
+    });
+  });
+
+  ipcMain.handle("skills:save", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少要保存的 Skill 内容。");
+    }
+    const payload = input as {
+      skillId?: unknown;
+      name?: unknown;
+      domain?: unknown;
+      purpose?: unknown;
+      whenToUse?: unknown;
+      whenNotToUse?: unknown;
+      inputs?: unknown;
+      steps?: unknown;
+      rules?: unknown;
+      outputSchema?: unknown;
+      permissions?: unknown;
+      status?: unknown;
+    };
+    if (typeof payload.skillId !== "string" || !payload.skillId.trim()) {
+      throw new Error("无效的 Skill 编号。");
+    }
+    if (typeof payload.name !== "string" || !payload.name.trim()) {
+      throw new Error("请填写 Skill 名称。");
+    }
+    if (typeof payload.domain !== "string" || !payload.domain.trim()) {
+      throw new Error("请选择 Skill 领域。");
+    }
+    if (typeof payload.purpose !== "string") {
+      throw new Error("请填写 Skill 目的。");
+    }
+    const permissions = payload.permissions && typeof payload.permissions === "object"
+      ? (payload.permissions as { network?: unknown; writeFiles?: unknown; modelProvider?: unknown })
+      : {};
+    let inputs = payload.inputs;
+    let steps = payload.steps;
+    let outputSchema = payload.outputSchema;
+    let rules = payload.rules;
+    if (typeof inputs === "string") {
+      inputs = parseJsonField<SkillInputField[]>(inputs, "输入");
+    }
+    if (typeof steps === "string") {
+      steps = parseJsonField<SkillStepField[]>(steps, "步骤");
+    }
+    if (typeof outputSchema === "string") {
+      outputSchema = parseJsonField(outputSchema, "输出 schema");
+    }
+    if (typeof rules === "string") {
+      rules = parseRulesText(rules);
+    }
+    return saveSkill(sliceWorkspace.db, {
+      skillId: payload.skillId,
+      name: payload.name,
+      domain: payload.domain,
+      purpose: payload.purpose,
+      whenToUse: typeof payload.whenToUse === "string" ? payload.whenToUse : "",
+      whenNotToUse: typeof payload.whenNotToUse === "string" ? payload.whenNotToUse : "",
+      inputs: Array.isArray(inputs) ? (inputs as SkillInputField[]) : [],
+      steps: Array.isArray(steps) ? (steps as SkillStepField[]) : [],
+      rules: Array.isArray(rules) ? (rules as string[]) : [],
+      outputSchema: outputSchema ?? {},
+      permissions: {
+        network: permissions.network === true,
+        writeFiles: permissions.writeFiles === true,
+        modelProvider: typeof permissions.modelProvider === "string" ? permissions.modelProvider : "local-stub",
+      },
+      status: typeof payload.status === "string" ? payload.status : undefined,
+    });
+  });
+
+  ipcMain.handle("skills:transitionStatus", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("缺少状态转换。");
+    }
+    const payload = input as { skillId?: unknown; action?: unknown; confirmedByUser?: unknown };
+    if (typeof payload.skillId !== "string" || !payload.skillId.trim()) {
+      throw new Error("无效的 Skill 编号。");
+    }
+    if (payload.action !== "mark_tested" && payload.action !== "publish" && payload.action !== "archive") {
+      throw new Error("不支持的状态操作。");
+    }
+    return transitionSkillStatus(sliceWorkspace.db, {
+      skillId: payload.skillId,
+      action: payload.action as SkillStatusAction,
+      confirmedByUser: payload.confirmedByUser === true,
+    });
+  });
+
+  ipcMain.handle("knowledge:instantiateConceptTemplate", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    instantiateConceptCard(sliceWorkspace.db);
+    return listKnowledgeCardViews(sliceWorkspace.db);
   });
 
   await app.whenReady();

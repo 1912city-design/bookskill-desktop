@@ -42,7 +42,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     id: "skills",
     label: "Skills",
     title: "Skills",
-    description: "浏览、编写和试用 Skill。薄切片已能保存可版本化的可运行 Skill；完整 Skill Studio 与自动发布不在本切片范围。",
+    description: "浏览、编写和试用 Skill。可从空白或模板生成草稿，编辑字段，并由你显式切换 draft / tested / published / archived。AI 与模板不会自动发布。版本列表与回滚即将提供。",
   },
   {
     id: "settings",

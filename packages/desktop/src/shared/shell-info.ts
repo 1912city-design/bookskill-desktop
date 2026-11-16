@@ -8,6 +8,13 @@ import type {
 import type { KnowledgeRelationView, RelationLists } from "../renderer/relations/types.ts";
 import type { SearchMode, SearchResult } from "@bookskill/core";
 import type { ChatConversationSummary, ChatConversationView } from "../renderer/chat/types.ts";
+import type {
+  SkillEditorView,
+  SkillInputField,
+  SkillListItem,
+  SkillStepField,
+  SkillTemplateSummary,
+} from "../renderer/skills/types.ts";
 
 export type SliceSnapshotInfo = {
   dataDir: string;
@@ -82,4 +89,35 @@ export type BookskillDesktopBridge = {
   ask: (input: { message: string; conversationId?: string }) => Promise<ChatConversationView>;
   loadConversation: (conversationId: string) => Promise<ChatConversationView>;
   listConversations: () => Promise<ChatConversationSummary[]>;
+  listSkillTemplates: () => Promise<SkillTemplateSummary[]>;
+  instantiateSkillTemplate: (input: { templateId: string; name?: string }) => Promise<SkillEditorView>;
+  createBlankSkill: (input?: { name?: string }) => Promise<SkillEditorView>;
+  listSkills: () => Promise<SkillListItem[]>;
+  loadSkill: (skillId: string) => Promise<SkillEditorView>;
+  saveSkill: (input: {
+    skillId: string;
+    name: string;
+    domain: string;
+    purpose: string;
+    whenToUse?: string;
+    whenNotToUse?: string;
+    inputs: SkillInputField[];
+    steps: SkillStepField[];
+    rules: string[];
+    outputSchema: unknown;
+    permissions: { network: boolean; writeFiles: boolean; modelProvider: string };
+    status?: string;
+  }) => Promise<SkillEditorView>;
+  updateSkillMetadata: (input: {
+    skillId: string;
+    name?: string;
+    domain?: string;
+    purpose?: string;
+  }) => Promise<SkillEditorView>;
+  transitionSkillStatus: (input: {
+    skillId: string;
+    action: "mark_tested" | "publish" | "archive";
+    confirmedByUser?: boolean;
+  }) => Promise<SkillEditorView>;
+  instantiateConceptCard: () => Promise<KnowledgeCardView[]>;
 };
