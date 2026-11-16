@@ -41,3 +41,6 @@ Thumbs.db
 
 # REPO-001: allow committed CI evidence logs under docs/repo/
 !docs/repo/*.log
+
+# PKG-001: allow committed packaging evidence logs under docs/pkg/
+!docs/pkg/*.log
