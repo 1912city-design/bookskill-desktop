@@ -47,6 +47,8 @@ export type SearchHit = {
   contentType: SearchContentType;
   title: string;
   snippet: string;
+  /** Plain-text fragments actually found in the record, for snippet highlighting. */
+  matchedFragments: string[];
   score: number;
   source: SearchSourceLocator;
   recordKind: SearchRecordKind;
