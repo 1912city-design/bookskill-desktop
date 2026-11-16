@@ -24,7 +24,14 @@ import {
   listKnowledgeCardViews,
   verifyBookLocatorsRemain,
 } from "../renderer/knowledge/catalog.ts";
-import { listConfirmedRelationViews, listRelationViews, listSuggestedRelationViews } from "../renderer/relations/catalog.ts";
+import {
+  confirmSuggestedRelations,
+  discoverAndListRelationViews,
+  listConfirmedRelationViews,
+  listRelationViews,
+  listSuggestedRelationViews,
+  rejectSuggestedRelations,
+} from "../renderer/relations/catalog.ts";
 import { searchDesktopLibrary } from "../renderer/search/run.ts";
 import { initializeDataDir } from "../shared/data-layout.ts";
 import { DEFAULT_ROUTE_ID, NAV_ITEMS } from "../shared/navigation.ts";
@@ -584,6 +591,33 @@ async function boot(): Promise<void> {
     }
     rejectRelation({ db: sliceWorkspace.db, relationId });
     return listRelationViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("relations:discover", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return discoverAndListRelationViews(sliceWorkspace.db);
+  });
+
+  ipcMain.handle("relations:confirmMany", (_event, relationIds: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!Array.isArray(relationIds) || relationIds.some((value) => typeof value !== "string")) {
+      throw new Error("无效的关系编号列表。");
+    }
+    return confirmSuggestedRelations(sliceWorkspace.db, relationIds);
+  });
+
+  ipcMain.handle("relations:rejectMany", (_event, relationIds: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!Array.isArray(relationIds) || relationIds.some((value) => typeof value !== "string")) {
+      throw new Error("无效的关系编号列表。");
+    }
+    return rejectSuggestedRelations(sliceWorkspace.db, relationIds);
   });
 
   ipcMain.handle("conversation:start", (_event, input: unknown) => {
