@@ -42,3 +42,14 @@
 ## Actions 运行说明
 
 首次推送使用 `runs-on: macos-14`。作业在约 1 秒内被取消，未分配 runner。检查注释为：`The configuration 'macos-14-arm64-us-default' is not supported`。GitHub 已于 2026-11-02 退役 macos-14 镜像。已改为 `runs-on: macos-15`（`minimumSystemVersion` 仍为 13.0），并再次推送。ubuntu `ci.yml` 在同一 SHA 上已成功。
+
+## Renderer 构建修复
+
+首次在 `macos-15` 上跑 `pack:mac` 时，作业在「Pack unsigned macOS .dmg and .zip」失败。原因是 `packages/desktop/scripts/build.mjs` 用 `platform: "browser"` 打包 renderer 时，`relations/types.ts` 从 `@bookskill/core` 桶文件取值常量，esbuild 在分析该桶时解析了 Node 专用模块（`node:fs` / `node:zlib` / `node:sqlite` 等）。本机 Linux 上复现同一失败。
+
+修复（未改 UI 功能逻辑）：
+
+- `packages/desktop/src/renderer/relations/types.ts` 改为本地保存与 core 合同一致的关系状态 / 类型字符串，避免 renderer 入口导入 core 桶
+- `scripts/build.mjs` 为 renderer 增加 `node:` stub（仅作分析安全网），并在产出后检查 `renderer.js` 不再引用 `node:` 内置模块
+
+本机 `pnpm --filter @bookskill/desktop build` 现已退出码 0，`renderer.js` 中无 `node:` 引用。desktop 测试仍为 39 passed。
