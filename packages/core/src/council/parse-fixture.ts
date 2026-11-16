@@ -64,9 +64,13 @@ function splitSections(markdown: string): ParsedDistillFixture["sections"] {
   const found: Partial<ParsedDistillFixture["sections"]> = {};
   for (let i = 0; i < matches.length; i += 1) {
     const match = matches[i];
+    if (!match) {
+      continue;
+    }
     const title = match[2] ?? "";
     const start = (match.index ?? 0) + match[0].length;
-    const end = i + 1 < matches.length ? (matches[i + 1].index ?? markdown.length) : markdown.length;
+    const next = matches[i + 1];
+    const end = next?.index ?? markdown.length;
     const body = markdown.slice(start, end).trim();
     const key = sectionKeyFor(title);
     if (key) {
