@@ -8,6 +8,10 @@ import {
   RELATION_DERIVED_FROM,
 } from "./constants.ts";
 import { findChunkByParagraphId, loadBook } from "./import-book.ts";
+import {
+  appendKnowledgeCardRevision,
+  deleteKnowledgeCardRevisions,
+} from "./knowledge-revisions.ts";
 import type { ImportedChunk, KnowledgeCardRecord, KnowledgeSourceRecord } from "./types.ts";
 import { newId, nowIso, withTransaction } from "./util.ts";
 
@@ -74,6 +78,19 @@ export function draftKnowledgeCardFromLocator(options: DraftCardOptions): Knowle
          VALUES (?, ?, ?, ?)`,
       )
       .run(newId(), id, chunk.id, RELATION_DERIVED_FROM);
+    appendKnowledgeCardRevision(
+      options.db,
+      {
+        cardId: id,
+        title: draft.title,
+        type: draft.type,
+        content: draft.content,
+        conditions: draft.conditions,
+        limitations: draft.limitations,
+        status: KNOWLEDGE_CARD_STATUS_DRAFT,
+      },
+      stamp,
+    );
   });
   return loadKnowledgeCard(options.db, id);
 }
@@ -81,21 +98,40 @@ export function draftKnowledgeCardFromLocator(options: DraftCardOptions): Knowle
 export function confirmKnowledgeCard(options: ConfirmCardOptions): KnowledgeCardRecord {
   const existing = loadKnowledgeCard(options.db, options.cardId);
   const stamp = nowIso(options.now);
-  options.db
-    .prepare(
-      `UPDATE knowledge_cards
-       SET title = ?, content = ?, conditions = ?, limitations = ?, status = ?, updated_at = ?
-       WHERE id = ?`,
-    )
-    .run(
-      options.title ?? existing.title,
-      options.content ?? existing.content,
-      options.conditions === undefined ? existing.conditions : options.conditions,
-      options.limitations === undefined ? existing.limitations : options.limitations,
-      KNOWLEDGE_CARD_STATUS_VERIFIED,
+  const title = options.title ?? existing.title;
+  const content = options.content ?? existing.content;
+  const conditions = options.conditions === undefined ? existing.conditions : options.conditions;
+  const limitations = options.limitations === undefined ? existing.limitations : options.limitations;
+  withTransaction(options.db, () => {
+    options.db
+      .prepare(
+        `UPDATE knowledge_cards
+         SET title = ?, content = ?, conditions = ?, limitations = ?, status = ?, updated_at = ?
+         WHERE id = ?`,
+      )
+      .run(
+        title,
+        content,
+        conditions,
+        limitations,
+        KNOWLEDGE_CARD_STATUS_VERIFIED,
+        stamp,
+        options.cardId,
+      );
+    appendKnowledgeCardRevision(
+      options.db,
+      {
+        cardId: options.cardId,
+        title,
+        type: existing.type,
+        content,
+        conditions,
+        limitations,
+        status: KNOWLEDGE_CARD_STATUS_VERIFIED,
+      },
       stamp,
-      options.cardId,
     );
+  });
   return loadKnowledgeCard(options.db, options.cardId);
 }
 
@@ -112,6 +148,7 @@ export function deleteKnowledgeCard(db: DatabaseSync, cardId: string): void {
     db.prepare(`DELETE FROM knowledge_sources WHERE knowledge_card_id = ?`).run(cardId);
     db.prepare(`DELETE FROM skill_sources WHERE knowledge_card_id = ?`).run(cardId);
     db.prepare(`UPDATE evidence_refs SET knowledge_card_id = NULL WHERE knowledge_card_id = ?`).run(cardId);
+    deleteKnowledgeCardRevisions(db, cardId);
     db.prepare(`DELETE FROM knowledge_cards WHERE id = ?`).run(cardId);
   });
 }
@@ -179,20 +216,32 @@ export function loadKnowledgeCard(db: DatabaseSync, cardId: string): KnowledgeCa
 export function updateKnowledgeCard(options: UpdateKnowledgeCardOptions): KnowledgeCardRecord {
   const existing = loadKnowledgeCard(options.db, options.cardId);
   const stamp = nowIso(options.now);
-  options.db
-    .prepare(
-      `UPDATE knowledge_cards
-       SET title = ?, content = ?, conditions = ?, limitations = ?, updated_at = ?
-       WHERE id = ?`,
-    )
-    .run(
-      options.title ?? existing.title,
-      options.content ?? existing.content,
-      options.conditions === undefined ? existing.conditions : options.conditions,
-      options.limitations === undefined ? existing.limitations : options.limitations,
+  const title = options.title ?? existing.title;
+  const content = options.content ?? existing.content;
+  const conditions = options.conditions === undefined ? existing.conditions : options.conditions;
+  const limitations = options.limitations === undefined ? existing.limitations : options.limitations;
+  withTransaction(options.db, () => {
+    options.db
+      .prepare(
+        `UPDATE knowledge_cards
+         SET title = ?, content = ?, conditions = ?, limitations = ?, updated_at = ?
+         WHERE id = ?`,
+      )
+      .run(title, content, conditions, limitations, stamp, options.cardId);
+    appendKnowledgeCardRevision(
+      options.db,
+      {
+        cardId: options.cardId,
+        title,
+        type: existing.type,
+        content,
+        conditions,
+        limitations,
+        status: existing.status,
+      },
       stamp,
-      options.cardId,
     );
+  });
   const updated = loadKnowledgeCard(options.db, options.cardId);
   if (updated.status !== existing.status) {
     throw new Error("Editing a knowledge card must not change its status");
@@ -243,6 +292,19 @@ export function mergeKnowledgeCards(options: MergeKnowledgeCardsOptions): Knowle
     options.db
       .prepare(`UPDATE knowledge_cards SET updated_at = ? WHERE id = ?`)
       .run(stamp, options.survivingCardId);
+    appendKnowledgeCardRevision(
+      options.db,
+      {
+        cardId: options.survivingCardId,
+        title: surviving.title,
+        type: surviving.type,
+        content: surviving.content,
+        conditions: surviving.conditions,
+        limitations: surviving.limitations,
+        status: surviving.status,
+      },
+      stamp,
+    );
     // Inline the delete contract so merge and cleanup share one transaction.
     // Do not insert a knowledge_relations row that would dangle after this delete.
     options.db
@@ -253,6 +315,7 @@ export function mergeKnowledgeCards(options: MergeKnowledgeCardsOptions): Knowle
     options.db
       .prepare(`UPDATE evidence_refs SET knowledge_card_id = NULL WHERE knowledge_card_id = ?`)
       .run(options.absorbedCardId);
+    deleteKnowledgeCardRevisions(options.db, options.absorbedCardId);
     options.db.prepare(`DELETE FROM knowledge_cards WHERE id = ?`).run(options.absorbedCardId);
   });
 

@@ -16,7 +16,10 @@ export const SCHEMA_VERSION_V1 = 1;
  */
 export const SCHEMA_VERSION_V2 = 2;
 
-export const SCHEMA_VERSION_CURRENT = SCHEMA_VERSION_V2;
+/** V3: append-only knowledge card revision history (VER-001). */
+export const SCHEMA_VERSION_V3 = 3;
+
+export const SCHEMA_VERSION_CURRENT = SCHEMA_VERSION_V3;
 
 /**
  * Contract section 3.1 business objects.
@@ -27,6 +30,7 @@ export const CORE_TABLES = [
   "source_chunks",
   "annotations",
   "knowledge_cards",
+  "knowledge_card_revisions",
   "knowledge_sources",
   "knowledge_relations",
   "skills",
