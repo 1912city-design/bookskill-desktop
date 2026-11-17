@@ -342,3 +342,14 @@ export type {
   LoadKnowledgeGraphInput,
   SaveKnowledgeGraphInput,
 } from "./graph/index.ts";
+
+export {
+  depositConversationKnowledgeDraft,
+  fuseSkills,
+} from "./skill-fuse/index.ts";
+export type {
+  DepositConversationKnowledgeDraftOptions,
+  DepositConversationKnowledgeDraftResult,
+  FuseSkillsOptions,
+  FuseSkillsResult,
+} from "./skill-fuse/index.ts";
