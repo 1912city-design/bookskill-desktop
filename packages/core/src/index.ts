@@ -45,6 +45,17 @@ export type {
   UpdateKnowledgeCardOptions,
 } from "./knowledge.ts";
 export {
+  listKnowledgeCardRevisions,
+  loadKnowledgeCardRevision,
+  rollbackKnowledgeCardToRevision,
+  summarizeKnowledgeCardRevisionDiff,
+} from "./knowledge-revisions.ts";
+export type {
+  KnowledgeCardRevisionDiffField,
+  KnowledgeCardRevisionRecord,
+  RollbackKnowledgeCardToRevisionOptions,
+} from "./knowledge-revisions.ts";
+export {
   ALLOWED_RELATION_TYPES,
   DISCOVERY_REASONS,
   DISCOVERY_REASON_SHARED_SOURCE,
@@ -88,8 +99,20 @@ export {
   createRetrospectiveSkill,
   createSkill,
   createSkillVersion,
+  listSkills,
+  listSkillVersions,
   loadSkill,
   loadSkillVersion,
+  rollbackSkillToVersion,
+  summarizeSkillVersionDiff,
+  transitionSkillStatus,
+  updateSkillMetadata,
+} from "./skills.ts";
+export type {
+  RollbackSkillToVersionOptions,
+  SkillVersionDiffField,
+  TransitionSkillStatusOptions,
+  UpdateSkillMetadataOptions,
 } from "./skills.ts";
 export { recommendSkills } from "./recommend.ts";
 export { runStubAdapter } from "./stub-adapter.ts";

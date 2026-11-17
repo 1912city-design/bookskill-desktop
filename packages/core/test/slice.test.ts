@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { afterEach, describe, it } from "node:test";
+import { SCHEMA_VERSION_CURRENT } from "@bookskill/data";
 import {
   DEFAULT_SKILL_NAME,
   DEFAULT_SKILL_VERSION,
@@ -209,7 +210,8 @@ describe("VERT-001 book-to-skill thin slice", () => {
       assert.equal(before.skills, 1);
       assert.equal(before.conversations, 1);
       assert.equal(before.feedback, 1);
-      assert.equal(before.schemaVersion, 2);
+      assert.equal(before.schemaVersion, SCHEMA_VERSION_CURRENT);
+      assert.equal(before.schemaVersion, 3);
       assert.ok(fs.existsSync(before.dbPath));
     } finally {
       workspace.close();

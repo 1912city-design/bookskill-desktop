@@ -235,6 +235,149 @@ export function loadSkillVersion(db: DatabaseSync, versionId: string): SkillVers
   };
 }
 
+export function listSkills(db: DatabaseSync): SkillRecord[] {
+  const rows = db
+    .prepare(
+      `SELECT id FROM skills
+       ORDER BY updated_at DESC, created_at DESC, id`,
+    )
+    .all() as Array<{ id: string }>;
+  return rows.map((row) => loadSkill(db, row.id));
+}
+
+export function listSkillVersions(db: DatabaseSync, skillId: string): SkillVersionRecord[] {
+  loadSkill(db, skillId);
+  const rows = db
+    .prepare(
+      `SELECT id FROM skill_versions
+       WHERE skill_id = ?
+       ORDER BY created_at ASC, version ASC, id ASC`,
+    )
+    .all(skillId) as Array<{ id: string }>;
+  return rows.map((row) => loadSkillVersion(db, row.id));
+}
+
+export type RollbackSkillToVersionOptions = {
+  db: DatabaseSync;
+  skillId: string;
+  versionId: string;
+  now?: Date;
+};
+
+export function rollbackSkillToVersion(options: RollbackSkillToVersionOptions): {
+  skill: SkillRecord;
+  version: SkillVersionRecord;
+  rolledBackFrom: SkillVersionRecord;
+} {
+  const skill = loadSkill(options.db, options.skillId);
+  if (!skill.currentVersionId) {
+    throw new Error(`Skill ${options.skillId} has no current version to roll back from`);
+  }
+  const rolledBackFrom = loadSkillVersion(options.db, skill.currentVersionId);
+  const target = loadSkillVersion(options.db, options.versionId);
+  if (target.skillId !== options.skillId) {
+    throw new Error(`Skill version ${options.versionId} does not belong to skill ${options.skillId}`);
+  }
+  const stamp = nowIso(options.now);
+  const versionId = newId();
+  const shortId = versionId.replaceAll("-", "").slice(0, 8);
+  const version = `${target.version}+rollback-${shortId}`;
+  withTransaction(options.db, () => {
+    insertVersion(options.db, {
+      id: versionId,
+      skillId: options.skillId,
+      version,
+      inputs: target.inputs,
+      steps: target.steps,
+      rules: target.rules,
+      outputSchema: target.outputSchema,
+      permissions: target.permissions,
+      knowledgeCardIds: target.knowledgeCardIds,
+      createdAt: stamp,
+    });
+    options.db
+      .prepare(`UPDATE skills SET current_version_id = ?, status = ?, updated_at = ? WHERE id = ?`)
+      .run(versionId, SKILL_STATUS_DRAFT, stamp, options.skillId);
+  });
+  return {
+    skill: loadSkill(options.db, options.skillId),
+    version: loadSkillVersion(options.db, versionId),
+    rolledBackFrom: loadSkillVersion(options.db, rolledBackFrom.id),
+  };
+}
+
+export type SkillVersionDiffField =
+  | "inputs"
+  | "steps"
+  | "rules"
+  | "outputSchema"
+  | "permissions"
+  | "knowledgeCardIds";
+
+const SKILL_VERSION_DIFF_FIELDS: readonly SkillVersionDiffField[] = [
+  "inputs",
+  "steps",
+  "rules",
+  "outputSchema",
+  "permissions",
+  "knowledgeCardIds",
+];
+
+export function summarizeSkillVersionDiff(
+  a: SkillVersionRecord,
+  b: SkillVersionRecord,
+): SkillVersionDiffField[] {
+  return SKILL_VERSION_DIFF_FIELDS.filter((field) => JSON.stringify(a[field]) !== JSON.stringify(b[field]));
+}
+
+export type UpdateSkillMetadataOptions = {
+  db: DatabaseSync;
+  skillId: string;
+  name?: string;
+  domain?: string;
+  purpose?: string;
+  now?: Date;
+};
+
+export function updateSkillMetadata(options: UpdateSkillMetadataOptions): SkillRecord {
+  const existing = loadSkill(options.db, options.skillId);
+  const stamp = nowIso(options.now);
+  options.db
+    .prepare(`UPDATE skills SET name = ?, domain = ?, purpose = ?, updated_at = ? WHERE id = ?`)
+    .run(
+      options.name ?? existing.name,
+      options.domain ?? existing.domain,
+      options.purpose ?? existing.purpose,
+      stamp,
+      options.skillId,
+    );
+  const updated = loadSkill(options.db, options.skillId);
+  if (updated.status !== existing.status) {
+    throw new Error("Updating skill metadata must not change its status");
+  }
+  return updated;
+}
+
+export type TransitionSkillStatusOptions = {
+  db: DatabaseSync;
+  skillId: string;
+  status: string;
+  now?: Date;
+};
+
+/**
+ * Explicitly set a skill status. `published` is allowed only because the caller
+ * passed `status` directly; create / new-version / rollback paths never do this.
+ */
+export function transitionSkillStatus(options: TransitionSkillStatusOptions): SkillRecord {
+  loadSkill(options.db, options.skillId);
+  const stamp = nowIso(options.now);
+  options.db
+    .prepare(`UPDATE skills SET status = ?, updated_at = ? WHERE id = ?`)
+    .run(options.status, stamp, options.skillId);
+  return loadSkill(options.db, options.skillId);
+}
+
 function insertVersion(
   db: DatabaseSync,
   input: {

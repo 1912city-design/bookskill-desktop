@@ -107,6 +107,18 @@ describe("core schema", () => {
           "created_at",
           "updated_at",
         ],
+        knowledge_card_revisions: [
+          "id",
+          "card_id",
+          "revision",
+          "title",
+          "type",
+          "content",
+          "conditions",
+          "limitations",
+          "status",
+          "created_at",
+        ],
         knowledge_sources: ["id", "knowledge_card_id", "source_chunk_id", "relation_type"],
         knowledge_relations: ["id", "from_card_id", "to_card_id", "relation_type", "status"],
         skills: [
@@ -177,6 +189,7 @@ describe("core schema", () => {
         annotation: createBusinessId(),
         card: createBusinessId(),
         card2: createBusinessId(),
+        revision: createBusinessId(),
         knowledgeSource: createBusinessId(),
         relation: createBusinessId(),
         skill: createBusinessId(),
@@ -213,6 +226,11 @@ describe("core schema", () => {
         `INSERT INTO knowledge_cards(id, title, type, content, conditions, limitations, status, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).run(ids.card2, "Card B", "claim", "B claim", null, null, "draft", now, now);
+
+      db.prepare(
+        `INSERT INTO knowledge_card_revisions(id, card_id, revision, title, type, content, conditions, limitations, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).run(ids.revision, ids.card, 1, "Card A", "claim", "A claim", "when x", "not y", "draft", now);
 
       db.prepare(
         `INSERT INTO knowledge_sources(id, knowledge_card_id, source_chunk_id, relation_type)
@@ -287,6 +305,11 @@ describe("core schema", () => {
       const count = db.prepare("SELECT COUNT(*) AS n FROM feedback").get() as { n: number };
       assert.equal(count.n, 1);
 
+      const revisionCount = db.prepare("SELECT COUNT(*) AS n FROM knowledge_card_revisions").get() as {
+        n: number;
+      };
+      assert.equal(revisionCount.n, 1);
+
       assert.throws(
         () =>
           db
@@ -295,6 +318,28 @@ describe("core schema", () => {
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             )
             .run(createBusinessId(), createBusinessId(), "1", 1, null, "orphan", "h", 1),
+        /FOREIGN KEY constraint failed/i,
+      );
+
+      assert.throws(
+        () =>
+          db
+            .prepare(
+              `INSERT INTO knowledge_card_revisions(id, card_id, revision, title, type, content, conditions, limitations, status, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            )
+            .run(
+              createBusinessId(),
+              createBusinessId(),
+              1,
+              "Orphan",
+              "claim",
+              "no such card",
+              null,
+              null,
+              "draft",
+              now,
+            ),
         /FOREIGN KEY constraint failed/i,
       );
     } finally {

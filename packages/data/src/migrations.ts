@@ -2,8 +2,10 @@ import type { DatabaseSync } from "node:sqlite";
 import {
   SCHEMA_VERSION_V1,
   SCHEMA_VERSION_V2,
+  SCHEMA_VERSION_V3,
   UUID_ID_CHECK_SQL,
 } from "./constants.ts";
+import { createBusinessId } from "./uuid.ts";
 
 export type Migration = {
   version: number;
@@ -230,4 +232,73 @@ export const migrationV2: Migration = {
   },
 };
 
-export const BUILTIN_MIGRATIONS: readonly Migration[] = [migrationV1, migrationV2];
+/**
+ * V3: knowledge card revision history.
+ * Existing knowledge_cards rows remain readable and receive a revision=1 baseline snapshot.
+ */
+export const migrationV3: Migration = {
+  version: SCHEMA_VERSION_V3,
+  name: "create_knowledge_card_revisions",
+  up(db) {
+    exec(
+      db,
+      `
+      CREATE TABLE knowledge_card_revisions (
+        id TEXT PRIMARY KEY CHECK ${UUID_ID_CHECK_SQL},
+        card_id TEXT NOT NULL,
+        revision INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        type TEXT NOT NULL,
+        content TEXT NOT NULL,
+        conditions TEXT,
+        limitations TEXT,
+        status TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        UNIQUE (card_id, revision),
+        FOREIGN KEY (card_id) REFERENCES knowledge_cards(id)
+      );
+      CREATE INDEX idx_knowledge_card_revisions_card_id
+        ON knowledge_card_revisions(card_id);
+      CREATE INDEX idx_knowledge_card_revisions_card_revision
+        ON knowledge_card_revisions(card_id, revision);
+      `,
+    );
+
+    const cards = db
+      .prepare(
+        `SELECT id, title, type, content, conditions, limitations, status, created_at
+         FROM knowledge_cards`,
+      )
+      .all() as Array<{
+      id: string;
+      title: string;
+      type: string;
+      content: string;
+      conditions: string | null;
+      limitations: string | null;
+      status: string;
+      created_at: string;
+    }>;
+    const insert = db.prepare(
+      `INSERT INTO knowledge_card_revisions(
+         id, card_id, revision, title, type, content, conditions, limitations, status, created_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+    for (const card of cards) {
+      insert.run(
+        createBusinessId(),
+        card.id,
+        1,
+        card.title,
+        card.type,
+        card.content,
+        card.conditions,
+        card.limitations,
+        card.status,
+        card.created_at,
+      );
+    }
+  },
+};
+
+export const BUILTIN_MIGRATIONS: readonly Migration[] = [migrationV1, migrationV2, migrationV3];
