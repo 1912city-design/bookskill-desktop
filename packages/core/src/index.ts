@@ -323,3 +323,22 @@ export type {
   ParseDistillationOptions,
   StoredDistillation,
 } from "./distill/index.ts";
+
+export {
+  GRAPH_DIRNAME,
+  GRAPH_FILENAME,
+  buildKnowledgeGraph,
+  knowledgeGraphPath,
+  loadKnowledgeGraph,
+  saveKnowledgeGraph,
+} from "./graph/index.ts";
+export type {
+  BuildKnowledgeGraphInput,
+  GraphEdgeType,
+  GraphNodeType,
+  KnowledgeGraph,
+  KnowledgeGraphEdge,
+  KnowledgeGraphNode,
+  LoadKnowledgeGraphInput,
+  SaveKnowledgeGraphInput,
+} from "./graph/index.ts";
