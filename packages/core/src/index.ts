@@ -357,3 +357,14 @@ export type {
   InterviewOrTextSource,
   TextSourceKind,
 } from "./distill/multi-source.ts";
+
+export {
+  depositConversationKnowledgeDraft,
+  fuseSkills,
+} from "./skill-fuse/index.ts";
+export type {
+  DepositConversationKnowledgeDraftOptions,
+  DepositConversationKnowledgeDraftResult,
+  FuseSkillsOptions,
+  FuseSkillsResult,
+} from "./skill-fuse/index.ts";
