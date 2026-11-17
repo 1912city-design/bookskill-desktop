@@ -1,0 +1,33 @@
+
+> @bookskill/desktop@0.0.0 pack:mac /workspace/bookskill-worktrees/PKG-001/packages/desktop
+> node scripts/pack-macos.mjs
+
+Cannot produce a macOS .dmg / .app on this host (linux x64).
+
+Official electron-builder rule: macOS DMG/.app packaging must run on macOS.
+Do not attempt a Linux cross-compiled or fake .dmg.
+
+Exact missing items on this environment:
+- macOS 13+ machine, or a GitHub-hosted macos-15 runner (macos-14 was retired 2026-11-02)
+- Xcode Command Line Tools (xcodebuild)
+- hdiutil (required to create a .dmg)
+- iconutil (required to convert resources/icon.png to .icns)
+- sw_vers / the macOS SDK
+- codesign and notarytool (only required for signed/notarized official builds; not used for this unsigned development sample)
+- Apple Developer ID Application certificate and notarization credentials (currently absent; B-003 / P-005). Official signed installers are blocked until these exist and a human approves publish.
+- osxcross, darling, and other Linux-side macOS toolchains (not present, and not an accepted substitute)
+
+Shortest path to an unsigned macOS 13+ development sample:
+
+  # On a macOS 13+ machine, from the repository root:
+  pnpm install --frozen-lockfile
+  CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter @bookskill/desktop pack:mac
+
+  # Or dispatch GitHub Actions workflow .github/workflows/macos-dev-build.yml
+  # (runs-on: macos-15; macos-14 was retired 2026-11-02). Remote success is a development sample only;
+  # it is not G1 and not a production publish.
+
+This command is the unsigned development sample path. It is not an official release.
+/workspace/bookskill-worktrees/PKG-001/packages/desktop:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @bookskill/desktop@0.0.0 pack:mac: `node scripts/pack-macos.mjs`
+Exit status 1

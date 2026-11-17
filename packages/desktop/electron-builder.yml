@@ -1,0 +1,98 @@
+# BookSkill Desktop packaging configuration (PKG-001).
+#
+# Chosen appId: design.city1912.bookskill.desktop
+# This is a BookSkill-specific application id. It is not an AnythingLLM
+# or Mintplex id, and it is not reused from any upstream desktop binary.
+#
+# Official electron-builder rule: macOS .dmg / .app packaging must run on
+# macOS. This file cannot be used to cross-compile a usable macOS package
+# on Linux.
+#
+# Signing and notarization are intentionally disabled. This config is for
+# an unsigned development sample, not an official release. Do not treat a
+# successful pack as G1, and do not treat it as a production publish.
+# Official signed installers remain blocked until certificates and
+# notarization credentials exist (B-003 / P-005) and a human approves publish.
+#
+# Linux is not a V1 official target (D-002) and is not declared here.
+
+appId: design.city1912.bookskill.desktop
+productName: BookSkill Desktop
+copyright: BookSkill
+
+directories:
+  output: out
+  buildResources: resources
+
+# esbuild already bundles @bookskill/core, @bookskill/data, and
+# @bookskill/repo-baseline into dist/main and dist/renderer.
+# Pack only the compiled output and the package manifest.
+files:
+  - dist/**/*
+  - package.json
+  - "!src/**/*"
+  - "!test/**/*"
+  - "!scripts/**/*"
+  - "!tsconfig.json"
+  - "!out/**/*"
+  - "!**/*.map"
+
+asar: true
+npmRebuild: false
+nodeGypRebuild: false
+
+# Do not set `publish: never` here: electron-builder 26 treats that as a
+# custom publisher module name and fails with
+# "Cannot find module for publisher never".
+# The pack scripts pass `--publish never` so this workflow cannot create
+# a GitHub Release or official publish.
+
+mac:
+  # Unsigned development sample. Scripts must also set
+  # CSC_IDENTITY_AUTO_DISCOVERY=false so electron-builder does not
+  # search for a signing identity.
+  identity: null
+  notarize: false
+  minimumSystemVersion: "13.0"
+  category: public.app-category.productivity
+  icon: resources/icon.png
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  # Prefer a single universal (x64 + arm64) artifact so the project lead
+  # can try it on Intel or Apple Silicon. If a universal build fails on
+  # the macOS runner, fall back to separate arm64 and x64 artifacts and
+  # document that in docs/pkg/MACOS-DEV-BUILD.md.
+  target:
+    - target: dmg
+      arch:
+        - universal
+    - target: zip
+      arch:
+        - universal
+  artifactName: BookSkill-Desktop-${version}-macOS-${arch}.${ext}
+
+dmg:
+  title: BookSkill Desktop
+  artifactName: BookSkill-Desktop-${version}-macOS-${arch}.${ext}
+  writeUpdateInfo: false
+
+# Windows 11 x64 is a V1 official target (D-002). This task's sample is
+# macOS only. Windows packaging must run on Windows (see pack:win).
+# No signing certificate is configured.
+win:
+  icon: resources/icon.png
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: zip
+      arch:
+        - x64
+  artifactName: BookSkill-Desktop-${version}-Windows-${arch}.${ext}
+
+nsis:
+  artifactName: BookSkill-Desktop-${version}-Windows-${arch}.${ext}
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: BookSkill Desktop
+  uninstallDisplayName: BookSkill Desktop

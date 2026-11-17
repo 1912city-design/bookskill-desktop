@@ -1,13 +1,24 @@
-import {
-  RELATION_STATUS_REJECTED,
-  RELATION_STATUS_SUGGESTED,
-  RELATION_STATUS_VERIFIED,
-  RELATION_TYPE_CONTRADICTS,
-  RELATION_TYPE_EXAMPLE_OF,
-  RELATION_TYPE_RELATED_TO,
-  RELATION_TYPE_SUPPORTS,
-  type KnowledgeRelationRecord,
-} from "@bookskill/core";
+/**
+ * Relation tokens must stay identical to `@bookskill/core`
+ * (`packages/core/src/relations.ts`). They are duplicated here so the
+ * renderer bundle does not import the core barrel, which would pull
+ * Node-only modules (parse-pdf, sqlite, fs) into a browser IIFE.
+ */
+const RELATION_STATUS_REJECTED = "rejected";
+const RELATION_STATUS_SUGGESTED = "suggested";
+const RELATION_STATUS_VERIFIED = "verified_by_user";
+const RELATION_TYPE_CONTRADICTS = "contradicts";
+const RELATION_TYPE_EXAMPLE_OF = "example_of";
+const RELATION_TYPE_RELATED_TO = "related_to";
+const RELATION_TYPE_SUPPORTS = "supports";
+
+type KnowledgeRelationRecord = {
+  id: string;
+  fromCardId: string;
+  toCardId: string;
+  relationType: string;
+  status: string;
+};
 
 export type KnowledgeRelationView = KnowledgeRelationRecord & {
   fromCardTitle: string;
