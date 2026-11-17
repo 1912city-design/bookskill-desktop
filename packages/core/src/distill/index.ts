@@ -55,3 +55,18 @@ export type { ImportDistillationOptions, ImportDistillationResult } from "./stor
 
 export { generateDistillation, sourceTextFromBook } from "./generate.ts";
 export type { DistillationModelAdapter, DistillationSectionRequest, GenerateDistillationOptions } from "./generate.ts";
+
+export {
+  TEXT_SOURCE_KINDS,
+  citeImportedSourceWithCouncil,
+  importInterviewOrText,
+  isTextSourceKind,
+} from "./multi-source.ts";
+export type {
+  CiteImportedSourceWithCouncilOptions,
+  ImportInterviewOrTextOptions,
+  ImportInterviewOrTextResult,
+  ImportedSourceCouncilCitationResult,
+  InterviewOrTextSource,
+  TextSourceKind,
+} from "./multi-source.ts";
