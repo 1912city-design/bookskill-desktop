@@ -342,3 +342,18 @@ export type {
   LoadKnowledgeGraphInput,
   SaveKnowledgeGraphInput,
 } from "./graph/index.ts";
+
+export {
+  TEXT_SOURCE_KINDS,
+  citeImportedSourceWithCouncil,
+  importInterviewOrText,
+  isTextSourceKind,
+} from "./distill/multi-source.ts";
+export type {
+  CiteImportedSourceWithCouncilOptions,
+  ImportInterviewOrTextOptions,
+  ImportInterviewOrTextResult,
+  ImportedSourceCouncilCitationResult,
+  InterviewOrTextSource,
+  TextSourceKind,
+} from "./distill/multi-source.ts";
