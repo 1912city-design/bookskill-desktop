@@ -76,4 +76,6 @@ contextBridge.exposeInMainWorld("bookskillDesktop", {
   askCouncilSeat: (input) => ipcRenderer.invoke("council:askSeat", input),
   runCouncilRoundtable: (input) => ipcRenderer.invoke("council:runRoundtable", input),
   enableFixtureCouncilAdapter: () => ipcRenderer.invoke("council:enableFixtureAdapter"),
+  loadKnowledgeGraph: () => ipcRenderer.invoke("graph:load"),
+  locateGraphNode: (input) => ipcRenderer.invoke("graph:locate", input),
 });

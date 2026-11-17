@@ -1,4 +1,6 @@
 import { escapeHtml } from "../../shared/error-boundary.ts";
+import { emptyGraphUiState, type GraphUiState } from "../graph/types.ts";
+import { renderLibraryGraph } from "../graph/view.ts";
 import { knowledgeStatusLabel, type KnowledgeCardView, type KnowledgeUiState } from "./types.ts";
 
 function formatLocator(source: KnowledgeCardView["sources"][number]): string {
@@ -129,7 +131,7 @@ function renderEditor(state: KnowledgeUiState): string {
   ].join("");
 }
 
-export function renderKnowledgeRoute(state: KnowledgeUiState): string {
+export function renderKnowledgeRoute(state: KnowledgeUiState, graph: GraphUiState = emptyGraphUiState()): string {
   const error = state.error
     ? `<p class="knowledge-error" data-testid="knowledge-error" role="alert">${escapeHtml(state.error)}</p>`
     : "";
@@ -152,6 +154,7 @@ export function renderKnowledgeRoute(state: KnowledgeUiState): string {
     renderEditor(state),
     `</section>`,
     `</div>`,
+    renderLibraryGraph(graph),
     `</div>`,
   ].join("");
 }

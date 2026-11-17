@@ -26,6 +26,7 @@ import type {
   CouncilRoundtableBridgeResult,
   CouncilAdapterKind,
 } from "../renderer/council/types.ts";
+import type { GraphLocateView, KnowledgeGraphView } from "../renderer/graph/types.ts";
 
 export type SliceSnapshotInfo = {
   dataDir: string;
@@ -175,5 +176,7 @@ export type BookskillDesktopBridge = {
     useFixtureAdapter?: boolean;
   }) => Promise<CouncilRoundtableBridgeResult>;
   enableFixtureCouncilAdapter: () => Promise<CouncilAdapterKind>;
+  loadKnowledgeGraph: () => Promise<KnowledgeGraphView>;
+  locateGraphNode: (input: { nodeId: string }) => Promise<GraphLocateView>;
 };
 

@@ -1424,3 +1424,144 @@ h1 {
   color: var(--ink-soft);
   font-size: 13px;
 }
+
+.library-graph {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid color-mix(in srgb, var(--knowledge-accent, #93f1f7) 24%, #222);
+  border-radius: var(--knowledge-radius, 16px);
+  background: var(--knowledge-surface, #0d0d0d);
+  color: var(--knowledge-ink, #fff);
+}
+
+.library-graph-header h2,
+.library-graph-life h3,
+.library-graph-book-title,
+.library-graph-locate h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.library-graph-lead,
+.library-graph-book-meta,
+.library-graph-locate-source,
+.library-graph-locate-empty,
+.library-graph-empty,
+.library-graph-life-meta {
+  margin: 0 0 16px;
+  color: var(--knowledge-muted, #999);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.library-graph-error,
+.library-graph-unconfirmed {
+  margin: 0 0 12px;
+  color: #f3c6a5;
+  font-size: 13px;
+}
+
+.library-graph-life {
+  margin-bottom: 20px;
+}
+
+.library-graph-life-list,
+.library-graph-edges {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.library-graph-life-item,
+.library-graph-edge,
+.library-graph-book-group {
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #111;
+}
+
+.library-graph-life-title,
+.library-graph-edge-ends,
+.library-graph-node-label {
+  display: block;
+  font-weight: 600;
+}
+
+.library-graph-life-counts,
+.library-graph-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.library-graph-life-count,
+.library-graph-node-type,
+.library-graph-edge-type,
+.library-graph-node-locator {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: color-mix(in srgb, var(--knowledge-accent, #93f1f7) 16%, #111);
+  color: var(--knowledge-accent, #93f1f7);
+  font-size: 12px;
+}
+
+.library-graph-book-group {
+  margin-bottom: 14px;
+}
+
+.library-graph-node {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 280px;
+  padding: 10px 12px;
+  border: 1px solid #333;
+  border-radius: 12px;
+  background: #171717;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.library-graph-node[data-selected="true"] {
+  border-color: var(--knowledge-accent, #93f1f7);
+  box-shadow: 0 0 0 1px var(--knowledge-accent, #93f1f7);
+}
+
+.library-graph-node-unconfirmed,
+.library-graph-inferred {
+  color: #f3c6a5;
+  background: color-mix(in srgb, #f3c6a5 14%, #111);
+}
+
+.library-graph-edges {
+  margin-top: 12px;
+}
+
+.library-graph-edge-explanation {
+  display: block;
+  margin-top: 6px;
+  color: var(--knowledge-muted, #999);
+  font-size: 12px;
+}
+
+.library-graph-locate,
+.library-graph-passage {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--knowledge-accent, #93f1f7);
+  background: #151515;
+}
+
+.library-graph-passage {
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+  color: var(--knowledge-ink, #fff);
+}
