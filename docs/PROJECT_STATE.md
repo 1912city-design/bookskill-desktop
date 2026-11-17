@@ -1,5 +1,20 @@
 # PROJECT_STATE
 
+## 当前快照（2026-11-17 21:18 Asia/Shanghai）
+
+这不是正式交付。G1 / G2 已超时且未通过，G3 / G4 未启动。不得宣布完成，不得盖 G1/G2，不得发布，不得合入 `main`。
+
+- 发布仓库：https://github.com/1912city-design/bookskill-desktop （公开，已连接）
+- `origin/main`：`953ba8d6d74fb174e076a208a09b67a70c18b996`（仅 REPO-001）
+- `origin/integration`：`5fe203b0b1c24d64b53415ddf2242297b225e577`（2026-11-17 21:18:46 Asia/Shanghai，Merge [PR #15](https://github.com/1912city-design/bookskill-desktop/pull/15) VER-001）。parents：`b3a240c` + `3241ee2`。
+- 已在 integration、未进 main：DATA/APP/FIXT/VERT/IMPORT/READ/KNOW、BOT-001、GOV-001、REL-001、SEARCH-001、PATH-001、SEARCH-002、SKILL-001、REL-002、SKILL-004、COUNCIL-001、DISTILL-001、DISTILL-002、VER-001（schema V3）
+- 官方未签名 macOS 开发包仍钉在 `1378c01` / Actions run 43829187100，七条核心路径独立 QA 为 PASS；该包不含 11-16 晚之后合入的功能。失败包 `f78aa00` 不得再用。PKG-001 [PR #13](https://github.com/1912city-design/bookskill-desktop/pull/13) 仍开放。
+- VER-001 独立 QA：`/workspace/bookskill-qa/VER-001-PR15-3241ee2/QA_REPORT.md`（通过，高风险）。桌面历史 UI 仍属 VER-002。
+- 本轮已冻结并启动：GRAPH-001（核心，ai_skill）、COUNCIL-002（智囊团桌面，frontend，优先可演示闭环）。已冻结并排队：GRAPH-002（图谱桌面，frontend，在 COUNCIL-002 开出 PR 后开工）、DISTILL-003、SKILL-FUSE-001（均在 GRAPH-001 开出 PR 后由 ai_skill 依次开工）。
+- 仍待决策：P-004 至 P-012（P-013 已确认并执行：VER-001 只合入 integration）。
+
+以下为 2026-11-14 及更早的历史正文，指针可能过时，以本节与 GitHub 为准。
+
 - 更新时间：2026-11-14 20:51 Asia/Shanghai
 - 合同：`docs/GROK_EXECUTION_SPEC.md`（SHA-256 `7b2cd11ac44e4dcc5d9f4b219c837ce8ddc2be86856e02327352e545418b64d2`）
 - 发布仓库：已连接，**公开**仓库 https://github.com/1912city-design/bookskill-desktop

@@ -1,5 +1,14 @@
 # TASKS
 
+## 当前队列（2026-11-17 21:18 Asia/Shanghai）
+
+进行中：GRAPH-001（Ready，核心）、COUNCIL-002（Ready，桌面，优先可演示闭环）。
+排队：GRAPH-002（Ready，等 COUNCIL-002 开出 PR）、DISTILL-003（Queued，等 GRAPH-001 开出 PR）、SKILL-FUSE-001（Queued，等 GRAPH-001 与 DISTILL-003 开出 PR）、VER-002（桌面历史 UI，等需要时再开）。
+仍开放：PKG-001 PR #13（不合入 main，不发布）。
+不要宣布 Done / G1 / G2。
+
+以下为历史任务表，状态可能过时。
+
 - 更新时间：2026-11-14 20:51 Asia/Shanghai
 - 状态机：`Backlog → Ready → In Progress → Pull Request → CI → Independent QA → Auto-merge to integration（低/中风险）或 Human Approval（高风险）→ Done`
 - 合入规则：D-025 与 `docs/policies/merge-policy.yml`。低/中风险在 CI + 独立 QA 通过后由 Orchestrator 自动合入 `integration`，不逐个询问。高风险与生产发布、以及分支保护启用前合入 `main`，须人工确认（记入 `docs/PENDING_DECISIONS.md`）。
