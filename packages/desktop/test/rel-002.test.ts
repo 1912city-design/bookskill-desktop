@@ -299,6 +299,10 @@ describe("REL-002 relations discovery inbox", () => {
         throw new Error("unused");
       },
       loadDistillationChatContext: async () => null,
+      listCouncilSeats: async () => ({ seats: [], adapterKind: "none" }),
+      askCouncilSeat: async () => ({ ok: false, error: "unused", adapterKind: "none" }),
+      runCouncilRoundtable: async () => ({ ok: false, error: "unused", adapterKind: "none" }),
+      enableFixtureCouncilAdapter: async () => "fixture",
     };
     assert.equal(typeof bridge.discoverKnowledgeRelations, "function");
     assert.equal(emptyKnowledgeUiState().selectedCardId, null);

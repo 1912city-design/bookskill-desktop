@@ -1265,3 +1265,162 @@ h1 {
   color: var(--copper-dark);
   font-weight: 600;
 }
+
+
+.council-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper-2);
+}
+
+.council-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.council-intro,
+.council-adapter-label,
+.council-status,
+.council-empty {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.council-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.council-seats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.council-seat {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.council-seat[data-selected="true"] {
+  border-color: var(--copper);
+  box-shadow: 0 0 0 1px var(--copper);
+}
+
+.council-seat-name {
+  font-weight: 650;
+}
+
+.council-seat-book,
+.council-seat-source,
+.council-seat-status {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.council-form,
+.council-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.council-actions {
+  grid-template-columns: repeat(auto-fit, minmax(160px, max-content));
+}
+
+.council-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.council-question {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.council-ask,
+.council-roundtable,
+.council-enable-fixture {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--copper);
+  color: #fff;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.council-enable-fixture,
+.council-roundtable {
+  background: var(--sidebar);
+}
+
+.council-utterances {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.council-utterance {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.council-utterance[data-kind="summary"] {
+  background: color-mix(in srgb, var(--copper) 8%, #fff);
+}
+
+.council-speaker {
+  margin: 0 0 6px;
+  font-weight: 650;
+}
+
+.council-content {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.council-source-filename {
+  margin: 8px 0 0;
+  color: var(--copper-dark);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.council-citations {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}

@@ -303,6 +303,10 @@ describe("REL-001 knowledge relations route", () => {
         throw new Error("unused");
       },
       loadDistillationChatContext: async () => null,
+      listCouncilSeats: async () => ({ seats: [], adapterKind: "none" }),
+      askCouncilSeat: async () => ({ ok: false, error: "unused", adapterKind: "none" }),
+      runCouncilRoundtable: async () => ({ ok: false, error: "unused", adapterKind: "none" }),
+      enableFixtureCouncilAdapter: async () => "fixture",
     };
     assert.equal(typeof bridge.suggestRelation, "function");
     assert.equal(emptyKnowledgeUiState().selectedCardId, null);

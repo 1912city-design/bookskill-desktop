@@ -23,6 +23,8 @@ import { emptySearchUiState, type SearchUiState } from "./search/types.ts";
 import { renderSearchPanel } from "./search/view.ts";
 import { emptyChatUiState, type ChatUiState } from "./chat/types.ts";
 import { renderChatRoute } from "./chat/view.ts";
+import { emptyCouncilUiState, type CouncilUiState } from "./council/types.ts";
+import { renderCouncilPanel } from "./council/view.ts";
 import { emptyDistillUiState, type DistillUiState } from "./distill/types.ts";
 import { renderDistillRoute } from "./distill/view.ts";
 import { draftFromSkill, emptySkillEditorDraft, emptySkillsUiState, type SkillEditorDraft, type SkillsUiState } from "./skills/types.ts";
@@ -66,9 +68,10 @@ type ShellState = {
   chat: ChatUiState;
   skills: SkillsUiState;
   distill: DistillUiState;
+  council: CouncilUiState;
 };
 
-function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState, skills: SkillsUiState, distill: DistillUiState): string {
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState, skills: SkillsUiState, distill: DistillUiState, council: CouncilUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -104,7 +107,7 @@ function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiSt
         : view.id === "knowledge"
           ? `${renderKnowledgeRoute(knowledge)}${renderRelationsRoute(relations, knowledge.cards)}`
         : view.id === "chat"
-          ? renderChatRoute(chat)
+          ? `${renderChatRoute(chat)}${renderCouncilPanel(council)}`
         : view.id === "skills"
           ? renderSkillsRoute(skills)
         : `<p class="view-note">此入口已可导航。薄切片的导入、知识卡、Skill 与离线对话已接到本机业务库；完整阅读器或 Skill Studio 不在本页范围。</p>`;
@@ -153,6 +156,7 @@ function bindNavigation(root: HTMLElement, state: ShellState): void {
           }
           if (id === "chat") {
             await ensureChat(state);
+            await ensureCouncil(state);
           }
           if (id === "skills") {
             await ensureSkills(state);
@@ -813,7 +817,7 @@ function bindSearch(root: HTMLElement, state: ShellState): void {
 }
 
 function paint(root: HTMLElement, state: ShellState): void {
-  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations, state.chat, state.skills, state.distill));
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations, state.chat, state.skills, state.distill, state.council));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
@@ -826,6 +830,7 @@ function paint(root: HTMLElement, state: ShellState): void {
   bindSearch(root, state);
   bindRelations(root, state);
   bindChat(root, state);
+  bindCouncil(root, state);
   bindSkills(root, state);
 }
 
@@ -1048,6 +1053,133 @@ async function ensureChat(state: ShellState): Promise<void> {
     state.chat.error = formatErrorMessage(error);
   } finally {
     state.chat.loaded = true;
+  }
+}
+
+function readCouncilQuestion(root: HTMLElement, state: ShellState): string {
+  const value = root.querySelector<HTMLTextAreaElement>("[data-testid='council-question']")?.value ?? state.council.draftQuestion;
+  state.council.draftQuestion = value;
+  return value;
+}
+
+function bindCouncil(root: HTMLElement, state: ShellState): void {
+  if (state.nav.current !== "chat") {
+    return;
+  }
+  root.querySelectorAll<HTMLButtonElement>("button.council-seat[data-seat-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const seatId = button.getAttribute("data-seat-id");
+      if (!seatId) {
+        return;
+      }
+      readCouncilQuestion(root, state);
+      state.council.selectedSeatId = seatId;
+      paint(root, state);
+    });
+  });
+  root.querySelector<HTMLButtonElement>("[data-testid='council-enable-fixture']")?.addEventListener("click", () => {
+    readCouncilQuestion(root, state);
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.enableFixtureCouncilAdapter) {
+          throw new Error("智囊团尚未连接到本机接口。");
+        }
+        state.council.adapterKind = await bridge.enableFixtureCouncilAdapter();
+        state.council.error = null;
+        state.council.statusMessage = "已启用夹具演示适配器（非在线模型）。";
+        paint(root, state);
+      } catch (error) {
+        state.council.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+  root.querySelector<HTMLButtonElement>("[data-testid='council-ask']")?.addEventListener("click", () => {
+    const question = readCouncilQuestion(root, state);
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.askCouncilSeat) {
+          throw new Error("智囊团尚未连接到本机接口。");
+        }
+        const seatId = state.council.selectedSeatId;
+        if (!seatId) {
+          state.council.error = "请先选择一个席位。";
+          paint(root, state);
+          return;
+        }
+        const result = await bridge.askCouncilSeat({
+          seatId,
+          question,
+          useFixtureAdapter: state.council.adapterKind === "fixture",
+        });
+        state.council.adapterKind = result.adapterKind;
+        if (!result.ok) {
+          state.council.error = result.error;
+          state.council.statusMessage = null;
+          paint(root, state);
+          return;
+        }
+        state.council.utterances = [result.utterance];
+        state.council.error = null;
+        state.council.statusMessage = result.adapterKind === "fixture" ? "夹具演示适配器（非在线模型）" : null;
+        paint(root, state);
+      } catch (error) {
+        state.council.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+  root.querySelector<HTMLButtonElement>("[data-testid='council-roundtable']")?.addEventListener("click", () => {
+    const question = readCouncilQuestion(root, state);
+    void (async () => {
+      try {
+        const bridge = getBridge();
+        if (!bridge?.runCouncilRoundtable) {
+          throw new Error("智囊团尚未连接到本机接口。");
+        }
+        const result = await bridge.runCouncilRoundtable({
+          question,
+          useFixtureAdapter: state.council.adapterKind === "fixture",
+        });
+        state.council.adapterKind = result.adapterKind;
+        if (!result.ok) {
+          state.council.error = result.error;
+          state.council.statusMessage = null;
+          paint(root, state);
+          return;
+        }
+        state.council.utterances = result.utterances;
+        state.council.error = null;
+        state.council.statusMessage = result.adapterKind === "fixture" ? "夹具演示适配器（非在线模型）" : null;
+        paint(root, state);
+      } catch (error) {
+        state.council.error = formatErrorMessage(error);
+        paint(root, state);
+      }
+    })();
+  });
+}
+
+async function ensureCouncil(state: ShellState): Promise<void> {
+  const bridge = getBridge();
+  if (!bridge?.listCouncilSeats) {
+    state.council.loaded = true;
+    return;
+  }
+  try {
+    const listed = await bridge.listCouncilSeats();
+    state.council.seats = listed.seats;
+    state.council.adapterKind = listed.adapterKind;
+    if (!state.council.selectedSeatId && listed.seats[0]) {
+      state.council.selectedSeatId = listed.seats[0].seat_id;
+    }
+    state.council.error = null;
+  } catch (error) {
+    state.council.error = formatErrorMessage(error);
+  } finally {
+    state.council.loaded = true;
   }
 }
 
@@ -1424,6 +1556,7 @@ async function start(): Promise<void> {
       chat: emptyChatUiState(),
       skills: emptySkillsUiState(),
       distill: emptyDistillUiState(),
+      council: emptyCouncilUiState(),
     };
     if (nav.current === "library") {
       await ensureLibraryBooks(state);
@@ -1434,6 +1567,7 @@ async function start(): Promise<void> {
     }
     if (nav.current === "chat") {
       await ensureChat(state);
+      await ensureCouncil(state);
     }
     if (nav.current === "skills") {
       await ensureSkills(state);

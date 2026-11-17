@@ -20,6 +20,12 @@ import type {
   SkillStepField,
   SkillTemplateSummary,
 } from "../renderer/skills/types.ts";
+import type {
+  CouncilAskBridgeResult,
+  CouncilListBridgeResult,
+  CouncilRoundtableBridgeResult,
+  CouncilAdapterKind,
+} from "../renderer/council/types.ts";
 
 export type SliceSnapshotInfo = {
   dataDir: string;
@@ -161,5 +167,13 @@ export type BookskillDesktopBridge = {
     skillId?: string;
   }) => Promise<DistillAttachBridgeResult>;
   loadDistillationChatContext: (conversationId: string) => Promise<DistillChatContext | null>;
+  listCouncilSeats: () => Promise<CouncilListBridgeResult>;
+  askCouncilSeat: (input: { seatId: string; question: string; useFixtureAdapter?: boolean }) => Promise<CouncilAskBridgeResult>;
+  runCouncilRoundtable: (input: {
+    question: string;
+    seatIds?: string[];
+    useFixtureAdapter?: boolean;
+  }) => Promise<CouncilRoundtableBridgeResult>;
+  enableFixtureCouncilAdapter: () => Promise<CouncilAdapterKind>;
 };
 
