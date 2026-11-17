@@ -54,6 +54,12 @@ import {
   startDistill,
 } from "./distill-path.ts";
 import {
+  askDesktopCouncilSeat,
+  enableFixtureCouncilAdapter,
+  listDesktopCouncilSeats,
+  runDesktopCouncilRoundtable,
+} from "./council.ts";
+import {
   createBlankSkill,
   instantiateConceptCard,
   instantiateSkillTemplate,
@@ -954,6 +960,61 @@ async function boot(): Promise<void> {
       return null;
     }
     return loadDistillationChatContext(bootState.dataDir, conversationId);
+  });
+
+  ipcMain.handle("council:listSeats", () => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    return listDesktopCouncilSeats({ db: sliceWorkspace.db });
+  });
+
+  ipcMain.handle("council:askSeat", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("请选择席位并输入问题。");
+    }
+    const payload = input as { seatId?: unknown; question?: unknown; useFixtureAdapter?: unknown };
+    if (typeof payload.seatId !== "string" || !payload.seatId.trim()) {
+      throw new Error("请选择一个智囊团席位。");
+    }
+    if (typeof payload.question !== "string") {
+      throw new Error("请输入要向席位提出的问题。");
+    }
+    return askDesktopCouncilSeat({
+      db: sliceWorkspace.db,
+      seatId: payload.seatId,
+      question: payload.question,
+      useFixtureAdapter: payload.useFixtureAdapter === true,
+    });
+  });
+
+  ipcMain.handle("council:runRoundtable", (_event, input: unknown) => {
+    if (!sliceWorkspace) {
+      throw new Error("业务库尚未打开。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("请输入圆桌问题。");
+    }
+    const payload = input as { question?: unknown; seatIds?: unknown; useFixtureAdapter?: unknown };
+    if (typeof payload.question !== "string") {
+      throw new Error("请输入圆桌问题。");
+    }
+    const seatIds = Array.isArray(payload.seatIds)
+      ? payload.seatIds.filter((item): item is string => typeof item === "string")
+      : undefined;
+    return runDesktopCouncilRoundtable({
+      db: sliceWorkspace.db,
+      question: payload.question,
+      seatIds,
+      useFixtureAdapter: payload.useFixtureAdapter === true,
+    });
+  });
+
+  ipcMain.handle("council:enableFixtureAdapter", () => {
+    return enableFixtureCouncilAdapter();
   });
 
 

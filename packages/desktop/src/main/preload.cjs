@@ -72,4 +72,8 @@ contextBridge.exposeInMainWorld("bookskillDesktop", {
   listDistillations: () => ipcRenderer.invoke("distill:list"),
   attachDistillationToChat: (input) => ipcRenderer.invoke("distill:attachToChat", input),
   loadDistillationChatContext: (conversationId) => ipcRenderer.invoke("distill:loadChatContext", conversationId),
+  listCouncilSeats: () => ipcRenderer.invoke("council:listSeats"),
+  askCouncilSeat: (input) => ipcRenderer.invoke("council:askSeat", input),
+  runCouncilRoundtable: (input) => ipcRenderer.invoke("council:runRoundtable", input),
+  enableFixtureCouncilAdapter: () => ipcRenderer.invoke("council:enableFixtureAdapter"),
 });
