@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, describe, it } from "node:test";
 import { openSliceWorkspace } from "@bookskill/core";
-import { resolveBusinessDbPath } from "@bookskill/data";
+import { SCHEMA_VERSION_CURRENT, resolveBusinessDbPath } from "@bookskill/data";
 import { initializeDataDir } from "../src/shared/data-layout.ts";
 import { PRODUCT_NAME } from "../src/shared/product.ts";
 
@@ -45,7 +45,7 @@ describe("desktop shell wiring for the VERT-001 slice", () => {
       const book = workspace.importBook(path.join(FIXTURES_DIR, "bookskill-test-primer.epub"));
       assert.equal(book.title, "BookSkill Test Primer");
       const snapshot = workspace.snapshot();
-      assert.equal(snapshot.schemaVersion, 2);
+      assert.equal(snapshot.schemaVersion, SCHEMA_VERSION_CURRENT);
       assert.equal(snapshot.books, 1);
       assert.equal(snapshot.dbPath, dbPath);
       assert.ok(fs.existsSync(dbPath));

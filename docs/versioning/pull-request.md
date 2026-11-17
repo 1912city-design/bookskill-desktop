@@ -5,9 +5,12 @@
 **Keep this PR OPEN.** Do not auto-merge. After independent QA, the Orchestrator will seek human confirmation under D-025 before merging into `integration`. This change must not be merged to `main` and must not be published as part of this ticket. Do not mark VER-001 Done.
 
 - Branch: `feat/VER-001`
-- Base: `integration` (`5ec4540`)
-- Implementation commit: `9c83e0ff07ba631ca0076d23af8e07d38a3ef76a`
+- Base: `integration` (`b3a240c6edea9c1d5988837ffa1bfd2ba479247d`; originally `5ec4540`)
+- Implementation commit (rewritten by rebase): `639dbd72212896d592c05b4d890c7724b7c16dcc` (was `9c83e0ff07ba631ca0076d23af8e07d38a3ef76a`)
+- Pre-follow-up rebased docs commit: `cc86fdd6427d1d48a6fb4f16a215a1a029ad4d68` (was tip `74459e73aa97434d40556237d492ee00cdb78654`)
+- 2026-11-17 follow-up: rebase onto current `integration`, fix desktop `slice-wiring` schema assertion, re-run data/core/desktop tests. The follow-up commit is the branch tip after this update.
 - Report: `docs/versioning/VER-001-REPORT.md`
+- Keep this PR OPEN against `integration`. Do not merge, do not retarget, do not touch `main`, do not mark Done / G1 / G2.
 
 ## Change summary
 
@@ -51,14 +54,25 @@ From `/workspace/bookskill-worktrees/VER-001`:
 ```bash
 pnpm --filter @bookskill/data test
 pnpm --filter @bookskill/core test
+pnpm --filter @bookskill/desktop test   # includes tsc --noEmit
 ```
 
+Original implementation run (2026-11-16, before rebase):
+
 - `pnpm --filter @bookskill/data test` — 2026-11-16 22:17:25 CST — exit **0** — **13 passed, 0 failed**
-- `pnpm --filter @bookskill/core test` — 2026-11-16 22:17:26 CST — exit **0** — **44 passed, 0 failed** (including 7 new VER-001 tests; existing know-001 / import / search / rel / slice / paths tests still pass)
+- `pnpm --filter @bookskill/core test` — 2026-11-16 22:17:26 CST — exit **0** — **44 passed, 0 failed** (including 7 new VER-001 tests)
+
+Follow-up run after rebase onto `b3a240c` (2026-11-17, Asia/Shanghai):
+
+- `pnpm --filter @bookskill/data test` — 2026-11-17 21:11:26–21:11:27 CST — exit **0** — **13 passed, 0 failed**
+- `pnpm --filter @bookskill/core test` — 2026-11-17 21:11:27–21:11:28 CST — exit **0** — **100 passed, 0 failed** (count rose because current `integration` includes later tickets' tests; the original 7 VER-001 tests still pass)
+- `pnpm --filter @bookskill/desktop test` — 2026-11-17 21:11:31–21:11:35 CST — exit **0** — **66 passed, 0 failed**. The package test script ran `tsc -p tsconfig.json --noEmit` successfully before the node tests.
 
 Full captured output: `docs/versioning/pnpm-test-output.txt`.
 
-Note: `packages/desktop/test/slice-wiring.test.ts` still asserts `schemaVersion === 2`. It is not part of root `pnpm test`. This PR does not edit `packages/desktop/**`; VER-002 can fix that assertion.
+These self-tests are not independent QA. This PR does not complete the ticket.
+
+The desktop `slice-wiring` test now asserts `SCHEMA_VERSION_CURRENT` instead of a hardcoded `2`. DISTILL-002 required bridge methods were already present on the REL-001 / REL-002 test stubs after the clean rebase; no further stub edits were required for `tsc`.
 
 ## Frozen API signatures (for Frontend VER-002)
 
@@ -177,7 +191,7 @@ function summarizeKnowledgeCardRevisionDiff(
 ## Unresolved risks
 
 - High-risk schema migration: must stay OPEN pending independent QA and human confirmation (D-025).
-- Desktop `slice-wiring` test still expects schema v2 (out of scope; for VER-002).
+- Desktop `slice-wiring` schema assertion has been updated to `SCHEMA_VERSION_CURRENT` in the 2026-11-17 follow-up. Desktop history UI remains out of scope (VER-002).
 - Concurrent writers on the same card could theoretically collide on `UNIQUE (card_id, revision)`.
 - Rollback version short ids are 8 hex characters; a collision would fail the insert rather than rewrite history.
 - Knowledge card `type` is treated as a body field and is restored on rollback.

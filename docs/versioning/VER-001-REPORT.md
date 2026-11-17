@@ -3,12 +3,56 @@
 - 任务：为 Skill 与知识卡提供本机可列出、可回滚、可追溯、可测试的追加式版本历史（不是 BACKUP-001 的整库备份）
 - 负责人：backend_engineer（BookSkill Backend Engineer）
 - 分支：`feat/VER-001`
-- 基础：`origin/integration` @ `5ec4540`
+- 基础：`origin/integration` @ `b3a240c6edea9c1d5988837ffa1bfd2ba479247d`（2026-11-17 变基后；原基础为 `5ec4540`）
 - 工作区：`/workspace/bookskill-worktrees/VER-001`
 - 完成时间：2026-11-16 22:17 Asia/Shanghai
-- 实现提交：`9c83e0ff07ba631ca0076d23af8e07d38a3ef76a`
+- 实现提交（变基后重写）：`639dbd72212896d592c05b4d890c7724b7c16dcc`（原 `9c83e0ff07ba631ca0076d23af8e07d38a3ef76a`）
+- 原报告提交（变基后重写）：`cc86fdd6427d1d48a6fb4f16a215a1a029ad4d68`（原 tip `74459e73aa97434d40556237d492ee00cdb78654`）
+- 本轮 follow-up：变基到当前 `integration` tip，修正 desktop schema 断言并完成本机 data/core/desktop 测试。**自测不是独立 QA。未合入，未发布，不得宣布本票 Done / G1 / G2。**
 - 状态：本地实现与测试已完成，并准备基于 `integration` 的远端 PR。**未合入 `main` / `integration`，未发布，不得宣布本票 Done。** 风险为 **高（high）**。PR 必须保持 OPEN，待独立 QA 后由 Orchestrator 按 D-025 征求人工确认再合入 `integration`。
 - 风险等级：**高（high）**。新增 schema V3 迁移（`knowledge_card_revisions` 表 + 已有卡的 revision=1 基线回填）。Skill 回滚 API 未新增表，与本票一并交付。
+
+
+## 2026-11-17 follow-up：变基到当前 integration 并修复 desktop 测试
+
+- 执行人：backend_engineer（BookSkill Backend Engineer）
+- 时间：2026-11-17 21:11–21:12 Asia/Shanghai（CST，UTC+8）
+- 工作区：`/workspace/bookskill-worktrees/VER-001`
+- 分支：`feat/VER-001`（PR #15，保持 OPEN，base 仍为 `integration`；不合入，不改 base，不触 `main`）
+- 决策约束：P-013 — 本票修好后只合入 `integration`，不合入 `main`，不发布，不标 Done / G1 / G2。本轮只做变基 + 修复 + 推送。
+
+### 变基链
+
+| 角色 | 完整 SHA | 说明 |
+|---|---|---|
+| 变基前 tip | `74459e73aa97434d40556237d492ee00cdb78654` | 原文档提交 |
+| 变基前实现 | `9c83e0ff07ba631ca0076d23af8e07d38a3ef76a` | 原实现提交 |
+| 变基基础 | `b3a240c6edea9c1d5988837ffa1bfd2ba479247d` | 当前 `origin/integration`（Merge PR #22 DISTILL-002；已含 SEARCH-002 / SKILL-001 / REL-002 / SKILL-004 / COUNCIL-001 / DISTILL-001 / DISTILL-002） |
+| 重写后票务文档 | `60cf1f81c378b26b2822d454e07d209238608251` | `docs: add VER-001 ticket and acceptance criteria`，parent 为 `b3a240c` |
+| 重写后实现 | `639dbd72212896d592c05b4d890c7724b7c16dcc` | `feat(versioning): add skill rollback APIs and knowledge card revision history (VER-001)` |
+| 重写后原报告 | `cc86fdd6427d1d48a6fb4f16a215a1a029ad4d68` | `docs(versioning): record VER-001 implementation commit hash and test results` |
+| 本轮 follow-up | 本文件与测试修复同一次提交；完整 tip SHA 以提交后的 `git rev-parse feat/VER-001` 为准 | 见下方改动文件 |
+
+变基过程：`git fetch` 后确认 `origin/integration` 恰好为 `b3a240c6edea9c1d5988837ffa1bfd2ba479247d`，再 `git rebase origin/integration`。3 个提交全部应用成功，**无冲突文件**。未丢弃 integration 上的新功能。
+
+### 本轮改动文件
+
+- `packages/desktop/test/slice-wiring.test.ts`：不再把 `snapshot.schemaVersion` 写死为 `2`，改为断言 `SCHEMA_VERSION_CURRENT`（自 `@bookskill/data` 导入，与 core 测试一致）。
+- `docs/versioning/VER-001-REPORT.md`、`docs/versioning/pull-request.md`、`docs/versioning/pnpm-test-output.txt`：记录变基、本轮测试与残差。
+
+未改业务行为。未新增产品 API。`BookskillDesktopBridge` 在 integration tip 上已含 DISTILL-002 必填方法；变基后 `packages/desktop/test/rel-001.test.ts` 与 `rel-002.test.ts` 中的测试桩已具备 `startDistill` / `importDistillationMarkdown` / `loadDistillation` / `listDistillations` / `attachDistillationToChat` / `loadDistillationChatContext` 等字段，`tsc --noEmit` 已通过，因此本轮不必再改这些桩。
+
+### 本轮测试（Asia/Shanghai，三者均为 exit 0）
+
+在 `/workspace/bookskill-worktrees/VER-001` 执行。完整输出追加于 `docs/versioning/pnpm-test-output.txt`。
+
+| 命令 | 时间（Asia/Shanghai） | 退出码 | 结果 |
+|---|---|---|---|
+| `pnpm --filter @bookskill/data test` | 2026-11-17 21:11:26 CST 开始，21:11:27 CST 结束 | **0** | **13 passed，0 failed**（4 suites） |
+| `pnpm --filter @bookskill/core test` | 2026-11-17 21:11:27 CST 开始，21:11:28 CST 结束 | **0** | **100 passed，0 failed**（23 suites；数量多于变基前的 44，是因为当前 integration 已含 COUNCIL / DISTILL / REL-002 / SEARCH-002 / SKILL-004 等测试，本票原有 7 项 VER-001 测试仍通过） |
+| `pnpm --filter @bookskill/desktop test` | 2026-11-17 21:11:31 CST 开始，21:11:35 CST 结束 | **0** | **66 passed，0 failed**（13 suites）。该脚本先执行 `pnpm --filter @bookskill/repo-baseline build` 与 `tsc -p tsconfig.json --noEmit`，二者均成功后才跑 `node --test`。 |
+
+**自测不是独立 QA。** 本报告不宣布工单完成，不宣布 G1 / G2。
 
 ## 变更摘要与迁移范围
 
@@ -55,7 +99,10 @@
 ```bash
 pnpm --filter @bookskill/data test
 pnpm --filter @bookskill/core test
+pnpm --filter @bookskill/desktop test   # includes tsc --noEmit
 ```
+
+变基前（2026-11-16）只跑了 data / core。变基后（2026-11-17）三者都跑过，见上方 follow-up 表。历史记录保留如下。
 
 | 命令 | 时间（Asia/Shanghai） | 退出码 | 结果 |
 |---|---|---|---|
@@ -78,9 +125,9 @@ pnpm --filter @bookskill/core test
 - `docs/versioning/pull-request.md`
 - `docs/versioning/pnpm-test-output.txt`
 
-未修改：`packages/desktop/**`、治理文件（`docs/DECISIONS.md`、`PROJECT_STATE.md`、`BLOCKERS.md`、`TASKS.md`、`PENDING_DECISIONS.md`、`docs/policies/**`、`docs/tickets/**`）、FIXT 样本正文、导入/搜索/关系/阅读 UI。
+最初实现未改 `packages/desktop/**`。2026-11-17 follow-up 仅修改 `packages/desktop/test/slice-wiring.test.ts`（schema 断言）以及 `docs/versioning/**`。仍未修改治理文件（`docs/DECISIONS.md`、`PROJECT_STATE.md`、`BLOCKERS.md`、`TASKS.md`、`PENDING_DECISIONS.md`、`docs/policies/**`、`docs/tickets/**`）、FIXT 样本正文、导入/搜索/关系/阅读 UI 业务行为。
 
-**给 VER-002 的说明：** `packages/desktop/test/slice-wiring.test.ts` 仍断言 `schemaVersion === 2`。该测试不在根 `pnpm test` 范围内（当前 CI 跑 lint + repo-baseline test + build）。本票按允许写入范围未改 `packages/desktop/**`。VER-002 可把这一行改为 3 / `SCHEMA_VERSION_CURRENT`。
+**给 VER-002 的说明：** `packages/desktop/test/slice-wiring.test.ts` 已改为断言 `SCHEMA_VERSION_CURRENT`，不再写死为 2。桌面历史 UI 仍不在本票范围。
 
 ## 冻结 API 签名（供 Frontend VER-002）
 
@@ -210,7 +257,7 @@ function summarizeKnowledgeCardRevisionDiff(
 ## 未解决风险
 
 - **高风险 schema 迁移。** V3 会改用户业务库结构。合入 `integration` 必须按 D-020 / D-025 等待独立 QA 与人工确认。本 PR 保持 OPEN，不得自动合入，不得宣布 Done。
-- **桌面测试仍断言 schema v2。** `packages/desktop/test/slice-wiring.test.ts` 未改（禁止写入 desktop）。若有人单独跑桌面测试会失败，留给 VER-002。
+- **桌面 schema 断言（已在 2026-11-17 follow-up 修复）。** `packages/desktop/test/slice-wiring.test.ts` 现断言 `SCHEMA_VERSION_CURRENT`。`pnpm --filter @bookskill/desktop test`（含 `tsc --noEmit`）已通过。桌面历史 UI 仍留给 VER-002。
 - **并发写入同一张卡。** 修订号用 `MAX(revision)+1`，写路径包在事务中，但两个连接同时更新同一张卡时仍可能撞上 `UNIQUE (card_id, revision)`。与现有卡片更新相同，本票未加额外锁协议。
 - **Skill 回滚 version 字符串。** 使用 `${target.version}+rollback-<8 hex>`。极端情况下短 id 碰撞会触发 `UNIQUE (skill_id, version)` 并失败，而不会改写旧行。调用方可重试。
 - **知识卡 `type` 视为正文字段。** 回滚会恢复 `type`。当前写入 API 并不编辑 type，因此通常与回滚目标一致。
