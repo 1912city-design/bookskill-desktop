@@ -6,7 +6,7 @@
 - 基础：`origin/integration` @ `5fe203b0b1c24d64b53415ddf2242297b225e577`（Merge PR #15 VER-001，2026-11-17 21:18:46 Asia/Shanghai）
 - 工作区：`/workspace/bookskill-worktrees/GRAPH-001`
 - 完成时间：2026-11-17 21:29 CST（Asia/Shanghai）
-- 实现提交：以提交后的 `git rev-parse feat/GRAPH-001` 为准（本文件与实现一并提交）
+- 实现提交：`1da149c6732ac4ccaa5054e2e9453cd43982304f`
 - 状态：本地实现与测试已完成，将推送 `feat/GRAPH-001` 并打开目标仅为 `integration` 的 PR。**未自行合入 `main` / `integration`，未发布，未标 Done，未宣布完成，未盖 G1/G2。** 自测不是独立 QA。独立 QA 通过前不得合入。
 - 风险等级：**中（medium）**。图谱以 JSON 文件存在 BookSkill 数据目录（`{dataDir}/graph/knowledge-graph.json`），未改 `packages/data` schema，未加表或迁移。
 
