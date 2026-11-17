@@ -3,16 +3,16 @@
 - 任务：在书籍流水线之外，先支持导入许可/合成访谈或其它文本，复用锁定 5 段模板，生成完整 5 段蒸馏结果与 **draft** Skill，并让智囊团引用时能看到 `source_filename`。转录集成不在本票。本票以核心 API 为主，不做完整上传 UI。
 - 负责人：ai_skill_engineer（BookSkill AI Skill Engineer）
 - 分支：`feat/DISTILL-003`
-- 基础：先从当时的 `origin/integration` @ `5fe203b0b1c24d64b53415ddf2242297b225e577` 拉出；GRAPH-001 PR #23 合入后，已变基到当前 `origin/integration` @ `4d60314e9d39c6e7158ab46738c8e071e272c373`（Merge PR #23 GRAPH-001，2026-11-17 21:37:21 Asia/Shanghai，parents `5fe203b` + `a3d5b31`）。未从 `feat/GRAPH-001` 直接拉出。
+- 基础：先从当时的 `origin/integration` @ `5fe203b0b1c24d64b53415ddf2242297b225e577` 拉出；随后先变基到 GRAPH-001 合入后的 `4d60314e9d39c6e7158ab46738c8e071e272c373`；COUNCIL-002 PR #24 只合入 `integration` 后，再次变基到当前 `origin/integration` @ `b6ff0ea0bcc024371341ea782eb06bee93cb9d44`（Merge PR #24 COUNCIL-002，2026-11-17 21:39:53 Asia/Shanghai）。未停在 `4d60314` 或 `5fe203b`。未从 `feat/GRAPH-001` 直接拉出。
 - 工作区：`/workspace/bookskill-worktrees/DISTILL-003`
-- 完成时间：2026-11-17 21:38 CST（Asia/Shanghai）
-- 实现提交：`f0cfd4e2b00e821dbb7628d63bcb41b362112ec6`（parent 为 `4d60314`）。若本报告随后另有文档提交，分支 tip 以推送后的 HEAD 为准。
-- 状态：已变基到 `4d60314`，本地测试已通过，将推送 `feat/DISTILL-003` 并打开目标仅为 `integration` 的 PR。**未自行合入 `main` / `integration`，未发布，未标 Done，未宣布完成，未盖 G1/G2。** 自测不是独立 QA。独立 QA 通过前不得合入。
+- 完成时间：2026-11-17 21:41 CST（Asia/Shanghai）
+- 实现提交：`7d5b009ddcfaabf7111e14ed2e98511d2f078230`（变基到 `b6ff0ea` 后重放；parent 为 `b6ff0ea`）。本报告的文档提交会成为新的分支 tip，以推送后的 HEAD 为准。
+- 状态：已变基到 `b6ff0ea`，本地测试已通过，将以 `--force-with-lease` 更新已开出的 [PR #25](https://github.com/1912city-design/bookskill-desktop/pull/25)。**PR 保持 OPEN，目标仍为 `integration`。未自行合入 `main` / `integration`，未发布，未标 Done，未宣布完成，未盖 G1/G2。** 自测不是独立 QA。独立 QA 通过前不得合入。
 - 风险等级：**中（medium）**。只创建 draft Skill 与数据目录下的蒸馏文件；未改 `packages/data` schema 或迁移；创建 Skill 仍走 DISTILL-001 的 `createDraftSkillsFromDistillation`（显式 `status: "draft"`，未改 createSkill 省略时默认 `tested` 的行为）；未写 `published`（D-018）；未写 `verified_by_user`（D-017）；未自动发布 Skill。
 
 ## 做了什么
 
-新增 `packages/core/src/distill/multi-source.ts`，扩展 `packages/core/src/distill/index.ts` 导出，并在 `packages/core/src/index.ts` **追加**导出。变基到 `4d60314` 后：既有 council / distill / GRAPH-001 graph 导出块一字未改；DISTILL-003 导出块接在 graph 块之后。未改 `packages/core/src/graph/**` 行为，不依赖把 GRAPH-001 当成本票实现的一部分来改写。
+新增 `packages/core/src/distill/multi-source.ts`，扩展 `packages/core/src/distill/index.ts` 导出，并在 `packages/core/src/index.ts` **追加**导出。变基到 `b6ff0ea` 时无冲突：COUNCIL-002 未改 `packages/core/src/index.ts`。既有 council / distill / GRAPH-001 graph 导出块与 `b6ff0ea` 完全一致；DISTILL-003 导出块仍接在 graph 块之后。未改写这些既有导出块，也未改 `packages/core/src/council/**` 或 `packages/core/src/graph/**` 行为。
 
 冻结 / 公开 API：
 
@@ -71,14 +71,14 @@
 
 ## 测试命令及本机结果（Asia/Shanghai）
 
-工作树：`/workspace/bookskill-worktrees/DISTILL-003`。下列结果是在变基到 `4d60314` 之后重跑的。
+工作树：`/workspace/bookskill-worktrees/DISTILL-003`。下列结果是在变基到 `b6ff0ea` 之后重跑的。
 
 | 命令 | 结果 | 时间（Asia/Shanghai，CST） | 日志 |
 |---|---|---|---|
-| `pnpm --filter @bookskill/core test` | **117/117 通过**，exit **0** | 2026-11-17 21:38:29–21:38:30 CST | `docs/distill/DISTILL-003-pnpm-core-test-output.txt` |
-| `pnpm --filter @bookskill/desktop test`（含 `tsc -p tsconfig.json --noEmit`） | **66/66 通过**，exit **0** | 2026-11-17 21:38:30–21:38:34 CST | `docs/distill/DISTILL-003-pnpm-desktop-test-output.txt` |
+| `pnpm --filter @bookskill/core test` | **117/117 通过**，exit **0** | 2026-11-17 21:41:15–21:41:16 CST | `docs/distill/DISTILL-003-pnpm-core-test-output.txt` |
+| `pnpm --filter @bookskill/desktop test`（含 `tsc -p tsconfig.json --noEmit`） | **74/74 通过**，exit **0** | 2026-11-17 21:41:16–21:41:19 CST | `docs/distill/DISTILL-003-pnpm-desktop-test-output.txt` |
 
-环境：Node v24.22.1，pnpm 10.34.6，Linux x86_64。本票新增 9 项核心测试；变基后套件包含已合入的 GRAPH-001 测试，故 core 由变基前的 109 增至 117。desktop 数量与 integration 基线一致（未改桌面代码）。
+环境：Node v24.22.1，pnpm 10.34.6，Linux x86_64。本票新增 9 项核心测试。变基到 `b6ff0ea` 后，core 套件仍为 117（含已合入的 GRAPH-001 测试，COUNCIL-002 未新增 core 测试）；desktop 由 66 增至 74，因为 integration 已含 COUNCIL-002 桌面测试。本票未改 `packages/desktop/**`。
 
 ## 交付物路径
 
@@ -94,7 +94,7 @@
 - 未改 `packages/data` schema、迁移或新表。
 - 未写完整上传 UI，未增加第六个一级导航，未改 `packages/desktop/**`。
 - 未改 `packages/core/src/council/**` 业务，也未改 `packages/core/src/graph/**` 行为。
-- `packages/core/src/index.ts` 在 `4d60314` 上保留 GRAPH-001 导出块，仅在其后追加多源导出。
+- `packages/core/src/index.ts` 在 `b6ff0ea` 上保留既有 council / distill / graph 导出块（与基线逐字一致），仅在其后追加多源导出。此次变基无冲突。
 - 未开工 SKILL-FUSE-001 或 GRAPH-002。
 - 转录集成不在范围。
 
