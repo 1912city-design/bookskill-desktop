@@ -303,6 +303,10 @@ describe("REL-002 relations discovery inbox", () => {
       askCouncilSeat: async () => ({ ok: false, error: "unused", adapterKind: "none" }),
       runCouncilRoundtable: async () => ({ ok: false, error: "unused", adapterKind: "none" }),
       enableFixtureCouncilAdapter: async () => "fixture",
+      loadKnowledgeGraph: async () => ({ nodes: [], edges: [], groups: [] }),
+      locateGraphNode: async () => {
+        throw new Error("unused");
+      },
     };
     assert.equal(typeof bridge.discoverKnowledgeRelations, "function");
     assert.equal(emptyKnowledgeUiState().selectedCardId, null);

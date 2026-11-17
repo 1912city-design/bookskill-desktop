@@ -14,6 +14,7 @@ import type { BookskillDesktopBridge, ShellInfo } from "../shared/shell-info.ts"
 import { emptyLibraryUiState, type LibraryUiState } from "./read/types.ts";
 import { jumpToAnnotation } from "./read/display.ts";
 import { renderLibraryRoute } from "./read/view.ts";
+import { emptyGraphUiState, type GraphUiState } from "./graph/types.ts";
 import { emptyKnowledgeUiState, type KnowledgeUiState } from "./knowledge/types.ts";
 import { renderKnowledgeRoute } from "./knowledge/view.ts";
 import { emptyRelationsUiState, type RelationsUiState } from "./relations/types.ts";
@@ -63,6 +64,7 @@ type ShellState = {
   nav: NavigationState;
   library: LibraryUiState;
   knowledge: KnowledgeUiState;
+  graph: GraphUiState;
   search: SearchUiState;
   relations: RelationsUiState;
   chat: ChatUiState;
@@ -71,7 +73,7 @@ type ShellState = {
   council: CouncilUiState;
 };
 
-function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState, skills: SkillsUiState, distill: DistillUiState, council: CouncilUiState): string {
+function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiState, knowledge: KnowledgeUiState, graph: GraphUiState, search: SearchUiState, relations: RelationsUiState, chat: ChatUiState, skills: SkillsUiState, distill: DistillUiState, council: CouncilUiState): string {
   const navButtons = nav.items
     .map((item) => {
       const current = item.id === nav.current;
@@ -105,7 +107,7 @@ function renderShell(info: ShellInfo, nav: NavigationState, library: LibraryUiSt
           ? renderDistillRoute(distill)
           : renderLibraryRoute(library)
         : view.id === "knowledge"
-          ? `${renderKnowledgeRoute(knowledge)}${renderRelationsRoute(relations, knowledge.cards)}`
+          ? `${renderKnowledgeRoute(knowledge, graph)}${renderRelationsRoute(relations, knowledge.cards)}`
         : view.id === "chat"
           ? `${renderChatRoute(chat)}${renderCouncilPanel(council)}`
         : view.id === "skills"
@@ -152,6 +154,7 @@ function bindNavigation(root: HTMLElement, state: ShellState): void {
           }
           if (id === "knowledge") {
             await ensureKnowledgeCards(state);
+            await ensureKnowledgeGraph(state);
             await ensureRelations(state);
           }
           if (id === "chat") {
@@ -554,6 +557,30 @@ function bindKnowledge(root: HTMLElement, state: ShellState): void {
       }
     })();
   });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-testid='library-graph-node']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const nodeId = button.getAttribute("data-node-id");
+      if (!nodeId) {
+        return;
+      }
+      void (async () => {
+        try {
+          const bridge = getBridge();
+          if (!bridge?.locateGraphNode) {
+            throw new Error("知识图谱尚未连接到本机接口。");
+          }
+          state.graph.selectedNodeId = nodeId;
+          state.graph.locate = await bridge.locateGraphNode({ nodeId });
+          state.graph.error = null;
+          paint(root, state);
+        } catch (error) {
+          state.graph.error = formatErrorMessage(error);
+          paint(root, state);
+        }
+      })();
+    });
+  });
 }
 
 function applyRelationLists(state: ShellState, lists: { suggested: RelationsUiState["suggested"]; confirmed: RelationsUiState["confirmed"] }): void {
@@ -755,6 +782,7 @@ function bindSearch(root: HTMLElement, state: ShellState): void {
           if (kind === "knowledge_card" && cardId) {
             state.nav.go("knowledge");
             await ensureKnowledgeCards(state);
+            await ensureKnowledgeGraph(state);
             const selected = state.knowledge.cards.find((card) => card.id === cardId);
             if (selected) {
               state.knowledge.selectedCardId = selected.id;
@@ -817,7 +845,7 @@ function bindSearch(root: HTMLElement, state: ShellState): void {
 }
 
 function paint(root: HTMLElement, state: ShellState): void {
-  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.search, state.relations, state.chat, state.skills, state.distill, state.council));
+  const attempt = renderWithBoundary(() => renderShell(state.info, state.nav, state.library, state.knowledge, state.graph, state.search, state.relations, state.chat, state.skills, state.distill, state.council));
   root.innerHTML = attempt.html;
   if (!attempt.ok) {
     return;
@@ -932,6 +960,7 @@ function bindDistill(root: HTMLElement, state: ShellState): void {
         state.distill.preview = result.preview;
         state.distill.error = null;
         state.distill.viewMode = "preview";
+        await ensureKnowledgeGraph(state);
         paint(root, state);
       } catch (error) {
         state.distill.phase = "failed";
@@ -1228,6 +1257,26 @@ async function ensureKnowledgeCards(state: ShellState): Promise<void> {
     state.knowledge.error = formatErrorMessage(error);
   } finally {
     state.knowledge.loaded = true;
+  }
+}
+
+async function ensureKnowledgeGraph(state: ShellState): Promise<void> {
+  const bridge = getBridge();
+  if (!bridge?.loadKnowledgeGraph) {
+    state.graph.loaded = true;
+    return;
+  }
+  try {
+    state.graph.view = await bridge.loadKnowledgeGraph();
+    if (state.graph.selectedNodeId && !state.graph.view.nodes.some((node) => node.id === state.graph.selectedNodeId)) {
+      state.graph.selectedNodeId = null;
+      state.graph.locate = null;
+    }
+    state.graph.error = null;
+  } catch (error) {
+    state.graph.error = formatErrorMessage(error);
+  } finally {
+    state.graph.loaded = true;
   }
 }
 
@@ -1551,6 +1600,7 @@ async function start(): Promise<void> {
       nav,
       library: emptyLibraryUiState(),
       knowledge: emptyKnowledgeUiState(),
+      graph: emptyGraphUiState(),
       search: emptySearchUiState(),
       relations: emptyRelationsUiState(),
       chat: emptyChatUiState(),
@@ -1563,6 +1613,7 @@ async function start(): Promise<void> {
     }
     if (nav.current === "knowledge") {
       await ensureKnowledgeCards(state);
+      await ensureKnowledgeGraph(state);
       await ensureRelations(state);
     }
     if (nav.current === "chat") {

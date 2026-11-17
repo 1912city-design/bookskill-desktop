@@ -46,6 +46,7 @@ import {
 } from "./conversation-path.ts";
 import { importLibraryBook } from "./library-import.ts";
 import { listDistillations } from "./distill-adapter.ts";
+import { loadKnowledgeGraphView, locateGraphNode } from "./graph.ts";
 import {
   attachDistillationToChat,
   importDistillationMarkdown,
@@ -1015,6 +1016,27 @@ async function boot(): Promise<void> {
 
   ipcMain.handle("council:enableFixtureAdapter", () => {
     return enableFixtureCouncilAdapter();
+  });
+
+  ipcMain.handle("graph:load", () => {
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    return loadKnowledgeGraphView(bootState.dataDir);
+  });
+
+  ipcMain.handle("graph:locate", (_event, input: unknown) => {
+    if (!bootState.dataDir) {
+      throw new Error("数据目录尚未就绪。");
+    }
+    if (!input || typeof input !== "object") {
+      throw new Error("请选择图谱节点。");
+    }
+    const payload = input as { nodeId?: unknown };
+    if (typeof payload.nodeId !== "string" || !payload.nodeId.trim()) {
+      throw new Error("请选择图谱节点。");
+    }
+    return locateGraphNode({ dataDir: bootState.dataDir, nodeId: payload.nodeId.trim() });
   });
 
 
