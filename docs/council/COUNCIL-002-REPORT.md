@@ -6,7 +6,8 @@
 - 基线：`origin/integration` @ `5fe203b0b1c24d64b53415ddf2242297b225e577`（VER-001 merge）
 - 工作树：`/workspace/bookskill-worktrees/COUNCIL-002`
 - 实现时间：2026-11-17 21:23–21:30 Asia/Shanghai
-- 分支 tip / 实现提交：`SHA_PLACEHOLDER`
+- 实现提交：`cd30eabe2d0dc86bce81a5f4b446d370c28d60cf` (`cd30eab`)
+- 文档修订：本文件记录实现提交哈希；PR head 以推送后的分支 tip 为准
 - 状态：本地实现与测试已完成，已准备（或已打开）目标为 `integration` 的 PR。**未自行合入，未触 `main`，未宣布完成，未盖 G1/G2，未发布，未把工单标为 Done。** 自测不是独立 QA。
 - 风险等级：**中（medium）**。UI 与 IPC 接线；未改 schema / 迁移；席位 Skill 保持 `draft`，不会自动发布。
 

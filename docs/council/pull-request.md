@@ -6,7 +6,7 @@ No sixth top-level nav item. `DEFAULT_ROUTE_ID` remains `chat`. Seats stay draft
 
 **Risk: medium** (UI and IPC wiring; no schema change).
 
-Base: `integration` @ `5fe203b0b1c24d64b53415ddf2242297b225e577`. Head: `SHA_PLACEHOLDER`.
+Base: `integration` @ `5fe203b0b1c24d64b53415ddf2242297b225e577`. Head: `cd30eabe2d0dc86bce81a5f4b446d370c28d60cf`.
 
 This is not a completeness claim and must not be merged until independent QA passes. Do not target `main`.
 
